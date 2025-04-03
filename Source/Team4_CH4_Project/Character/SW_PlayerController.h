@@ -37,4 +37,7 @@ public:
 public:
 	UFUNCTION()
 	void PlayerMove(const FInputActionValue& _InputValue);
+
+	UFUNCTION()
+	void PlayerJump(const FInputActionValue& _InputValue);
 };

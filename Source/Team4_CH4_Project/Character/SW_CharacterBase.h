@@ -61,4 +61,10 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	bool IsMoving() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool IsJump() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool InAir() const;
 };

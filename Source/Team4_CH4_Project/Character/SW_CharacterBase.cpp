@@ -66,3 +66,17 @@ bool ASW_CharacterBase::IsMoving() const
 
 	return false;
 }
+
+bool ASW_CharacterBase::IsJump() const
+{
+	if (InAir())
+	{
+		return GetVelocity().Z > 0;
+	}
+	return false;
+}
+
+bool ASW_CharacterBase::InAir() const
+{
+	return GetCharacterMovement()->IsFalling();
+}
