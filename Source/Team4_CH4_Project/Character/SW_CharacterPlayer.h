@@ -38,4 +38,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	virtual void Player_Move(const FInputActionValue& _InputValue);
+
+	UFUNCTION(BlueprintCallable)
+	virtual void Player_Jump(const FInputActionValue& _InputValue);
 };

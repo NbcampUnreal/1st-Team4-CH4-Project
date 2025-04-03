@@ -46,3 +46,12 @@ void ASW_CharacterPlayer::Player_Move(const FInputActionValue& _InputValue)
 	AddMovementInput(ForwardDirection, MoveVector.Y);
 	AddMovementInput(RightDirection, MoveVector.X);
 }
+
+void ASW_CharacterPlayer::Player_Jump(const FInputActionValue& _InputValue)
+{
+	bool bJump = _InputValue.Get<bool>();
+	if(bJump)
+	{
+		Jump();
+	}
+}

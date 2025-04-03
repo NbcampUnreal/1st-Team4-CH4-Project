@@ -43,6 +43,10 @@ void ASW_PlayerController::SetupInputComponent()
 		{
 			EnhancedInput->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ASW_PlayerController::PlayerMove);
 		}
+		if (JumpAction)
+		{
+			EnhancedInput->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ASW_PlayerController::PlayerJump);
+		}
 	}
 }
 
@@ -52,6 +56,15 @@ void ASW_PlayerController::PlayerMove(const FInputActionValue& _InputValue)
 	if (PlayerCharacter)
 	{
 		PlayerCharacter->Player_Move(_InputValue);
+	}
+}
+
+void ASW_PlayerController::PlayerJump(const FInputActionValue& _InputValue)
+{
+	ASW_CharacterPlayer* PlayerCharacter = Cast<ASW_CharacterPlayer>(GetPawn());
+	if (PlayerCharacter)
+	{
+		PlayerCharacter->Player_Jump(_InputValue);
 	}
 }
 
