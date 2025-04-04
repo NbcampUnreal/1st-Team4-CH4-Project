@@ -9,5 +9,7 @@ public class Team4_CH4_Project : ModuleRules
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput" });
-	}
+
+        PublicDependencyModuleNames.AddRange(new string[] { "UMG", "Slate", "SlateCore" });
+    }
 }
