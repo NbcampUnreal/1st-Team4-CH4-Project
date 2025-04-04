@@ -24,10 +24,6 @@ ASW_CharacterBase::ASW_CharacterBase()
 		MoveComp->MaxAcceleration = 2048.f;
 		MoveComp->BrakingFrictionFactor = 2.f;
 		MoveComp->BrakingFriction = 8.f;
-
-		MoveComp->bOrientRotationToMovement = true;
-		MoveComp->RotationRate = FRotator(0.f, 720.f, 0.f);
-		bUseControllerRotationYaw = false;
 	}
 
 
