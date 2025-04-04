@@ -10,7 +10,11 @@
 			"LoadingPhase": "Default",
 			"AdditionalDependencies": [
 				"Engine",
-				"ControlRigEditor"
+				"ControlRigEditor",
+				"CoreUObject",
+				"UMG",
+				"Engine",
+				"ModelViewViewModel"
 			]
 		}
 	],
@@ -36,6 +40,14 @@
 		},
 		{
 			"Name": "PCGExtendedToolkit",
+			"Enabled": true
+		},
+		{
+			"Name": "SlateInsights",
+			"Enabled": true
+		},
+		{
+			"Name": "ModelViewViewModel",
 			"Enabled": true
 		}
 	]
