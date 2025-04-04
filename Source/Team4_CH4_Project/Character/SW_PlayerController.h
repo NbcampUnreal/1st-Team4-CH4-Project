@@ -32,7 +32,21 @@ public:
 	UInputAction* JumpAction;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
-	UInputAction* AttackBasicAction;
+	UInputAction* ComboAttackAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+	UInputAction* DashSkillAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+	UInputAction* NormalSkillAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+	UInputAction* SpecialSkillAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+	UInputAction* JumpAttackAction;
+
+
 
 public:
 	UFUNCTION()
@@ -40,4 +54,20 @@ public:
 
 	UFUNCTION()
 	void PlayerJump(const FInputActionValue& _InputValue);
+
+	UFUNCTION()
+	void ComboAttack(const FInputActionValue& InputValue);
+
+	UFUNCTION()
+	void JumpAttack(const FInputActionValue& InputValue);
+
+	UFUNCTION()
+	void NormalSkill(const FInputActionValue& InputValue);
+
+	UFUNCTION()
+	void SpecialSkill(const FInputActionValue& InputValue);
+
+	UFUNCTION()
+	void DashSkill(const FInputActionValue& InputValue);
+
 };

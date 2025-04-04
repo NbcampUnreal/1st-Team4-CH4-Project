@@ -1,10 +1,12 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "InputActionValue.h"
 #include "SW_CharacterBase.generated.h"
+
+class USpringArmComponent; 
+class UCameraComponent;
 
 UCLASS()
 class TEAM4_CH4_PROJECT_API ASW_CharacterBase : public ACharacter
@@ -27,6 +29,26 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const;
+
+	// 각 캐릭터마다 InputAction 함수용 virtaul
+	virtual void Player_Move(const FInputActionValue& _InputValue);
+	virtual void Player_Jump(const FInputActionValue& _InputValue);
+
+	// 캐릭터 공통된 공격 애니메이션 재생용
+	virtual void ComboAttack();
+	virtual void JumpAttack();
+	virtual void NormalSkill();
+	virtual void SpecialSkill();
+	virtual void DashSkill();
+
+
+public:
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
+	USpringArmComponent* CameraBoom;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
+	UCameraComponent* FollowCamera;
 
 private:
 	// Movement Value
