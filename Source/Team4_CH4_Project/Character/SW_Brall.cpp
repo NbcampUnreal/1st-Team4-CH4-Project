@@ -20,3 +20,35 @@ ASW_Brall::ASW_Brall()
 	if (Combo3.Succeeded()) ComboMontages.Add(Combo3.Object);
 }
 
+void ASW_Brall::DashSkill()
+{
+	Super::DashSkill();
+
+	GetWorldTimerManager().SetTimer(
+		DashTimerHandle,
+		this,
+		&ASW_Brall::ExecuteDesh,
+		0.3f,
+		false
+	);
+}
+
+void ASW_Brall::ExecuteDesh()
+{
+	FVector DashDirection = GetActorForwardVector().GetSafeNormal();
+	float DashSpeed = 2000.f;
+
+	UCharacterMovementComponent* MoveComp = GetCharacterMovement();
+	MoveComp->BrakingFrictionFactor = 0.f;
+	MoveComp->BrakingDecelerationWalking = 0.f;
+
+	LaunchCharacter(DashDirection * DashSpeed, true, true);
+
+	// 일정 시간 후 마찰 복원
+	FTimerHandle DashResetHandle;
+	GetWorldTimerManager().SetTimer(DashResetHandle, FTimerDelegate::CreateLambda([=]()
+		{
+			MoveComp->BrakingFrictionFactor = 2.f;
+			MoveComp->BrakingDecelerationWalking = 2048.f;
+		}), 0.5f, false); // 0.5초 뒤 원상복구
+}

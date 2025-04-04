@@ -16,4 +16,13 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	virtual void BeginPlay() override;
+
+	UFUNCTION(BlueprintCallable)
+	virtual void DashSkill() override;
+
+
+	// ↑↑↑↑↑↑↑↑↑↑↑↑↑↑변수↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑
+	//===================================
+	// ↓↓↓↓↓↓↓↓↓↓↓↓↓↓함수↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
 };
