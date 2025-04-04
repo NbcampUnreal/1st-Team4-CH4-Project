@@ -16,10 +16,6 @@ class TEAM4_CH4_PROJECT_API ISW_PlayerAnimLayerInterface
 
 public:
 
-	// 기본공격
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void PlayComboAttack();
-
 	// 점프공격
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void PlayJumpAttack();

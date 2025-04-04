@@ -107,7 +107,13 @@ void ASW_CharacterBase::ComboAttack()
 			bCanNextCombo = false;
 
 			float MontageDuration = MontageToPlay->GetPlayLength();
-			GetWorldTimerManager().SetTimer(ComboResetTimer, this, &ASW_CharacterBase::CheckPendingCombo, MontageDuration * 0.9f, false); 
+			GetWorldTimerManager().SetTimer(
+				ComboResetTimer,
+				this,
+				&ASW_CharacterBase::CheckPendingCombo,
+				MontageDuration * 0.9f,
+				false
+			); 
 		}
 	}
 	else // 평타 도중에 키입력시
@@ -115,9 +121,6 @@ void ASW_CharacterBase::ComboAttack()
 		bPendingNextCombo = true;
 	}
 }
-
-
-
 
 // 점프 공격
 void ASW_CharacterBase::JumpAttack()
@@ -223,8 +226,11 @@ void ASW_CharacterBase::CheckPendingCombo()
 			return;
 		}
 
+		/* 콤보 몽타주가 너무 많거나 무한 콤보면
+		스택 오버플로우나 로직 꼬일 위험 있다고함.
+		아직까지는 평타 몽타주가 3개로 문제는 없어보임 */
 		bCanNextCombo = true;
-		ComboAttack(); // !!!!!!!!!!!!!!!!!!재귀 호출!!!!!!!!!!!!!!!!!!!!!!!!!!! 나중에 문제 생길수.. 도..
+		ComboAttack(); // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!재귀 호출!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! (나중을 위하여)
 	}
 	else
 	{
