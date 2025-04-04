@@ -11,29 +11,12 @@ void ASW_Brall::BeginPlay()
 ASW_Brall::ASW_Brall()
 {
 
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> Combo1(TEXT("/Game/Characters/Brall/Animation/ComboAttack/AM_Brall_Combo1.AM_Brall_Combo1"));
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> Combo2(TEXT("/Game/Characters/Brall/Animation/ComboAttack/AM_Brall_Combo2.AM_Brall_Combo2"));
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> Combo3(TEXT("/Game/Characters/Brall/Animation/ComboAttack/AM_Brall_Combo3.AM_Brall_Combo3"));
+
+	if (Combo1.Succeeded()) ComboMontages.Add(Combo1.Object);
+	if (Combo2.Succeeded()) ComboMontages.Add(Combo2.Object);
+	if (Combo3.Succeeded()) ComboMontages.Add(Combo3.Object);
 }
 
-void ASW_Brall::Player_Move(const FInputActionValue& _InputValue)
-{
-	const FVector2D MoveVector = _InputValue.Get<FVector2D>();
-	if (MoveVector.IsNearlyZero())
-	{
-		return;
-	}
-
-	FRotator ControlRotation = GetControlRotation();
-	FRotator YawRotation(0, ControlRotation.Yaw, 0);
-	FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-	FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-	AddMovementInput(ForwardDirection, MoveVector.Y);
-	AddMovementInput(RightDirection, MoveVector.X);
-}
-
-void ASW_Brall::Player_Jump(const FInputActionValue& _InputValue)
-{
-	bool bJump = _InputValue.Get<bool>();
-	if (bJump)
-	{
-		Jump();
-	}
-}

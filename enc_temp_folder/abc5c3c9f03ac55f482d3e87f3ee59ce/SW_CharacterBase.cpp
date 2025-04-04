@@ -224,7 +224,7 @@ void ASW_CharacterBase::CheckPendingCombo()
 		}
 
 		bCanNextCombo = true;
-		ComboAttack(); // !!!!!!!!!!!!!!!!!!재귀 호출!!!!!!!!!!!!!!!!!!!!!!!!!!! 나중에 문제 생길수.. 도..
+		ComboAttack(); // !!!!!!!!!!!!!!!!!!재귀 호출!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	}
 	else
 	{

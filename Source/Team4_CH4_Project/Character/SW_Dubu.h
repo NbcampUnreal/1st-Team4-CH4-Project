@@ -16,11 +16,4 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	virtual void BeginPlay() override;
-
-	UFUNCTION(BlueprintCallable)
-	virtual void Player_Move(const FInputActionValue& _InputValue) override;
-
-	UFUNCTION(BlueprintCallable)
-	virtual void Player_Jump(const FInputActionValue& _InputValue) override;
-
 };

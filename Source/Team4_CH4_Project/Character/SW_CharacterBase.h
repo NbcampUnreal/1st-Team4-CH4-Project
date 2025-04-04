@@ -50,6 +50,24 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	UCameraComponent* FollowCamera;
 
+
+
+	// === 평타 콤보 시스템용 ===
+	UPROPERTY(EditDefaultsOnly, Category = "Combo")
+	TArray<UAnimMontage*> ComboMontages;
+
+	int32 CurrentComboIndex = 0;
+	bool bCanNextCombo = true;
+	bool bPendingNextCombo = false;
+
+	// 콤보 초기화용
+	FTimerHandle ComboResetTimer;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Combo")
+	float ComboResetTime = 1.5f;
+	//==========================
+
+
 private:
 	// Movement Value
 	UPROPERTY(VisibleAnywhere, Replicated,  Category = "Movement")
@@ -78,9 +96,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	float GetGroundSpeed();
 
-	UFUNCTION(BlueprintCallable)
-	void SetGroundSpeed(float _Velocity);
-
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	bool IsMoving() const;
 
@@ -89,4 +104,16 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	bool InAir() const;
+
+	// ↑↑↑↑↑↑↑↑↑↑↑↑↑↑변수↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑
+	//===================================
+	// ↓↓↓↓↓↓↓↓↓↓↓↓↓↓함수↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+	UFUNCTION(BlueprintCallable)
+	void SetGroundSpeed(float _Velocity);
+
+	// 평타 3타 콤보 초기화 함수
+	void ResetCombo();
+
+	void CheckPendingCombo();
 };
