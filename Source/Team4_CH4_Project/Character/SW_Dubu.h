@@ -13,11 +13,7 @@ public:
 	ASW_Dubu();
 
 public:
-
-	UFUNCTION(BlueprintCallable)
 	virtual void BeginPlay() override;
-
-	UFUNCTION(BlueprintCallable)
 	virtual void DashSkill() override;
 
 

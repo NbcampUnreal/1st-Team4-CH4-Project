@@ -1,119 +1,109 @@
 #pragma once
-
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
 #include "SW_CharacterBase.generated.h"
 
-class USpringArmComponent; 
+class USpringArmComponent;
 class UCameraComponent;
+class UAnimMontage;
 
 UCLASS()
 class TEAM4_CH4_PROJECT_API ASW_CharacterBase : public ACharacter
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
-	ASW_CharacterBase();
+    ASW_CharacterBase();
 
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const;
-
-	// 각 캐릭터마다 InputAction 함수용 virtaul
-	virtual void Player_Move(const FInputActionValue& _InputValue);
-	virtual void Player_Jump(const FInputActionValue& _InputValue);
-
-	// 캐릭터 공통된 공격 애니메이션 재생용
-	virtual void ComboAttack();
-	virtual void JumpAttack();
-	virtual void NormalSkill();
-	virtual void SpecialSkill();
-	virtual void DashSkill();
-
+    virtual void BeginPlay() override;
 
 public:
+    virtual void Tick(float DeltaTime) override;
+    virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+    virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
-	USpringArmComponent* CameraBoom;
+    virtual void Player_Move(const FInputActionValue& _InputValue);
+    virtual void Player_Jump(const FInputActionValue& _InputValue);
+    virtual void ComboAttack();
+    virtual void JumpAttack();
+    virtual void NormalSkill();
+    virtual void SpecialSkill();
+    virtual void DashSkill();
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
-	UCameraComponent* FollowCamera;
+public:
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
+    USpringArmComponent* CameraBoom;
 
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
+    UCameraComponent* FollowCamera;
 
+    // === 콤보 시스템용 ===
+    UPROPERTY(EditDefaultsOnly, Category = "Combo")
+    TArray<UAnimMontage*> ComboMontages;
 
-	// === 평타 콤보 시스템용 ===
-	UPROPERTY(EditDefaultsOnly, Category = "Combo")
-	TArray<UAnimMontage*> ComboMontages;
+    UPROPERTY(VisibleAnywhere, Category = "Combo")
+    int32 CurrentComboIndex = 0;
 
-	int32 CurrentComboIndex = 0;
-	bool bCanNextCombo = true;
-	bool bPendingNextCombo = false;
+    UPROPERTY(VisibleAnywhere, Category = "Combo")
+    bool bCanNextCombo = true;
 
-	// 콤보 초기화용
-	FTimerHandle ComboResetTimer;
+    UPROPERTY(VisibleAnywhere, Category = "Combo")
+    bool bPendingNextCombo = false;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Combo")
-	float ComboResetTime = 1.5f;
-	//==========================
+    // === 스킬 애니메이션 관리 ===
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
+    TMap<FName, UAnimMontage*> SkillMontages;
 
+    // 애니메이션 재생 중 입력 차단 상태
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
+    bool bIsLocked = false;
 
 private:
-	// Movement Value
-	UPROPERTY(VisibleAnywhere, Replicated,  Category = "Movement")
-	float GroundSpeed;
+    UPROPERTY(VisibleAnywhere, Replicated, Category = "Movement")
+    float GroundSpeed;
 
-	UPROPERTY(VisibleAnywhere, Category = "Movement")
-	FVector Acceleration;
+    UPROPERTY(VisibleAnywhere, Category = "Movement")
+    FVector Acceleration;
 
-	UPROPERTY(VisibleAnywhere, Category = "Movement")
-	FVector Velocity;
+    UPROPERTY(VisibleAnywhere, Category = "Movement")
+    FVector Velocity;
 
-	UPROPERTY(VisibleAnywhere, Category = "Movement")
-	FVector AccelerationLastFrame;
+    UPROPERTY(VisibleAnywhere, Category = "Movement")
+    FVector AccelerationLastFrame;
 
-	UPROPERTY(VisibleAnywhere, Category = "Movement")
-	FVector VelocityLastFrame;
+    UPROPERTY(VisibleAnywhere, Category = "Movement")
+    FVector VelocityLastFrame;
 
-	// Stat Value
-	UPROPERTY(VisibleAnywhere, Replicated, Category = "Stat")
-	int32 Health;
+    UPROPERTY(VisibleAnywhere, Replicated, Category = "Stat")
+    int32 Health;
 
-	UPROPERTY(VisibleAnywhere, Replicated, Category = "Stat")
-	int32 Stamina;
+    UPROPERTY(VisibleAnywhere, Replicated, Category = "Stat")
+    int32 Stamina;
 
 public:
-	UFUNCTION(BlueprintCallable)
-	float GetGroundSpeed();
+    UFUNCTION(BlueprintCallable)
+    float GetGroundSpeed();
 
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	bool IsMoving() const;
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    bool IsMoving() const;
 
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	bool IsJump() const;
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    bool IsJump() const;
 
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	bool InAir() const;
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    bool InAir() const;
 
-	// ↑↑↑↑↑↑↑↑↑↑↑↑↑↑변수↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑
-	//===================================
-	// ↓↓↓↓↓↓↓↓↓↓↓↓↓↓함수↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+    UFUNCTION(BlueprintCallable)
+    void SetGroundSpeed(float _Velocity);
 
-	UFUNCTION(BlueprintCallable)
-	void SetGroundSpeed(float _Velocity);
+    void ResetCombo();
+    void CheckPendingCombo();
 
-	// 평타 3타 콤보 초기화 함수
-	void ResetCombo();
+    UFUNCTION(BlueprintCallable)
+    void PlaySkillAnimation(FName SkillName);
 
-	void CheckPendingCombo();
+    UFUNCTION(BlueprintCallable)
+    void SetLockedState(bool bLocked);
 };
