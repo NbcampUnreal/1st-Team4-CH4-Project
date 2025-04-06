@@ -14,7 +14,6 @@ void USkillAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBas
             else if (NotifyEventName == "EndSkill")
             {
                 Character->SetLockedState(false);
-                Character->CheckPendingCombo(); 
             }
         }
     }

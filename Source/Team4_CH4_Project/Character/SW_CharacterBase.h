@@ -60,9 +60,10 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
     bool bIsLocked = false;
 
-private:
-    UPROPERTY(VisibleAnywhere, Replicated, Category = "Movement")
-    float GroundSpeed;
+protected:
+    // 캐릭터 이동속도 변수
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+    float DefaultMoveSpeed = 600.f;
 
     UPROPERTY(VisibleAnywhere, Category = "Movement")
     FVector Acceleration;
@@ -75,35 +76,28 @@ private:
 
     UPROPERTY(VisibleAnywhere, Category = "Movement")
     FVector VelocityLastFrame;
-
+    
+    // 아직은 미사용 중 
     UPROPERTY(VisibleAnywhere, Replicated, Category = "Stat")
     int32 Health;
 
+    // 아직은 미사용 중 
     UPROPERTY(VisibleAnywhere, Replicated, Category = "Stat")
     int32 Stamina;
 
 public:
-    UFUNCTION(BlueprintCallable)
-    float GetGroundSpeed();
 
-    UFUNCTION(BlueprintCallable, BlueprintPure)
-    bool IsMoving() const;
-
-    UFUNCTION(BlueprintCallable, BlueprintPure)
-    bool IsJump() const;
-
-    UFUNCTION(BlueprintCallable, BlueprintPure)
-    bool InAir() const;
-
-    UFUNCTION(BlueprintCallable)
-    void SetGroundSpeed(float _Velocity);
-
+    // 콤보 평타 리셋용
     void ResetCombo();
+
+    // 콤보 평타용으로 콤보 인풋액션 입력시 CurrentIndex증가용 함수
     void CheckPendingCombo();
 
+    // 스킬애니메이션 모음집 함수
     UFUNCTION(BlueprintCallable)
     void PlaySkillAnimation(FName SkillName);
 
+    // 스킬시전중에 다른 입력 못하는 함수
     UFUNCTION(BlueprintCallable)
     void SetLockedState(bool bLocked);
 };

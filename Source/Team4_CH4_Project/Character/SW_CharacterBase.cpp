@@ -16,7 +16,9 @@ ASW_CharacterBase::ASW_CharacterBase()
 
     if (UCharacterMovementComponent* MoveComp = GetCharacterMovement())
     {
-        MoveComp->bOrientRotationToMovement = false;
+        // 캐릭터 이동방향에 맞춰서 캐릭터 이동 true
+        MoveComp->bOrientRotationToMovement = true;
+
         MoveComp->MaxWalkSpeed = 600.f;
         MoveComp->BrakingDecelerationWalking = 2048.f;
         MoveComp->GroundFriction = 8.f;
@@ -110,7 +112,13 @@ void ASW_CharacterBase::ComboAttack()
             FTimerHandle ComboResetTimer;
 
             float MontageDuration = MontageToPlay->GetPlayLength();
-            GetWorldTimerManager().SetTimer(ComboResetTimer, this, &ASW_CharacterBase::CheckPendingCombo, MontageDuration * 0.5f, false);
+            GetWorldTimerManager().SetTimer(
+                ComboResetTimer,
+                this,
+                &ASW_CharacterBase::CheckPendingCombo,
+                MontageDuration * 0.8f,
+                false
+            );
         }
     }
     else // 평타 도중에 키입력시
@@ -172,22 +180,8 @@ void ASW_CharacterBase::SetLockedState(bool bLocked)
     bIsLocked = bLocked;
     if (UCharacterMovementComponent* MoveComp = GetCharacterMovement())
     {
-        MoveComp->MaxWalkSpeed = bLocked ? 0.f : 600.f;
+        MoveComp->MaxWalkSpeed = bLocked ? 0.f : DefaultMoveSpeed;
     }
-}
-
-float ASW_CharacterBase::GetGroundSpeed() { return GroundSpeed; }
-void ASW_CharacterBase::SetGroundSpeed(float _GroundSpeed) { GroundSpeed = _GroundSpeed; }
-bool ASW_CharacterBase::IsMoving() const { return Acceleration != FVector::ZeroVector && Velocity != FVector::ZeroVector; }
-bool ASW_CharacterBase::IsJump() const { return InAir() && GetVelocity().Z > 0; }
-bool ASW_CharacterBase::InAir() const { return GetCharacterMovement()->IsFalling(); }
-
-void ASW_CharacterBase::ResetCombo()
-{
-    CurrentComboIndex = 0;
-    bCanNextCombo = true;
-    bPendingNextCombo = false;
-    SetLockedState(false);
 }
 
 void ASW_CharacterBase::CheckPendingCombo()
@@ -209,4 +203,12 @@ void ASW_CharacterBase::CheckPendingCombo()
     {
         ResetCombo();
     }
+}
+
+void ASW_CharacterBase::ResetCombo()
+{
+    CurrentComboIndex = 0;
+    bCanNextCombo = true;
+    bPendingNextCombo = false;
+    SetLockedState(false);
 }

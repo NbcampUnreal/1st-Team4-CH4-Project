@@ -41,7 +41,6 @@ void ASW_PlayerController::BeginPlay()
 void ASW_PlayerController::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
-    LookMouseCursor();
 }
 
 void ASW_PlayerController::SetupInputComponent()
