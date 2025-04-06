@@ -11,6 +11,7 @@ public class Team4_CH4_Project : ModuleRules
             "CoreUObject", 
             "Engine", 
             "InputCore", 
+            "UMG",
             "EnhancedInput", 
             "AnimGraphRuntime"   
         });

@@ -16,9 +16,4 @@ public:
 	virtual void BeginPlay() override;
 	virtual void DashSkill() override;
 
-
-	// ↑↑↑↑↑↑↑↑↑↑↑↑↑↑변수↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑
-	//===================================
-	// ↓↓↓↓↓↓↓↓↓↓↓↓↓↓함수↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
-
 };

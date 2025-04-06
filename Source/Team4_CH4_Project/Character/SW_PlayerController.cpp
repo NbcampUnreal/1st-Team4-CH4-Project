@@ -80,33 +80,6 @@ void ASW_PlayerController::SetupInputComponent()
     }
 }
 
-void ASW_PlayerController::LookMouseCursor()
-{
-    FHitResult Hit;
-    GetHitResultUnderCursor(ECC_Visibility, false, Hit);
-
-    if (Hit.bBlockingHit)
-    {
-        APawn* const MyPawn = GetPawn();
-        if (MyPawn)
-        {
-            FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(
-                MyPawn->GetActorLocation(),
-                FVector(Hit.Location.X, Hit.Location.Y, MyPawn->GetActorLocation().Z)
-            );
-
-            FRotator NewRotation = FMath::RInterpTo(
-                MyPawn->GetActorRotation(),
-                TargetRotation,
-                GetWorld()->GetDeltaSeconds(),
-                20.0f
-            );
-
-            MyPawn->SetActorRotation(NewRotation);
-        }
-    }
-}
-
 void ASW_PlayerController::PlayerMove(const FInputActionValue& _InputValue)
 {
     if (ASW_CharacterBase* PlayerCharacter = Cast<ASW_CharacterBase>(GetPawn()))

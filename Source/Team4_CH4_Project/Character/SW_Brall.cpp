@@ -10,6 +10,10 @@ ASW_Brall::ASW_Brall()
     if (Combo1.Succeeded()) ComboMontages.Add(Combo1.Object);
     if (Combo2.Succeeded()) ComboMontages.Add(Combo2.Object);
     if (Combo3.Succeeded()) ComboMontages.Add(Combo3.Object);
+    
+    // 체력
+    MaxHealth = 100;
+    Health = MaxHealth;
 }
 
 void ASW_Brall::BeginPlay()

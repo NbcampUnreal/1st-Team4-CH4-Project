@@ -27,6 +27,7 @@ ASW_CharacterBase::ASW_CharacterBase()
         MoveComp->BrakingFriction = 8.f;
     }
 
+    //스프링암
     CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
     CameraBoom->SetupAttachment(RootComponent);
     CameraBoom->TargetArmLength = 1400.f;
@@ -35,11 +36,29 @@ ASW_CharacterBase::ASW_CharacterBase()
     CameraBoom->bInheritYaw = false;
     CameraBoom->bInheritPitch = false;
     CameraBoom->bInheritRoll = false;
+    CameraBoom->bDoCollisionTest = false; // 스프링암사이에 사물이나 캐릭터가 겹쳐도 거리 유지
 
+    // 카메라
     FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
     FollowCamera->SetupAttachment(CameraBoom);
     FollowCamera->bUsePawnControlRotation = false;
 
+    // =======================체력바==============================================
+   HealthBarWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("HealthBar"));
+   HealthBarWidget->SetupAttachment(GetMesh());
+   HealthBarWidget->SetRelativeLocation(FVector(0.f, 0.f, 280.f));        // 머리 위 고정
+   HealthBarWidget->SetRelativeRotation(FRotator(180.f, 0.f, 0.f));       // 회전값 180으로 고정
+   HealthBarWidget->SetUsingAbsoluteRotation(true);                       // 부모 회전 무시
+   HealthBarWidget->SetWidgetSpace(EWidgetSpace::World);                  // 월드기준
+   HealthBarWidget->SetDrawSize(FVector2D(200.f, 20.f));
+   HealthBarWidget->SetCollisionEnabled(ECollisionEnabled::NoCollision);  // 충돌 제거
+   HealthBarWidget->SetGenerateOverlapEvents(false);
+   HealthBarWidget->SetCastShadow(false);                                 // 그림자 제거
+   HealthBarWidget->bCastDynamicShadow = false;
+   HealthBarWidget->bAffectDistanceFieldLighting = false;
+   // =====================================================================++++++++
+
+    // 스킬, 콤보용 변수 초기화
     bIsLocked = false;
     CurrentComboIndex = 0;
     bCanNextCombo = true;
@@ -49,11 +68,24 @@ ASW_CharacterBase::ASW_CharacterBase()
 void ASW_CharacterBase::BeginPlay()
 {
     Super::BeginPlay();
+
+    // 체력바 초기화
+    UpdateHealthBar();
 }
 
 void ASW_CharacterBase::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
+
+    if (HealthBarWidget)
+    {
+        FVector CameraLocation = GetWorld()->GetFirstPlayerController()->PlayerCameraManager->GetCameraLocation();
+        FVector ToCamera = CameraLocation - HealthBarWidget->GetComponentLocation();
+        FRotator LookAtRotation = FRotationMatrix::MakeFromX(ToCamera).Rotator();
+
+        LookAtRotation.Pitch = 0.f;
+        LookAtRotation.Roll = 0.f;
+    }
 
     AccelerationLastFrame = Acceleration;
     Acceleration = GetCharacterMovement()->GetCurrentAcceleration();
@@ -211,4 +243,15 @@ void ASW_CharacterBase::ResetCombo()
     bCanNextCombo = true;
     bPendingNextCombo = false;
     SetLockedState(false);
+}
+
+void ASW_CharacterBase::UpdateHealthBar()
+{
+    if (!HealthBarWidget) return;
+
+    USW_HP* HP = Cast<USW_HP>(HealthBarWidget->GetUserWidgetObject());
+    if (HP)
+    {
+        HP->UpdateHealthBar(Health, MaxHealth);
+    }
 }

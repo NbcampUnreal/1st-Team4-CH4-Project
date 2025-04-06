@@ -12,6 +12,10 @@ ASW_Dubu::ASW_Dubu()
     if (Combo1.Succeeded()) ComboMontages.Add(Combo1.Object);
     if (Combo2.Succeeded()) ComboMontages.Add(Combo2.Object);
     if (Combo3.Succeeded()) ComboMontages.Add(Combo3.Object);
+
+    // 체력
+    MaxHealth = 150;
+    Health = MaxHealth;
 }
 
 void ASW_Dubu::BeginPlay()

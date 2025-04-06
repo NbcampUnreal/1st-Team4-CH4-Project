@@ -83,12 +83,12 @@ protected:
     UPROPERTY(VisibleAnywhere, Category = "Movement")
     FVector VelocityLastFrame;
     
-    // =======================캐릭터 체력 ============================
+    // 아직은 미사용 중 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Stat")
     int32 MaxHealth;
     UPROPERTY(VisibleAnywhere, Replicated, Category = "Stat")
     int32 Health;
-    // ==============================================================
+
 
     // 아직은 미사용 중 
     UPROPERTY(VisibleAnywhere, Replicated, Category = "Stat")
