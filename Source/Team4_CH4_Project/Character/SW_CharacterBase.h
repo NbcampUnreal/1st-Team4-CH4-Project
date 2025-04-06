@@ -4,6 +4,7 @@
 #include "InputActionValue.h"
 #include "Components/WidgetComponent.h"
 #include "SW_HP.h"
+#include "GameFramework/DamageType.h"
 #include "SW_CharacterBase.generated.h"
 
 class USpringArmComponent;
@@ -41,9 +42,22 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
     UCameraComponent* FollowCamera;
 
+
     // 체력바
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
     UWidgetComponent* HealthBarWidget;
+
+
+    // ================TakeDmage()함수용================
+    // 피격 애니메이션
+    UPROPERTY(EditAnywhere, Category = "Animation")
+    UAnimMontage* HitReactionMontage;
+    // 사망 애니메이션
+    UPROPERTY(EditAnywhere, Category = "Animation")
+    UAnimMontage* DeathMontage;
+    //===================================================
+    
+
 
     // === 콤보 시스템용 ===
     UPROPERTY(EditDefaultsOnly, Category = "Combo")
@@ -113,5 +127,9 @@ public:
     // 캐릭터 체력바 함수
     UFUNCTION(BlueprintCallable)
     void UpdateHealthBar();
+
+    // 데미지 처리
+    UFUNCTION(BlueprintCallable, Category = "Stat")
+    virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
 };

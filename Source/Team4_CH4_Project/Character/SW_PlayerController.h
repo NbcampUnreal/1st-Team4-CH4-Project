@@ -46,7 +46,6 @@ public:
     UInputAction* JumpAttackAction;
 
 public:
-    void LookMouseCursor();
     void PlayerMove(const FInputActionValue& _InputValue);
     void PlayerJump(const FInputActionValue& _InputValue);
     void ComboAttack(const FInputActionValue& InputValue);

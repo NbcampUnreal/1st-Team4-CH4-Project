@@ -255,3 +255,47 @@ void ASW_CharacterBase::UpdateHealthBar()
         HP->UpdateHealthBar(Health, MaxHealth);
     }
 }
+
+float ASW_CharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+    const int32 DamageToApply = FMath::Clamp(FMath::RoundToInt(DamageAmount), 0, Health);
+    if (DamageToApply <= 0) return 0.f;
+
+    Health -= DamageToApply;
+
+    // 체력바 UI 업데이트
+    UpdateHealthBar();
+
+    // 사망이 아닐 경우 피격 처리
+    if (Health > 0)
+    {
+        // 피격 애니메이션 재생
+        if (HitReactionMontage && !bIsLocked)
+        {
+            PlayAnimMontage(HitReactionMontage);
+        }
+
+        // 넉백 처리 (이동만 물리적으로)
+        if (DamageCauser)
+        {
+            FVector KnockbackDir = (GetActorLocation() - DamageCauser->GetActorLocation()).GetSafeNormal();
+            LaunchCharacter(KnockbackDir * 500.f + FVector(0.f, 0.f, 200.f), true, true);
+        }
+    }
+    else
+    {
+        // 체력 최소값 보정
+        Health = 0;
+
+        // 사망 애니메이션
+        SetLockedState(true); // 이동/입력 잠금
+        if (DeathMontage)
+        {
+            PlayAnimMontage(DeathMontage);
+        }
+
+        // TODO: 사망 후 파괴 or 리스폰 처리 (필요시 타이머로 처리 가능)
+    }
+
+    return DamageToApply;
+}
