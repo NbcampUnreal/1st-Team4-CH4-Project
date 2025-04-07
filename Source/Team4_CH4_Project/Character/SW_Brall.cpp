@@ -14,6 +14,22 @@ ASW_Brall::ASW_Brall()
     // 체력
     MaxHealth = 100;
     Health = MaxHealth;
+
+    // 기본 스킬 설정
+    FSkillData NormalSkillData;
+    NormalSkillData.Damage = 20.f;
+    NormalSkillData.AttackType = ESkillAttackType::MeleeSphere;
+    NormalSkillData.Range = FVector(200.f);
+    NormalSkillData.Offset = FVector(100.f, 0.f, 0.f);
+    SkillDataMap.Add(FName("NormalSkill"), NormalSkillData);
+
+    // 대쉬 스킬 설정
+    FSkillData DashSkillData;
+    DashSkillData.Damage = 30.f;
+    DashSkillData.AttackType = ESkillAttackType::MeleeSphere;
+    DashSkillData.Range = FVector(300.f); // 대시 범위: 반경 300
+    DashSkillData.Offset = FVector(250.f, 0.f, 0.f); // 캐릭터 앞쪽
+    SkillDataMap.Add(FName("DashSkill"), DashSkillData);
 }
 
 void ASW_Brall::BeginPlay()

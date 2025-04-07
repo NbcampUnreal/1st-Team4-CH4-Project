@@ -16,6 +16,22 @@ ASW_Dubu::ASW_Dubu()
     // 체력
     MaxHealth = 150;
     Health = MaxHealth;
+
+    // 기본 스킬 설정
+    FSkillData NormalSkillData;
+    NormalSkillData.Damage = 20.f;
+    NormalSkillData.AttackType = ESkillAttackType::MeleeSphere;
+    NormalSkillData.Range = FVector(200.f);
+    NormalSkillData.Offset = FVector(100.f, 0.f, 0.f);
+    SkillDataMap.Add(FName("NormalSkill"), NormalSkillData);
+
+    // 대쉬 스킬 설정
+    FSkillData DashSkillData;
+    DashSkillData.Damage = 35.f;
+    DashSkillData.AttackType = ESkillAttackType::MeleeSphere;
+    DashSkillData.Range = FVector(300.f);
+    DashSkillData.Offset = FVector(250.f, 0.f, 0.f);
+    SkillDataMap.Add(FName("DashSkill"), DashSkillData);
 }
 
 void ASW_Dubu::BeginPlay()

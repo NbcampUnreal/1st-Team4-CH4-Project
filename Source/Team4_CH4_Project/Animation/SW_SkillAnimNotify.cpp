@@ -15,6 +15,13 @@ void USkillAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBas
             {
                 Character->SetLockedState(false);
             }
+            else if (NotifyEventName == "ApplyDamage")
+            {
+                if (SkillName.IsNone()) return;
+
+                TArray<AActor*> Targets = Character->GetTargetsInRange(SkillName);
+                Character->ApplySkillDamage(SkillName, Targets);
+            }
         }
     }
 }

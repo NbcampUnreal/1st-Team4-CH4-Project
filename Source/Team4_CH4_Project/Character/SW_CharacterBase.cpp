@@ -5,6 +5,9 @@
 #include "SW_PlayerAnimLayerInterface.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "Engine/DamageEvents.h"
 
 ASW_CharacterBase::ASW_CharacterBase()
 {
@@ -16,9 +19,7 @@ ASW_CharacterBase::ASW_CharacterBase()
 
     if (UCharacterMovementComponent* MoveComp = GetCharacterMovement())
     {
-        // 캐릭터 이동방향에 맞춰서 캐릭터 이동 true
         MoveComp->bOrientRotationToMovement = true;
-
         MoveComp->MaxWalkSpeed = 600.f;
         MoveComp->BrakingDecelerationWalking = 2048.f;
         MoveComp->GroundFriction = 8.f;
@@ -27,7 +28,6 @@ ASW_CharacterBase::ASW_CharacterBase()
         MoveComp->BrakingFriction = 8.f;
     }
 
-    //스프링암
     CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
     CameraBoom->SetupAttachment(RootComponent);
     CameraBoom->TargetArmLength = 1400.f;
@@ -36,40 +36,38 @@ ASW_CharacterBase::ASW_CharacterBase()
     CameraBoom->bInheritYaw = false;
     CameraBoom->bInheritPitch = false;
     CameraBoom->bInheritRoll = false;
-    CameraBoom->bDoCollisionTest = false; // 스프링암사이에 사물이나 캐릭터가 겹쳐도 거리 유지
+    CameraBoom->bDoCollisionTest = false;
 
-    // 카메라
     FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
     FollowCamera->SetupAttachment(CameraBoom);
     FollowCamera->bUsePawnControlRotation = false;
 
-    // =======================체력바==============================================
-   HealthBarWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("HealthBar"));
-   HealthBarWidget->SetupAttachment(GetMesh());
-   HealthBarWidget->SetRelativeLocation(FVector(0.f, 0.f, 280.f));        // 머리 위 고정
-   HealthBarWidget->SetRelativeRotation(FRotator(180.f, 0.f, 0.f));       // 회전값 180으로 고정
-   HealthBarWidget->SetUsingAbsoluteRotation(true);                       // 부모 회전 무시
-   HealthBarWidget->SetWidgetSpace(EWidgetSpace::World);                  // 월드기준
-   HealthBarWidget->SetDrawSize(FVector2D(200.f, 20.f));
-   HealthBarWidget->SetCollisionEnabled(ECollisionEnabled::NoCollision);  // 충돌 제거
-   HealthBarWidget->SetGenerateOverlapEvents(false);
-   HealthBarWidget->SetCastShadow(false);                                 // 그림자 제거
-   HealthBarWidget->bCastDynamicShadow = false;
-   HealthBarWidget->bAffectDistanceFieldLighting = false;
-   // =====================================================================++++++++
+    HealthBarWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("HealthBar"));
+    HealthBarWidget->SetupAttachment(GetMesh());
+    HealthBarWidget->SetRelativeLocation(FVector(0.f, 0.f, 280.f));
+    HealthBarWidget->SetRelativeRotation(FRotator(180.f, 0.f, 0.f));
+    HealthBarWidget->SetUsingAbsoluteRotation(true);
+    HealthBarWidget->SetWidgetSpace(EWidgetSpace::World);
+    HealthBarWidget->SetDrawSize(FVector2D(200.f, 20.f));
+    HealthBarWidget->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    HealthBarWidget->SetGenerateOverlapEvents(false);
+    HealthBarWidget->SetCastShadow(false);
+    HealthBarWidget->bCastDynamicShadow = false;
+    HealthBarWidget->bAffectDistanceFieldLighting = false;
 
-    // 스킬, 콤보용 변수 초기화
     bIsLocked = false;
     CurrentComboIndex = 0;
     bCanNextCombo = true;
     bPendingNextCombo = false;
+
+    // MaxHealth 초기화 (자식 클래스에서 설정 가능하도록 기본값)
+    MaxHealth = 100;
+    Health = MaxHealth;
 }
 
 void ASW_CharacterBase::BeginPlay()
 {
     Super::BeginPlay();
-
-    // 체력바 초기화
     UpdateHealthBar();
 }
 
@@ -82,7 +80,6 @@ void ASW_CharacterBase::Tick(float DeltaTime)
         FVector CameraLocation = GetWorld()->GetFirstPlayerController()->PlayerCameraManager->GetCameraLocation();
         FVector ToCamera = CameraLocation - HealthBarWidget->GetComponentLocation();
         FRotator LookAtRotation = FRotationMatrix::MakeFromX(ToCamera).Rotator();
-
         LookAtRotation.Pitch = 0.f;
         LookAtRotation.Roll = 0.f;
     }
@@ -128,7 +125,6 @@ void ASW_CharacterBase::Player_Jump(const FInputActionValue& _InputValue)
     if (IsJump) Jump();
 }
 
-// 평타 3타 콤보
 void ASW_CharacterBase::ComboAttack()
 {
     if (!GetMesh() || !ComboMontages.IsValidIndex(CurrentComboIndex)) return;
@@ -142,7 +138,6 @@ void ASW_CharacterBase::ComboAttack()
             bCanNextCombo = false;
 
             FTimerHandle ComboResetTimer;
-
             float MontageDuration = MontageToPlay->GetPlayLength();
             GetWorldTimerManager().SetTimer(
                 ComboResetTimer,
@@ -153,7 +148,7 @@ void ASW_CharacterBase::ComboAttack()
             );
         }
     }
-    else // 평타 도중에 키입력시
+    else
     {
         bPendingNextCombo = true;
     }
@@ -177,6 +172,100 @@ void ASW_CharacterBase::SpecialSkill()
 void ASW_CharacterBase::DashSkill()
 {
     PlaySkillAnimation(FName("DashSkill"));
+}
+
+TArray<AActor*> ASW_CharacterBase::GetTargetsInRange_Implementation(FName SkillName)
+{
+    TArray<AActor*> HitActors;
+    TArray<AActor*> ActorsToIgnore;
+    ActorsToIgnore.Add(this);
+
+    const FSkillData* SkillData = SkillDataMap.Find(SkillName);
+    if (!SkillData) return HitActors;
+
+    FVector Location = GetActorLocation() + GetActorRotation().RotateVector(SkillData->Offset);
+
+    switch (SkillData->AttackType)
+    {
+    case ESkillAttackType::MeleeSphere:
+        UKismetSystemLibrary::SphereOverlapActors(
+            GetWorld(),
+            Location,
+            SkillData->Range.X,
+            TArray<TEnumAsByte<EObjectTypeQuery>>{ UEngineTypes::ConvertToObjectType(ECC_Pawn) },
+            ACharacter::StaticClass(),
+            ActorsToIgnore,
+            HitActors
+        );
+        break;
+
+    case ESkillAttackType::MeleeBox:
+        UKismetSystemLibrary::BoxOverlapActors(
+            GetWorld(),
+            Location,
+            SkillData->Range,
+            TArray<TEnumAsByte<EObjectTypeQuery>>{ UEngineTypes::ConvertToObjectType(ECC_Pawn) },
+            ACharacter::StaticClass(),
+            ActorsToIgnore,
+            HitActors
+        );
+        break;
+
+    case ESkillAttackType::RangedTrace:
+    {
+        FHitResult HitResult;
+        FVector End = Location + (GetActorForwardVector() * SkillData->Range.X);
+        UKismetSystemLibrary::LineTraceSingle(
+            GetWorld(),
+            Location,
+            End,
+            UEngineTypes::ConvertToTraceType(ECC_Pawn),
+            false,
+            ActorsToIgnore,
+            EDrawDebugTrace::ForDuration,
+            HitResult,
+            true
+        );
+        if (HitResult.bBlockingHit && HitResult.GetActor())
+        {
+            HitActors.Add(HitResult.GetActor());
+        }
+        break;
+    }
+
+    case ESkillAttackType::RangedProjectile:
+        if (SkillData->ProjectileClass)
+        {
+            FActorSpawnParameters SpawnParams;
+            SpawnParams.Owner = this;
+            SpawnParams.Instigator = GetInstigator();
+            AActor* Projectile = GetWorld()->SpawnActor<AActor>(
+                SkillData->ProjectileClass,
+                Location,
+                GetActorRotation(),
+                SpawnParams
+            );
+        }
+        break;
+    }
+
+    return HitActors;
+}
+
+void ASW_CharacterBase::ApplySkillDamage(FName SkillName, const TArray<AActor*>& Targets)
+{
+    const FSkillData* SkillData = SkillDataMap.Find(SkillName);
+    if (!SkillData) return;
+
+    float Damage = SkillData->Damage;
+    for (AActor* Target : Targets)
+    {
+        if (Target && Target != this)
+        {
+            FDamageEvent DamageEvent;
+            Target->TakeDamage(Damage, DamageEvent, GetController(), this);
+        }
+    }
 }
 
 void ASW_CharacterBase::PlaySkillAnimation(FName SkillName)
@@ -258,43 +347,24 @@ void ASW_CharacterBase::UpdateHealthBar()
 
 float ASW_CharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-    const int32 DamageToApply = FMath::Clamp(FMath::RoundToInt(DamageAmount), 0, Health);
+    int32 DamageToApply = FMath::Clamp(FMath::RoundToInt(DamageAmount), 0, Health);
     if (DamageToApply <= 0) return 0.f;
 
     Health -= DamageToApply;
-
-    // 체력바 UI 업데이트
     UpdateHealthBar();
 
-    // 사망이 아닐 경우 피격 처리
-    if (Health > 0)
+    if (Health <= 0)
     {
-        // 피격 애니메이션 재생
-        if (HitReactionMontage && !bIsLocked)
-        {
-            PlayAnimMontage(HitReactionMontage);
-        }
-
-        // 넉백 처리 (이동만 물리적으로)
-        if (DamageCauser)
-        {
-            FVector KnockbackDir = (GetActorLocation() - DamageCauser->GetActorLocation()).GetSafeNormal();
-            LaunchCharacter(KnockbackDir * 500.f + FVector(0.f, 0.f, 200.f), true, true);
-        }
-    }
-    else
-    {
-        // 체력 최소값 보정
         Health = 0;
-
-        // 사망 애니메이션
-        SetLockedState(true); // 이동/입력 잠금
+        SetLockedState(true);
         if (DeathMontage)
         {
             PlayAnimMontage(DeathMontage);
         }
-
-        // TODO: 사망 후 파괴 or 리스폰 처리 (필요시 타이머로 처리 가능)
+    }
+    else if (HitReactionMontage && !bIsLocked)
+    {
+        PlayAnimMontage(HitReactionMontage);
     }
 
     return DamageToApply;
