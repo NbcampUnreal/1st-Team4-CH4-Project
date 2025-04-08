@@ -71,7 +71,7 @@ ASW_Dubu::ASW_Dubu()
 	NormalSkillData.Damage = 20.f;
 	NormalSkillData.AttackType = ESkillAttackType::MeleeBox;
 	NormalSkillData.Range = FVector(300.f, 300.f, 300.f); // X: 길이, Y: 폭, Z: 높이
-	NormalSkillData.Offset = FVector(50.f, 0.f, 0.f);
+	NormalSkillData.Offset = FVector(100.f, 0.f, 0.f);
 	SkillDataMap.Add(FName("NormalSkill"), NormalSkillData);
 
 	// 점프 공격
