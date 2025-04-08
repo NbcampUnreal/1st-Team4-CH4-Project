@@ -11,7 +11,7 @@ ASW_Dubu::ASW_Dubu()
 	// 대시 충돌용 박스 콜리전
 	DashCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("DashCollider"));
 	DashCollider->SetupAttachment(RootComponent);
-	DashCollider->SetBoxExtent(FVector(150.f, 100.f, 100.f));
+	DashCollider->SetBoxExtent(FVector(100.f, 100.f, 100.f));
 	DashCollider->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	DashCollider->SetCollisionResponseToAllChannels(ECR_Ignore);
 	DashCollider->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);

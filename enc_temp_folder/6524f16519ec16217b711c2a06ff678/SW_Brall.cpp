@@ -10,7 +10,7 @@ ASW_Brall::ASW_Brall()
     // 대시 충돌 용 몸 전체 박스 콜리전 생성
     DashCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("DashCollider"));
     DashCollider->SetupAttachment(RootComponent);
-    DashCollider->SetBoxExtent(FVector(150.f, 100.f, 100.f)); // X: 앞뒤, Y: 좌우, Z: 높이
+    DashCollider->SetBoxExtent(FVector(150.f, 150.f, 100.f)); // X: 앞뒤, Y: 좌우, Z: 높이
     DashCollider->SetRelativeLocation(FVector(120.f, 0.f, 0.f)); // 앞쪽으로 밀기
     DashCollider->SetCollisionEnabled(ECollisionEnabled::NoCollision);
     DashCollider->SetCollisionResponseToAllChannels(ECR_Ignore);
