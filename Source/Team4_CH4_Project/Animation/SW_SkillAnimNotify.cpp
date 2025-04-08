@@ -2,7 +2,6 @@
 #include "SW_CharacterBase.h"
 #include "SW_Dubu.h"
 #include "SW_Brall.h"
-#include "SW_ThrowActor.h"
 
 void USkillAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
 {
@@ -25,6 +24,8 @@ void USkillAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBas
                 TArray<AActor*> Targets = Character->GetTargetsInRange(SkillName);
                 Character->ApplySkillDamage(SkillName, Targets);
             }
+
+           // 캐릭터 콤보용 노티파이
             else if (NotifyEventName == "ComboInput")
             {
                 Character->bCanNextCombo = true; // 콤보 입력 가능
@@ -41,7 +42,7 @@ void USkillAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBas
                 else if (ASW_Brall* Brall = Cast<ASW_Brall>(Character))
                 {
                     FVector Forward = Brall->GetActorForwardVector();
-                    Brall->LaunchCharacter(Forward * 600.f, true, false);
+                    Brall->LaunchCharacter(Forward * 1000.f, true, false);
                 }
             }
             // 두부 평타 노티파이
@@ -77,31 +78,29 @@ void USkillAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBas
                     Dubu->LeftHandEnd();
                 }
             }
-            // 두부 땅 던지는 노티파이
-            else if (NotifyEventName == "SpawnGround")
+
+            else if (NotifyEventName == "ThrowActor")
             {
                 if (ASW_Dubu* Dubu = Cast<ASW_Dubu>(Character))
                 {
                     if (Dubu->ThrowActorClass)
                     {
-                        FVector SpawnLoc = Dubu->GetActorLocation() + Dubu->GetActorForwardVector() * 100.f + FVector(0.f, 0.f, 50.f);
-                        FRotator SpawnRot = Dubu->GetActorRotation();
+                        FVector SpawnLocation = Dubu->GetActorLocation() + Dubu->GetActorForwardVector() * 100.f;
+                        FRotator SpawnRotation = Dubu->GetActorRotation();
 
-                        FActorSpawnParameters Params;
-                        Params.Owner = Dubu;
-                        Params.Instigator = Dubu;
+                        FActorSpawnParameters SpawnParams;
+                        SpawnParams.Owner = Dubu;
+                        SpawnParams.Instigator = Dubu->GetInstigator();
 
-                        ASW_ThrowActor* Thrown = Dubu->GetWorld()->SpawnActor<ASW_ThrowActor>(Dubu->ThrowActorClass, SpawnLoc, SpawnRot, Params);
-                        if (Thrown)
-                        {
-                            Thrown->Damage = 30.f;
-                            Thrown->IgnoredActor = Dubu;
-                        }
+                        AActor* ThrownActor = Dubu->GetWorld()->SpawnActor<AActor>(
+                            Dubu->ThrowActorClass,
+                            SpawnLocation,
+                            SpawnRotation,
+                            SpawnParams
+                        );
                     }
                 }
             }
-
-
 
             // 브랄 평타 노티파이
             else if (NotifyEventName == "SwordStart")

@@ -16,6 +16,7 @@ public:
 
 	virtual void BeginPlay() override;
 	virtual void DashSkill() override;
+	virtual void JumpAttack() override;
 
 public:
 	
@@ -25,7 +26,6 @@ public:
 
 
 	// 손 충돌 처리용 =============================
-
 	// 오른손
 	UPROPERTY(VisibleAnywhere, Category = "Combat")
 	UBoxComponent* RightHandCollider;
@@ -37,11 +37,9 @@ public:
 	TSet<AActor*> AlreadyHitActors;
 	// ============================================
 
-	// 스페셜 스킬용 던지는 땅 스폰용 변수
-	UPROPERTY(EditAnywhere, Category = "Skill")
-	TSubclassOf<class ASW_ThrowActor> ThrowActorClass;
-
-
+	// 궁극기용 던지는 액터 변수
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
+    TSubclassOf<AActor> ThrowActorClass;
 
 	// 콤보 평타용 오른손 콜리전 데미지 함수
 	UFUNCTION()

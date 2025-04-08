@@ -110,6 +110,10 @@ public:
     UPROPERTY(VisibleAnywhere, Category = "Combo")
     bool bPendingNextCombo = false;
 
+    // 점프중에 공격가능한지 확인하는 변수
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
+    bool bIsJumpAttacking;
+
     // 공격중인지 확인하는 변수
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
     bool bIsAttacking = false;

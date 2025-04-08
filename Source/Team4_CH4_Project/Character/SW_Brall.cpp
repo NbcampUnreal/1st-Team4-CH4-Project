@@ -19,6 +19,13 @@ ASW_Brall::ASW_Brall()
     DashCollider->SetHiddenInGame(false); // 디버그용
     DashCollider->SetVisibility(true); // 디버그용
 
+    // 2단 점프용 애니메이션 몽타주 주소
+    static ConstructorHelpers::FObjectFinder<UAnimMontage> JumpStartMontage(TEXT("/Game/Characters/Brall/Animation/Jump/AM_Brall_2StepJump.AM_Brall_2StepJump"));
+    if (JumpStartMontage.Succeeded())
+    {
+        SkillMontages.Add(FName("Brall_JumpAttackStart"), JumpStartMontage.Object);
+    }
+
     static ConstructorHelpers::FObjectFinder<UAnimMontage> Combo1(TEXT("/Game/Characters/Brall/Animation/ComboAttack/AM_Brall_Combo1.AM_Brall_Combo1"));
     static ConstructorHelpers::FObjectFinder<UAnimMontage> Combo2(TEXT("/Game/Characters/Brall/Animation/ComboAttack/AM_Brall_Combo2.AM_Brall_Combo2"));
     static ConstructorHelpers::FObjectFinder<UAnimMontage> Combo3(TEXT("/Game/Characters/Brall/Animation/ComboAttack/AM_Brall_Combo3.AM_Brall_Combo3"));
@@ -47,6 +54,13 @@ ASW_Brall::ASW_Brall()
     SpecialSkillData.Offset = FVector(200.f, 0.f, 0.f);        // 살짝 앞쪽으로
     SkillDataMap.Add(FName("SpecialSkill"), SpecialSkillData);
 
+    // 점프 공격
+    FSkillData JumpAttackData;
+    JumpAttackData.Damage = 40.f;
+    JumpAttackData.AttackType = ESkillAttackType::MeleeBox;
+    JumpAttackData.Range = FVector(200.f, 200.f, 200.f); // 범위 설정
+    JumpAttackData.Offset = FVector(200.f, 0.f, -50.f);    // 착지 지점 아래쪽
+    SkillDataMap.Add(FName("JumpAttack"), JumpAttackData);
 }
 
 void ASW_Brall::BeginPlay()
@@ -141,6 +155,54 @@ void ASW_Brall::DashSkill()
         false
     );
 }
+// =============================================================================================
+
+
+
+// 점프 공격용 ================================================================================
+void ASW_Brall::JumpAttack()
+{
+    if (!GetCharacterMovement()->IsFalling()) return;
+    if (bIsLocked) return;
+
+    bIsJumpAttacking = true;
+
+    // 45도 방향으로 점프
+    FVector Forward = GetActorForwardVector() * 0.707f;
+    FVector Up = FVector::UpVector * 0.707f;
+    FVector JumpDir = (Forward + Up).GetSafeNormal();
+
+    // 중력 OFF + 점프 시작
+    UCharacterMovementComponent* MoveComp = GetCharacterMovement();
+    MoveComp->GravityScale = 0.f;
+    LaunchCharacter(JumpDir * 1000.f, true, true);
+
+    // 점프 애니메이션 재생
+    PlaySkillAnimation(FName("Brall_JumpAttackStart"));
+
+    // 0.3초 후 25도 각도로 낙하
+    FTimerHandle DiveTimer;
+    GetWorldTimerManager().SetTimer(DiveTimer, FTimerDelegate::CreateLambda([this]()
+        {
+            UCharacterMovementComponent* MoveComp = GetCharacterMovement();
+
+            MoveComp->StopMovementImmediately(); // 멈춤
+            MoveComp->GravityScale = 1.f;        // 중력 ON
+
+            // 25도 낙하 방향
+            FVector Forward = GetActorForwardVector() * 0.9063f;
+            FVector Down = FVector::DownVector * 0.4226f;
+            FVector DiveDir = (Forward + Down).GetSafeNormal();
+
+            // 낙하 속도
+            LaunchCharacter(DiveDir * 1000.f, true, true);
+
+            // 낙하 시 애니메이션 재생
+            PlaySkillAnimation(FName("JumpAttack"));
+
+        }), 0.3f, false);
+}
+// =============================================================================================
 
 void ASW_Brall::ExecuteDesh()
 {

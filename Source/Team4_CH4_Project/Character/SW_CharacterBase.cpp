@@ -17,6 +17,14 @@ ASW_CharacterBase::ASW_CharacterBase()
     bUseControllerRotationRoll = false;
     bUseControllerRotationYaw = false;
 
+    // 그림자 Off
+    if (GetMesh())
+    {
+        GetMesh()->CastShadow = false;
+        GetMesh()->bCastDynamicShadow = false;
+        GetMesh()->bAffectDistanceFieldLighting = false;
+    }
+
     if (UCharacterMovementComponent* MoveComp = GetCharacterMovement())
     {
         MoveComp->bOrientRotationToMovement = true;
@@ -160,12 +168,10 @@ void ASW_CharacterBase::ComboAttack()
     );
 }
 
-
 void ASW_CharacterBase::JumpAttack()
 {
     PlaySkillAnimation(FName("JumpAttack"));
 }
-
 void ASW_CharacterBase::NormalSkill()
 {
     PlaySkillAnimation(FName("NormalSkill"));
@@ -218,7 +224,7 @@ TArray<AActor*> ASW_CharacterBase::GetTargetsInRange_Implementation(FName SkillN
         FVector Extent = SkillData->Range;
 
         // 디버그용
-        DrawDebugBox(GetWorld(), Location, Extent, GetActorQuat(), FColor::Red, false, 1.0f);
+        DrawDebugBox(GetWorld(), Location, Extent, GetActorQuat(), FColor::Cyan, false, 1.f);
 
         UKismetSystemLibrary::BoxOverlapActors(
             GetWorld(),

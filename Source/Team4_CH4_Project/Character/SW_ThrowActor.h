@@ -4,9 +4,8 @@
 #include "GameFramework/Actor.h"
 #include "SW_ThrowActor.generated.h"
 
-class UBoxComponent;
-class UProjectileMovementComponent;
 class UStaticMeshComponent;
+class UBoxComponent;
 
 UCLASS()
 class TEAM4_CH4_PROJECT_API ASW_ThrowActor : public AActor
@@ -16,25 +15,29 @@ class TEAM4_CH4_PROJECT_API ASW_ThrowActor : public AActor
 public:
     ASW_ThrowActor();
 
+protected:
     virtual void BeginPlay() override;
 
-    UFUNCTION()
-    void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
-        UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
-
 public:
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-    UBoxComponent* Collision;
+    virtual void Tick(float DeltaTime) override;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-    UProjectileMovementComponent* Movement;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+    UStaticMeshComponent* MeshComp;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-    UStaticMeshComponent* StaticMesh;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+    UBoxComponent* CollisionComp;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float Damage = 20.f;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Throw")
+    float MoveSpeed = 2000.f;
 
-    UPROPERTY()
-    AActor* IgnoredActor;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Throw")
+    float LifeSpan = 3.f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Throw")
+    float Damage = 250.f;
+
+    UFUNCTION()
+    void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+        UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
+        bool bFromSweep, const FHitResult& SweepResult);
 };

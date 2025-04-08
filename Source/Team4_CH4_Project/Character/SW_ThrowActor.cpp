@@ -1,70 +1,56 @@
 #include "SW_ThrowActor.h"
-#include "GameFramework/ProjectileMovementComponent.h"
-#include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
-#include "Kismet/GameplayStatics.h"
+#include "Components/BoxComponent.h"
 #include "GameFramework/DamageType.h"
-#include "Engine/EngineTypes.h"
-#include "Engine/DamageEvents.h"
+#include "Engine/DamageEvents.h" // FDamageEvent 정의를 위해 추가
+#include "Kismet/GameplayStatics.h"
 
 ASW_ThrowActor::ASW_ThrowActor()
 {
-    PrimaryActorTick.bCanEverTick = false;
+    PrimaryActorTick.bCanEverTick = true;
 
-    // 충돌용 Box 컴포넌트
-    Collision = CreateDefaultSubobject<UBoxComponent>(TEXT("Box"));
-    Collision->SetBoxExtent(FVector(10.f, 10.f, 10.f)); // 박스 크기 설정 (구형 반지름 10.f에 맞게 조정)
-    Collision->SetCollisionProfileName(TEXT("Projectile"));
-    Collision->SetNotifyRigidBodyCollision(true);
-    Collision->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-    Collision->SetCollisionObjectType(ECC_WorldDynamic);
-    Collision->SetCollisionResponseToAllChannels(ECR_Ignore);
-    Collision->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
-    Collision->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
-    RootComponent = Collision;
+    // Static Mesh 컴포넌트 설정 (블루프린트에서 메시 지정)
+    MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
+    RootComponent = MeshComp;
+    MeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision); // 메시 자체는 충돌 X
 
-    // 충돌 이벤트 바인딩
-    Collision->OnComponentHit.AddDynamic(this, &ASW_ThrowActor::OnHit);
-
-    // 투사체 이동 컴포넌트
-    Movement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
-    Movement->InitialSpeed = 1500.f;
-    Movement->MaxSpeed = 1500.f;
-    Movement->ProjectileGravityScale = 0.f;
-
-    // StaticMesh 컴포넌트 추가
-    StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
-    StaticMesh->SetupAttachment(RootComponent);
-    StaticMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision); // 충돌 비활성화
-    StaticMesh->SetCollisionResponseToAllChannels(ECR_Ignore); // 모든 채널에 대해 충돌 무시
-
-    // 5초 후 자동 파괴
-    InitialLifeSpan = 2.f;
-
-    // 기본 데미지 설정
-    Damage = 20.f;
+    // 충돌용 박스 컴포넌트 설정
+    CollisionComp = CreateDefaultSubobject<UBoxComponent>(TEXT("CollisionComp"));
+    CollisionComp->SetupAttachment(RootComponent);
+    CollisionComp->SetBoxExtent(FVector(50.f, 50.f, 50.f)); // 충돌 크기 설정
+    CollisionComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+    CollisionComp->SetCollisionResponseToAllChannels(ECR_Ignore);
+    CollisionComp->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap); // 적 캐릭터와 충돌
+    CollisionComp->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Overlap); // 벽과 충돌
+    CollisionComp->OnComponentBeginOverlap.AddDynamic(this, &ASW_ThrowActor::OnOverlapBegin);
 }
 
 void ASW_ThrowActor::BeginPlay()
 {
     Super::BeginPlay();
-
-    if (IgnoredActor)
-    {
-        Collision->IgnoreActorWhenMoving(IgnoredActor, true);
-    }
+    SetLifeSpan(2.f); // 2초 후 자동 파괴
 }
 
-void ASW_ThrowActor::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
-    UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+void ASW_ThrowActor::Tick(float DeltaTime)
 {
-    if (OtherActor && OtherActor != this && OtherActor != IgnoredActor)
+    Super::Tick(DeltaTime);
+
+    // 앞으로 이동
+    FVector NewLocation = GetActorLocation() + (GetActorForwardVector() * MoveSpeed * DeltaTime);
+    SetActorLocation(NewLocation);
+}
+
+void ASW_ThrowActor::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+    UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
+    bool bFromSweep, const FHitResult& SweepResult)
+{
+    if (OtherActor && OtherActor != GetInstigator())
     {
-        FPointDamageEvent PointDamageEvent;
-        PointDamageEvent.Damage = Damage;
-        PointDamageEvent.HitInfo = Hit;
-        PointDamageEvent.ShotDirection = GetActorForwardVector();
-        OtherActor->TakeDamage(Damage, PointDamageEvent, GetInstigatorController(), this);
+        // 지역 변수로 FDamageEvent 선언
+        FDamageEvent DamageEvent;
+        OtherActor->TakeDamage(Damage, DamageEvent, GetInstigatorController(), this);
+
+        // 맞으면 즉시 파괴
+        Destroy();
     }
-    Destroy();
 }

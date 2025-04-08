@@ -16,6 +16,7 @@ public:
 public:
     virtual void BeginPlay() override;
     virtual void DashSkill() override;
+    virtual void JumpAttack() override;
 
 public:
     FTimerHandle DashTimerHandle;
