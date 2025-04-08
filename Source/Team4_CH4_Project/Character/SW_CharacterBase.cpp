@@ -129,30 +129,37 @@ void ASW_CharacterBase::ComboAttack()
 {
     if (!GetMesh() || !ComboMontages.IsValidIndex(CurrentComboIndex)) return;
 
-    if (bCanNextCombo)
+    if (bIsAttacking)
     {
-        UAnimMontage* MontageToPlay = ComboMontages[CurrentComboIndex];
-        if (MontageToPlay)
+        // 콤보 입력 가능 타이밍일 때만 예약
+        if (bCanNextCombo)
         {
-            PlayAnimMontage(MontageToPlay);
-            bCanNextCombo = false;
-
-            FTimerHandle ComboResetTimer;
-            float MontageDuration = MontageToPlay->GetPlayLength();
-            GetWorldTimerManager().SetTimer(
-                ComboResetTimer,
-                this,
-                &ASW_CharacterBase::CheckPendingCombo,
-                MontageDuration * 0.8f,
-                false
-            );
+            bPendingNextCombo = true;
         }
+        return;
     }
-    else
+
+    // 콤보 시작
+    UAnimMontage* MontageToPlay = ComboMontages[CurrentComboIndex];
+    if (MontageToPlay)
     {
-        bPendingNextCombo = true;
+        PlayAnimMontage(MontageToPlay);
+        bIsAttacking = true;
+        bCanNextCombo = false;
+        bPendingNextCombo = false;
     }
+
+    float MontageLength = MontageToPlay->GetPlayLength();
+    FTimerHandle ComboCheckTimer;
+    GetWorldTimerManager().SetTimer(
+        ComboCheckTimer,
+        this,
+        &ASW_CharacterBase::CheckPendingCombo,
+        MontageLength * 0.8f,
+        false
+    );
 }
+
 
 void ASW_CharacterBase::JumpAttack()
 {
@@ -188,44 +195,104 @@ TArray<AActor*> ASW_CharacterBase::GetTargetsInRange_Implementation(FName SkillN
     switch (SkillData->AttackType)
     {
     case ESkillAttackType::MeleeSphere:
+    {
+        float Radius = SkillData->Range.X;
+
+        // 디버그용
+        DrawDebugSphere(GetWorld(), Location, Radius, 12, FColor::Green, false, 1.0f);
+
         UKismetSystemLibrary::SphereOverlapActors(
             GetWorld(),
             Location,
-            SkillData->Range.X,
+            Radius,
             TArray<TEnumAsByte<EObjectTypeQuery>>{ UEngineTypes::ConvertToObjectType(ECC_Pawn) },
             ACharacter::StaticClass(),
             ActorsToIgnore,
             HitActors
         );
         break;
+    }
 
     case ESkillAttackType::MeleeBox:
+    {
+        FVector Extent = SkillData->Range;
+
+        // 디버그용
+        DrawDebugBox(GetWorld(), Location, Extent, GetActorQuat(), FColor::Red, false, 1.0f);
+
         UKismetSystemLibrary::BoxOverlapActors(
             GetWorld(),
             Location,
-            SkillData->Range,
+            Extent,
             TArray<TEnumAsByte<EObjectTypeQuery>>{ UEngineTypes::ConvertToObjectType(ECC_Pawn) },
             ACharacter::StaticClass(),
             ActorsToIgnore,
             HitActors
         );
         break;
+    }
+
+    case ESkillAttackType::BoxTrace:
+    {
+        FVector Start = GetActorLocation() + GetActorRotation().RotateVector(SkillData->Offset);
+        FVector End = Start + GetActorForwardVector() * 50.f; // 캐릭터 제외 위해 50 정도 앞으로 이동
+
+        FVector HalfSize = SkillData->Range * 0.5f;
+        FQuat Rotation = GetActorQuat();
+
+        TArray<FHitResult> HitResults;
+        FCollisionShape BoxShape = FCollisionShape::MakeBox(HalfSize);
+        FCollisionQueryParams Params;
+        Params.AddIgnoredActor(this);
+
+        bool bHit = GetWorld()->SweepMultiByChannel(
+            HitResults,
+            Start,
+            End,
+            Rotation,
+            ECC_Pawn,
+            BoxShape,
+            Params
+        );
+
+        // 디버그 박스
+        DrawDebugBox(GetWorld(), Start, HalfSize, Rotation, FColor::Purple, false, 1.5f, 0, 2.0f);
+
+        if (bHit)
+        {
+            for (const FHitResult& Hit : HitResults)
+            {
+                if (AActor* HitActor = Hit.GetActor())
+                {
+                    HitActors.AddUnique(HitActor);
+                }
+            }
+        }
+
+        break;
+    }
 
     case ESkillAttackType::RangedTrace:
     {
+        FVector Start = Location;
+        FVector End = Start + GetActorForwardVector() * SkillData->Range.X;
         FHitResult HitResult;
-        FVector End = Location + (GetActorForwardVector() * SkillData->Range.X);
+
+        // 디버그용
+        DrawDebugLine(GetWorld(), Start, End, FColor::Blue, false, 1.0f, 0, 2.0f);
+
         UKismetSystemLibrary::LineTraceSingle(
             GetWorld(),
-            Location,
+            Start,
             End,
             UEngineTypes::ConvertToTraceType(ECC_Pawn),
             false,
             ActorsToIgnore,
-            EDrawDebugTrace::ForDuration,
+            EDrawDebugTrace::None,
             HitResult,
             true
         );
+
         if (HitResult.bBlockingHit && HitResult.GetActor())
         {
             HitActors.Add(HitResult.GetActor());
@@ -234,11 +301,16 @@ TArray<AActor*> ASW_CharacterBase::GetTargetsInRange_Implementation(FName SkillN
     }
 
     case ESkillAttackType::RangedProjectile:
+    {
+        // 디버그용
+        DrawDebugSphere(GetWorld(), Location, 20.f, 8, FColor::Yellow, false, 1.0f);
+
         if (SkillData->ProjectileClass)
         {
             FActorSpawnParameters SpawnParams;
             SpawnParams.Owner = this;
             SpawnParams.Instigator = GetInstigator();
+
             AActor* Projectile = GetWorld()->SpawnActor<AActor>(
                 SkillData->ProjectileClass,
                 Location,
@@ -246,6 +318,10 @@ TArray<AActor*> ASW_CharacterBase::GetTargetsInRange_Implementation(FName SkillN
                 SpawnParams
             );
         }
+        break;
+    }
+
+    default:
         break;
     }
 
@@ -305,24 +381,31 @@ void ASW_CharacterBase::SetLockedState(bool bLocked)
     }
 }
 
+void ASW_CharacterBase::SetMovementLocked(bool bLocked)
+{
+    bIsMovementLocked = bLocked;
+    if (UCharacterMovementComponent* MoveComp = GetCharacterMovement())
+    {
+        MoveComp->MaxWalkSpeed = bLocked ? 0.f : DefaultMoveSpeed;
+    }
+}
+
 void ASW_CharacterBase::CheckPendingCombo()
 {
     if (bPendingNextCombo)
     {
         bPendingNextCombo = false;
-        CurrentComboIndex++;
-        if (CurrentComboIndex >= 3)
-        {
-            ResetCombo();
-            return;
-        }
-
-        bCanNextCombo = true;
-        ComboAttack();
+        CurrentComboIndex = (CurrentComboIndex + 1) % ComboMontages.Num();
+        bIsAttacking = false; // 다음 콤보 재생 허용
+        ComboAttack();        // 다음 콤보 실행
     }
     else
     {
-        ResetCombo();
+        // 콤보 종료 처리
+        bIsAttacking = false;
+        bCanNextCombo = false;
+        bPendingNextCombo = false;
+        CurrentComboIndex = 0;
     }
 }
 

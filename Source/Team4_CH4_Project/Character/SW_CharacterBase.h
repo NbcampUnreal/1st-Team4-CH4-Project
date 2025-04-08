@@ -17,6 +17,7 @@ enum class ESkillAttackType : uint8
 {
     MeleeSphere,    // 근접 스피어 오버랩
     MeleeBox,       // 근접 박스 오버랩
+    BoxTrace,
     RangedTrace,    // 원거리 라인 트레이스
     RangedProjectile // 원거리 투사체
 };
@@ -96,7 +97,7 @@ public:
     
 
 
-    // === 콤보 시스템용 ===
+    // ===================== 콤보 시스템용 ==============================
     UPROPERTY(EditDefaultsOnly, Category = "Combo")
     TArray<UAnimMontage*> ComboMontages;
 
@@ -108,6 +109,15 @@ public:
 
     UPROPERTY(VisibleAnywhere, Category = "Combo")
     bool bPendingNextCombo = false;
+
+    // 공격중인지 확인하는 변수
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
+    bool bIsAttacking = false;
+
+    // 이동만 멈추는 상태 (입력은 가능)
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
+    bool bIsMovementLocked = false;
+    // ====================================================================
 
     // === 스킬 애니메이션 관리 ===
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
@@ -165,6 +175,10 @@ public:
     // 스킬시전중에 다른 입력 못하는 함수
     UFUNCTION(BlueprintCallable)
     void SetLockedState(bool bLocked);
+
+    // 멈추거나 다시 움직일 수있게 해주는 함수
+    UFUNCTION(BlueprintCallable)
+    void SetMovementLocked(bool bLocked);
 
     // 캐릭터 체력바 함수
     UFUNCTION(BlueprintCallable)
