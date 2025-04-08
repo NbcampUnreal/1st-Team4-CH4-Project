@@ -28,12 +28,14 @@ void USkillAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBas
             {
                 Character->bCanNextCombo = true; // 콤보 입력 가능
             }
+
+            // 근접캐릭터 평타시 앞으로가는 거리
             else if (NotifyEventName == "DoForwardMove")
             {
                 if (ASW_Dubu* Dubu = Cast<ASW_Dubu>(Character))
                 {
                     FVector Forward = Dubu->GetActorForwardVector();
-                    Dubu->LaunchCharacter(Forward * 600.f, true, false);
+                    Dubu->LaunchCharacter(Forward * 800.f, true, false);
                 }
                 else if (ASW_Brall* Brall = Cast<ASW_Brall>(Character))
                 {

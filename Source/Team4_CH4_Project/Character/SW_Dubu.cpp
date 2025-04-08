@@ -61,14 +61,6 @@ ASW_Dubu::ASW_Dubu()
 	NormalSkillData.Range = FVector(300.f, 300.f, 300.f); // X: 길이, Y: 폭, Z: 높이
 	NormalSkillData.Offset = FVector(100.f, 0.f, 0.f);
 	SkillDataMap.Add(FName("NormalSkill"), NormalSkillData);
-
-	// 대시 스킬
-	FSkillData DashSkillData;
-	DashSkillData.Damage = 35.f;
-	DashSkillData.AttackType = ESkillAttackType::MeleeSphere;
-	DashSkillData.Range = FVector(300.f);
-	DashSkillData.Offset = FVector(250.f, 0.f, 0.f);
-	SkillDataMap.Add(FName("DashSkill"), DashSkillData);
 }
 
 void ASW_Dubu::BeginPlay()
