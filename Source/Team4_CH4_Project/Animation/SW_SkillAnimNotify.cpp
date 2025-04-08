@@ -2,6 +2,7 @@
 #include "SW_CharacterBase.h"
 #include "SW_Dubu.h"
 #include "SW_Brall.h"
+#include "SW_ThrowActor.h"
 
 void USkillAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
 {
@@ -76,6 +77,32 @@ void USkillAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBas
                     Dubu->LeftHandEnd();
                 }
             }
+            // 두부 땅 던지는 노티파이
+            else if (NotifyEventName == "SpawnGround")
+            {
+                if (ASW_Dubu* Dubu = Cast<ASW_Dubu>(Character))
+                {
+                    if (Dubu->ThrowActorClass)
+                    {
+                        FVector SpawnLoc = Dubu->GetActorLocation() + Dubu->GetActorForwardVector() * 100.f + FVector(0.f, 0.f, 50.f);
+                        FRotator SpawnRot = Dubu->GetActorRotation();
+
+                        FActorSpawnParameters Params;
+                        Params.Owner = Dubu;
+                        Params.Instigator = Dubu;
+
+                        ASW_ThrowActor* Thrown = Dubu->GetWorld()->SpawnActor<ASW_ThrowActor>(Dubu->ThrowActorClass, SpawnLoc, SpawnRot, Params);
+                        if (Thrown)
+                        {
+                            Thrown->Damage = 30.f;
+                            Thrown->IgnoredActor = Dubu;
+                        }
+                    }
+                }
+            }
+
+
+
             // 브랄 평타 노티파이
             else if (NotifyEventName == "SwordStart")
             {

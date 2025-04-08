@@ -37,6 +37,11 @@ public:
 	TSet<AActor*> AlreadyHitActors;
 	// ============================================
 
+	// 스페셜 스킬용 던지는 땅 스폰용 변수
+	UPROPERTY(EditAnywhere, Category = "Skill")
+	TSubclassOf<class ASW_ThrowActor> ThrowActorClass;
+
+
 
 	// 콤보 평타용 오른손 콜리전 데미지 함수
 	UFUNCTION()

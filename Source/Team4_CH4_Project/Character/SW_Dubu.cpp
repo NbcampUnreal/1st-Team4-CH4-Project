@@ -5,13 +5,14 @@
 #include "EnhancedInputComponent.h"
 #include "Engine/DamageEvents.h"
 #include "InputActionValue.h"
+#include "SW_ThrowActor.h"
 
 ASW_Dubu::ASW_Dubu()
 {
 	// 대시 충돌용 박스 콜리전
 	DashCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("DashCollider"));
 	DashCollider->SetupAttachment(RootComponent);
-	DashCollider->SetBoxExtent(FVector(150.f, 100.f, 100.f));
+	DashCollider->SetBoxExtent(FVector(120.f, 120.f, 100.f));
 	DashCollider->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	DashCollider->SetCollisionResponseToAllChannels(ECR_Ignore);
 	DashCollider->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
@@ -41,6 +42,13 @@ ASW_Dubu::ASW_Dubu()
 	LeftHandCollider->OnComponentBeginOverlap.AddDynamic(this, &ASW_Dubu::OnLeftHandOverlap);
 	LeftHandCollider->SetHiddenInGame(false); //디버그용
 	LeftHandCollider->SetVisibility(true); // 디버그용
+
+	// 두부 스페셜스킬 덩지는 액터주소
+	static ConstructorHelpers::FClassFinder<ASW_ThrowActor> ThrowBP(TEXT("/Game/Characters/Dubu/BP_ThrowGround/BP_ThrowActor.BP_ThrowActor"));
+	if (ThrowBP.Succeeded())
+	{
+		ThrowActorClass = ThrowBP.Class;
+	}
 
 	// 콤보 애님 몽타주
 	static ConstructorHelpers::FObjectFinder<UAnimMontage> Combo1(TEXT("/Game/Characters/Dubu/Animation/ComboAttack/AM_Dubu_Combo_1.AM_Dubu_Combo_1"));
@@ -177,3 +185,4 @@ void ASW_Dubu::OnDashBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor
 		AlreadyHitActors.Add(OtherActor);
 	}
 }
+
