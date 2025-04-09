@@ -4,10 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "AbilitySystemInterface.h"
 #include "SW_CharacterBase.generated.h"
 
-UCLASS()
-class TEAM4_CH4_PROJECT_API ASW_CharacterBase : public ACharacter
+class UAbilitySystemComponent;
+class UAttributeSet;
+
+//DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDownTimeTickDelegate, int32, Seconds);
+
+UCLASS(Abstract)
+class TEAM4_CH4_PROJECT_API ASW_CharacterBase : public ACharacter, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -45,12 +51,12 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Movement")
 	FVector VelocityLastFrame;
 
-	// Stat Value
-	UPROPERTY(VisibleAnywhere, Replicated, Category = "Stat")
-	int32 Health;
+	// Skill
+	UPROPERTY(EditAnywhere, Category = "Skill")
+	FTimerHandle  QSkill_DownTime_TimerHandle;
 
-	UPROPERTY(VisibleAnywhere, Replicated, Category = "Stat")
-	int32 Stamina;
+	UPROPERTY(EditAnywhere, Category = "Skill")
+	int32  Skill_DownTime_Remaining;
 
 public:
 	UFUNCTION(BlueprintCallable)
@@ -67,4 +73,31 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	bool InAir() const;
+
+	// Gameplay Ability System
+protected:
+	UPROPERTY()
+	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
+
+	UPROPERTY()
+	TObjectPtr<UAttributeSet> AttributeSet;
+
+public:
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	UAttributeSet* GetAttributeSet() const;
+
+// skill
+//public:
+//	UFUNCTION(BlueprintCallable, Category = "Skill")
+//	void StartDownTime(float DownTime);
+//
+//	
+//	UPROPERTY(BlueprintAssignable, Category = "Skill")
+//	FDownTimeTickDelegate OnDownTimeTick;
+//
+//public:
+//	FTimerHandle DownTime_TimerHandle;
+//	float RemainingTime;
+//
+//	void UpdateCooldown();
 };

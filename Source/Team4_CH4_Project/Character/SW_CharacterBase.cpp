@@ -3,7 +3,7 @@
 
 #include "SW_CharacterBase.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Net/UnrealNetwork.h"
+//#include "Net/UnrealNetwork.h"
 
 // Sets default values
 ASW_CharacterBase::ASW_CharacterBase()
@@ -11,6 +11,8 @@ ASW_CharacterBase::ASW_CharacterBase()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+
 
 }
 
@@ -42,9 +44,6 @@ void ASW_CharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 void ASW_CharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME(ASW_CharacterBase, Health);
-	DOREPLIFETIME(ASW_CharacterBase, Stamina);
 }
 
 float ASW_CharacterBase::GetGroundSpeed()
@@ -80,3 +79,37 @@ bool ASW_CharacterBase::InAir() const
 {
 	return GetCharacterMovement()->IsFalling();
 }
+
+UAbilitySystemComponent* ASW_CharacterBase::GetAbilitySystemComponent() const
+{
+	return AbilitySystemComponent;
+}
+
+UAttributeSet* ASW_CharacterBase::GetAttributeSet() const
+{
+	return AttributeSet;
+}
+
+//void ASW_CharacterBase::StartDownTime(float DownTime)
+//{
+//	RemainingTime = DownTime;
+//
+//	GetWorld()->GetTimerManager().SetTimer(
+//		DownTime_TimerHandle,
+//		this,
+//		&ASW_CharacterBase::UpdateCooldown,
+//		1.0f,
+//		true
+//	);
+//}
+//
+//void ASW_CharacterBase::UpdateCooldown()
+//{
+//	UE_LOG(LogTemp, Warning, TEXT("%f"), RemainingTime);
+//	RemainingTime -= 1.0f;
+//	OnDownTimeTick.Broadcast(FMath::CeilToInt(RemainingTime));
+//	if (RemainingTime <= 0.f)
+//	{
+//		GetWorld()->GetTimerManager().ClearTimer(DownTime_TimerHandle);
+//	}
+//}

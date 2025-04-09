@@ -41,4 +41,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	virtual void Player_Jump(const FInputActionValue& _InputValue);
+
+	// GAS
+	virtual void PossessedBy(AController* NewController) override;
+	virtual void OnRep_PlayerState() override;
+	void InitAbilityActorInfo();
 };

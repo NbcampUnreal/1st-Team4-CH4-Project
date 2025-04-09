@@ -7,6 +7,9 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Player/SW_PlayerState.h"
+#include "AbilitySystem/SW_AbilitySystemComponent.h"
+#include "AbilitySystem/SW_AttributeSet.h"
 
 ASW_CharacterPlayer::ASW_CharacterPlayer()
 	: ASW_CharacterBase()
@@ -41,8 +44,8 @@ void ASW_CharacterPlayer::Player_Move(const FInputActionValue& _InputValue)
 	}
 	FRotator ControlRotation = GetControlRotation();
 	FRotator YawRotation(0, ControlRotation.Yaw, 0);
-	FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-	FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+	FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+	FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 	AddMovementInput(ForwardDirection, MoveVector.Y);
 	AddMovementInput(RightDirection, MoveVector.X);
 }
@@ -54,4 +57,29 @@ void ASW_CharacterPlayer::Player_Jump(const FInputActionValue& _InputValue)
 	{
 		Jump();
 	}
+}
+
+void ASW_CharacterPlayer::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+
+	// Init ability actor info for server
+	InitAbilityActorInfo();
+}
+
+void ASW_CharacterPlayer::OnRep_PlayerState()
+{
+	Super::OnRep_PlayerState();
+
+	// Init ability actor info for client
+	InitAbilityActorInfo();
+}
+
+void ASW_CharacterPlayer::InitAbilityActorInfo()
+{
+	ASW_PlayerState* SW_PlayerState = GetPlayerState<ASW_PlayerState>();
+	check(SW_PlayerState);
+	SW_PlayerState->GetAbilitySystemComponent()->InitAbilityActorInfo(SW_PlayerState, this);
+	AbilitySystemComponent = SW_PlayerState->GetAbilitySystemComponent();
+	AttributeSet = SW_PlayerState->GetAttributeSet();
 }
