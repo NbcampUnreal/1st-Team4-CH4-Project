@@ -1,5 +1,6 @@
 #include "SW_PlayerController.h"
 #include "SW_CharacterBase.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "InputMappingContext.h"
 #include "InputAction.h"
@@ -114,12 +115,13 @@ void ASW_PlayerController::JumpAttack(const FInputActionValue& InputValue)
 {
     if (ASW_CharacterBase* PlayerCharacter = Cast<ASW_CharacterBase>(GetPawn()))
     {
-        if (!PlayerCharacter->bIsLocked)
+        if (!PlayerCharacter->bIsLocked && PlayerCharacter->GetCharacterMovement()->IsFalling()) // 점프중일때만 실행되도록
         {
             PlayerCharacter->Server_PlaySkill("JumpAttack");
         }
     }
 }
+
 
 void ASW_PlayerController::NormalSkill(const FInputActionValue& InputValue)
 {

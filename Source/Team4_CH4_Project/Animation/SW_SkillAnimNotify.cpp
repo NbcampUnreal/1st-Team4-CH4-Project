@@ -18,12 +18,14 @@ void USkillAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBas
             {
                 Character->SetLockedState(false); // 전체 입력 해제
             }
+
+            // 공격이 적용되는 노티파이
             else if (NotifyEventName == "ApplyDamage")
             {
-                if (SkillName.IsNone()) return;
-
-                TArray<AActor*> Targets = Character->GetTargetsInRange(SkillName);
-                Character->ApplySkillDamage(SkillName, Targets);
+                if (Character->HasAuthority()) // 서버에서만 실행
+                {
+                    Character->Server_ApplySkillDamage(SkillName);
+                }
             }
 
            // 캐릭터 콤보용 노티파이
