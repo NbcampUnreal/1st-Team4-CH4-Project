@@ -18,10 +18,11 @@ ASW_Void::ASW_Void()
 	
 	MaxHealth = 80;
 	Health = MaxHealth;
+	AttackDamage = 30.f;
 
 	// 대쉬 스킬
 	FSkillData DashSkillData;
-	DashSkillData.Damage = 30.f;
+	DashSkillData.DamageMultiplier = 1.5;
 	DashSkillData.AttackType = ESkillAttackType::MeleeSphere;
 	DashSkillData.Range = FVector(300.f); // 대시 범위: 반경 300
 	DashSkillData.Offset = FVector(250.f, 0.f, 0.f); // 캐릭터 앞쪽
