@@ -7,6 +7,9 @@
 
 ASW_ThrowActor::ASW_ThrowActor()
 {
+    bReplicates = true;
+    SetReplicateMovement(true);
+
     PrimaryActorTick.bCanEverTick = true;
 
     // Static Mesh 컴포넌트 설정 (블루프린트에서 메시 지정)
@@ -44,13 +47,20 @@ void ASW_ThrowActor::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AA
     UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
     bool bFromSweep, const FHitResult& SweepResult)
 {
-    if (OtherActor && OtherActor != GetInstigator())
-    {
-        // 지역 변수로 FDamageEvent 선언
-        FDamageEvent DamageEvent;
-        OtherActor->TakeDamage(Damage, DamageEvent, GetInstigatorController(), this);
+    if (!HasAuthority()) return;
+    ApplyThrowDamage(OtherActor);
+}
 
-        // 맞으면 즉시 파괴
-        Destroy();
-    }
+void ASW_ThrowActor::ApplyThrowDamage(AActor* OtherActor)
+{
+    if (!OtherActor || OtherActor == this || OtherActor == GetInstigator() || OtherActor == GetOwner())
+        return;
+
+    if (AlreadyHitActors.Contains(OtherActor)) return;
+    AlreadyHitActors.Add(OtherActor);
+
+    FDamageEvent DamageEvent;
+    OtherActor->TakeDamage(Damage, DamageEvent, GetInstigatorController(), this);
+
+    Destroy();
 }

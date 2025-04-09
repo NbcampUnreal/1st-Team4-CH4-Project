@@ -2,6 +2,7 @@
 #include "SW_CharacterBase.h"
 #include "SW_Dubu.h"
 #include "SW_Brall.h"
+#include "SW_ThrowActor.h"
 
 void USkillAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
 {
@@ -79,28 +80,15 @@ void USkillAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBas
                 }
             }
 
+            // 두부 궁극기 스킬
             else if (NotifyEventName == "ThrowActor")
             {
                 if (ASW_Dubu* Dubu = Cast<ASW_Dubu>(Character))
                 {
-                    if (Dubu->ThrowActorClass)
-                    {
-                        FVector SpawnLocation = Dubu->GetActorLocation() + Dubu->GetActorForwardVector() * 100.f;
-                        FRotator SpawnRotation = Dubu->GetActorRotation();
-
-                        FActorSpawnParameters SpawnParams;
-                        SpawnParams.Owner = Dubu;
-                        SpawnParams.Instigator = Dubu->GetInstigator();
-
-                        AActor* ThrownActor = Dubu->GetWorld()->SpawnActor<AActor>(
-                            Dubu->ThrowActorClass,
-                            SpawnLocation,
-                            SpawnRotation,
-                            SpawnParams
-                        );
-                    }
+                    Dubu->ThrowUltimateSkill();
                 }
             }
+
 
             // 브랄 평타 노티파이
             else if (NotifyEventName == "SwordStart")

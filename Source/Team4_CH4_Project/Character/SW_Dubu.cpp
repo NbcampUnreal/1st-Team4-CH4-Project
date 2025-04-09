@@ -9,6 +9,18 @@
 
 ASW_Dubu::ASW_Dubu()
 {
+	// 리플리케이션 용
+	bReplicates = true;
+	SetReplicateMovement(true);
+
+	// 체력
+	MaxHealth = 700;
+	Health = MaxHealth;
+
+	// 기본 데미지
+	AttackDamage = 30.f;
+
+
 	// 대시 충돌용 박스 콜리전
 	DashCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("DashCollider"));
 	DashCollider->SetupAttachment(RootComponent);
@@ -62,24 +74,20 @@ ASW_Dubu::ASW_Dubu()
 	if (Combo2.Succeeded()) ComboMontages.Add(Combo2.Object);
 	if (Combo3.Succeeded()) ComboMontages.Add(Combo3.Object);
 
-	// 체력
-	MaxHealth = 700;
-	Health = MaxHealth;
-
 	// 기본 스킬
 	FSkillData NormalSkillData;
-	NormalSkillData.Damage = 20.f;
+	NormalSkillData.DamageMultiplier = 1.5f; // 데미지 계수
 	NormalSkillData.AttackType = ESkillAttackType::MeleeBox;
 	NormalSkillData.Range = FVector(300.f, 300.f, 300.f); // X: 길이, Y: 폭, Z: 높이
-	NormalSkillData.Offset = FVector(100.f, 0.f, 0.f);
+	NormalSkillData.Offset = FVector(100.f, 0.f, 0.f); // 캐릭터 스킬 방향
 	SkillDataMap.Add(FName("NormalSkill"), NormalSkillData);
 
 	// 점프 공격
 	FSkillData JumpAttackData;
-	JumpAttackData.Damage = 40.f;
+	JumpAttackData.DamageMultiplier = 2.f; // 데미지 계수
 	JumpAttackData.AttackType = ESkillAttackType::MeleeBox;
-	JumpAttackData.Range = FVector(200.f, 200.f, 200.f); // 범위 설정
-	JumpAttackData.Offset = FVector(0.f);    // 착지 지점 아래쪽
+	JumpAttackData.Range = FVector(200.f, 200.f, 200.f);  // X: 길이, Y: 폭, Z: 높이
+	JumpAttackData.Offset = FVector(0.f); // 캐릭터 스킬 방향
 	SkillDataMap.Add(FName("JumpAttack"), JumpAttackData);
 }
 
@@ -96,19 +104,19 @@ void ASW_Dubu::OnRightHandOverlap(UPrimitiveComponent* OverlappedComponent, AAct
 {
 	if (OtherActor && OtherActor != this && !AlreadyHitActors.Contains(OtherActor))
 	{
-		int32 Damage = 0;
+		int32 Damage = FMath::RoundToInt(AttackDamage * 1.f);
 
 		if (CurrentComboIndex == 0) // 1타
-			Damage = 10;
-		else if (CurrentComboIndex == 2) // 3타 양손
-			Damage = 25;
+			Damage = Damage * 1;
+		else if (CurrentComboIndex == 2) // 3타 양손 
+			Damage = Damage * 1 + 20;
 		else
 			return;
 
 		FDamageEvent DamageEvent;
 		OtherActor->TakeDamage(Damage, DamageEvent, GetController(), this);
 
-		AlreadyHitActors.Add(OtherActor); //  중복 방지!
+		AlreadyHitActors.Add(OtherActor); //  중복 방지
 	}
 }
 
@@ -119,19 +127,19 @@ void ASW_Dubu::OnLeftHandOverlap(UPrimitiveComponent* OverlappedComponent, AActo
 {
 	if (OtherActor && OtherActor != this && !AlreadyHitActors.Contains(OtherActor))
 	{
-		int32 Damage = 0;
+		int32 Damage = AttackDamage;
 
 		if (CurrentComboIndex == 1) // 1타
-			Damage = 10;
+			Damage = Damage * 1;
 		else if (CurrentComboIndex == 2) // 3타 양손
-			Damage = 25;
+			Damage = Damage * 1 + 20;
 		else
 			return;
 
 		FDamageEvent DamageEvent;
 		OtherActor->TakeDamage(Damage, DamageEvent, GetController(), this);
 
-		AlreadyHitActors.Add(OtherActor); //  중복 방지!
+		AlreadyHitActors.Add(OtherActor); //  중복 방지
 	}
 }
 
@@ -186,6 +194,20 @@ void ASW_Dubu::DashSkill()
 			DashCollider->SetCollisionEnabled(ECollisionEnabled::NoCollision); // 박스 OFF
 		}), 0.5f, false);
 }
+
+void ASW_Dubu::OnDashBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
+	bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor && OtherActor != this && !AlreadyHitActors.Contains(OtherActor))
+	{
+		int32 Damage = FMath::RoundToInt(AttackDamage * 1.5f);
+
+		FDamageEvent DamageEvent;
+		OtherActor->TakeDamage(Damage, DamageEvent, GetController(), this);
+		AlreadyHitActors.Add(OtherActor);
+	}
+}
 // ===========================================================================================
 
 
@@ -233,20 +255,26 @@ void ASW_Dubu::JumpAttack()
 
 		}), 0.3f, false);
 }
-
 // ===========================================================================================
 
-void ASW_Dubu::OnDashBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
-	bool bFromSweep, const FHitResult& SweepResult)
-{
-	if (OtherActor && OtherActor != this && !AlreadyHitActors.Contains(OtherActor))
-	{
-		int32 Damage = 35;
 
-		FDamageEvent DamageEvent;
-		OtherActor->TakeDamage(Damage, DamageEvent, GetController(), this);
-		AlreadyHitActors.Add(OtherActor);
+
+// 궁극기 스킬용 ==============================================================================
+void ASW_Dubu::ThrowUltimateSkill()
+{
+	if (!HasAuthority()) return;
+
+	FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * 100.f;
+	FRotator SpawnRotation = GetActorRotation();
+
+	FActorSpawnParameters Params;
+	Params.Owner = this;
+	Params.Instigator = this;
+
+	auto* Thrown = GetWorld()->SpawnActor<ASW_ThrowActor>(ThrowActorClass, SpawnLocation, SpawnRotation, Params);
+	if (Thrown)
+	{
+		Thrown->Damage = AttackDamage * 8.f;
 	}
 }
-
+// ========================================================================================== =

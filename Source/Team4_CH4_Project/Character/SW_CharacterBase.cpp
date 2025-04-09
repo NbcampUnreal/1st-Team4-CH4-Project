@@ -11,6 +11,10 @@
 
 ASW_CharacterBase::ASW_CharacterBase()
 {
+    // 리플리케이션 용
+    bReplicates = true;
+    SetReplicateMovement(true);
+
     PrimaryActorTick.bCanEverTick = true;
 
     bUseControllerRotationPitch = false;
@@ -103,13 +107,6 @@ void ASW_CharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
     Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
-void ASW_CharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-    DOREPLIFETIME(ASW_CharacterBase, Health);
-    DOREPLIFETIME(ASW_CharacterBase, Stamina);
-}
-
 void ASW_CharacterBase::Player_Move(const FInputActionValue& _InputValue)
 {
     if (bIsLocked) return;
@@ -155,17 +152,17 @@ void ASW_CharacterBase::ComboAttack()
         bIsAttacking = true;
         bCanNextCombo = false;
         bPendingNextCombo = false;
-    }
 
-    float MontageLength = MontageToPlay->GetPlayLength();
-    FTimerHandle ComboCheckTimer;
-    GetWorldTimerManager().SetTimer(
-        ComboCheckTimer,
-        this,
-        &ASW_CharacterBase::CheckPendingCombo,
-        MontageLength * 0.8f,
-        false
-    );
+        float MontageLength = MontageToPlay->GetPlayLength();
+        FTimerHandle ComboCheckTimer;
+        GetWorldTimerManager().SetTimer(
+            ComboCheckTimer,
+            this,
+            &ASW_CharacterBase::CheckPendingCombo,
+            MontageLength * 0.8f,
+            false
+        );
+    }
 }
 
 void ASW_CharacterBase::JumpAttack()
@@ -339,13 +336,14 @@ void ASW_CharacterBase::ApplySkillDamage(FName SkillName, const TArray<AActor*>&
     const FSkillData* SkillData = SkillDataMap.Find(SkillName);
     if (!SkillData) return;
 
-    float Damage = SkillData->Damage;
+    float FinalDamage = AttackDamage * SkillData->DamageMultiplier;
+
     for (AActor* Target : Targets)
     {
         if (Target && Target != this)
         {
             FDamageEvent DamageEvent;
-            Target->TakeDamage(Damage, DamageEvent, GetController(), this);
+            Target->TakeDamage(FinalDamage, DamageEvent, GetController(), this);
         }
     }
 }
@@ -450,6 +448,8 @@ float ASW_CharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Dama
         {
             PlayAnimMontage(DeathMontage);
         }
+
+        SetLifeSpan(2.f);
     }
     else if (HitReactionMontage && !bIsLocked)
     {
@@ -458,3 +458,83 @@ float ASW_CharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 
     return DamageToApply;
 }
+
+// 리플리케이션되는 함수들================================================================================
+
+void ASW_CharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+    DOREPLIFETIME(ASW_CharacterBase, Health);
+    DOREPLIFETIME(ASW_CharacterBase, bIsLocked);
+    DOREPLIFETIME(ASW_CharacterBase, bIsAttacking);
+    DOREPLIFETIME(ASW_CharacterBase, bIsMovementLocked);
+}
+
+void ASW_CharacterBase::OnRep_Health()
+{
+    UpdateHealthBar();
+}
+
+void ASW_CharacterBase::Server_PlaySkill_Implementation(FName SkillName)
+{
+    if (bIsLocked) return;
+
+    if (SkillName == "ComboAttack")
+    {
+        ComboAttack();              
+        Multicast_ComboAttack();    
+    }
+    else
+    {
+        PlaySkillAnimation(SkillName);
+        Multicast_PlaySkill(SkillName);
+
+        if (SkillName == "DashSkill") DashSkill();
+        else if (SkillName == "JumpAttack")
+        {
+            if (GetCharacterMovement()->IsFalling()) 
+            {
+                JumpAttack(); 
+            }
+        }
+        else if (SkillName == "NormalSkill")
+        {
+
+        }
+        else if (SkillName == "SpecialSkill")
+        {
+
+        }
+    }
+}
+
+
+void ASW_CharacterBase::Multicast_PlaySkill_Implementation(FName SkillName)
+{
+    if (!HasAuthority()) 
+    {
+        PlaySkillAnimation(SkillName);
+    }
+}
+
+void ASW_CharacterBase::Server_ApplySkillDamage_Implementation(FName SkillName)
+{
+    TArray<AActor*> Targets = GetTargetsInRange(SkillName);
+    ApplySkillDamage(SkillName, Targets);
+    Multicast_ApplySkillDamage(SkillName);
+}
+
+void ASW_CharacterBase::Multicast_ApplySkillDamage_Implementation(FName SkillName)
+{
+
+}
+
+void ASW_CharacterBase::Multicast_ComboAttack_Implementation()
+{
+    if (!HasAuthority())
+    {
+        ComboAttack();
+    }
+}
+// ============================================================================================

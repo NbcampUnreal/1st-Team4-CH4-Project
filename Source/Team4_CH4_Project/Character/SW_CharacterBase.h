@@ -27,23 +27,18 @@ struct FSkillData
 {
     GENERATED_BODY()
 
-    // 스킬 데미지
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
-    float Damage = 10.f;
+    float DamageMultiplier = 1.f;
 
-    // 공격 타입
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
     ESkillAttackType AttackType = ESkillAttackType::MeleeSphere;
 
-    // 타격 범위 크기 (Sphere: 반경, Box: Extent, Trace: 거리, Projectile: 속도)
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
     FVector Range = FVector(200.f);
 
-    // 타격 범위 오프셋
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
     FVector Offset = FVector::ZeroVector;
 
-    // 투사체 클래스 (원거리 투사체용, 옵션)
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
     TSubclassOf<AActor> ProjectileClass;
 };
@@ -63,7 +58,7 @@ protected:
 public:
     virtual void Tick(float DeltaTime) override;
     virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-    virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const;
+    virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
     virtual void Player_Move(const FInputActionValue& _InputValue);
     virtual void Player_Jump(const FInputActionValue& _InputValue);
@@ -80,11 +75,13 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
     UCameraComponent* FollowCamera;
 
-
     // 체력바
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
     UWidgetComponent* HealthBarWidget;
 
+    // 기본 데미지
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stat")
+    float AttackDamage = 50.f;
 
     // ================TakeDmage()함수용================
     // 피격 애니메이션
@@ -115,12 +112,12 @@ public:
     bool bIsJumpAttacking;
 
     // 공격중인지 확인하는 변수
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
-    bool bIsAttacking = false;
+    UPROPERTY(Replicated)
+    bool bIsAttacking;
 
     // 이동만 멈추는 상태 (입력은 가능)
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
-    bool bIsMovementLocked = false;
+    UPROPERTY(Replicated)
+    bool bIsMovementLocked;
     // ====================================================================
 
     // === 스킬 애니메이션 관리 ===
@@ -128,8 +125,8 @@ public:
     TMap<FName, UAnimMontage*> SkillMontages;
 
     // 애니메이션 재생 중 입력 차단 상태
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
-    bool bIsLocked = false;
+    UPROPERTY(Replicated)
+    bool bIsLocked;
 
 protected:
 
@@ -153,16 +150,21 @@ protected:
     UPROPERTY(VisibleAnywhere, Category = "Movement")
     FVector VelocityLastFrame;
     
+
+
     // =======================캐릭터 체력 ============================
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Stat")
+    UPROPERTY(EditDefaultsOnly, Category = "Stat")
     int32 MaxHealth;
-    UPROPERTY(VisibleAnywhere, Replicated, Category = "Stat")
+
+    // 체력 리플리케이션
+    UPROPERTY(VisibleAnywhere, ReplicatedUsing = OnRep_Health, Category = "Stat")
     int32 Health;
+
+    UFUNCTION()
+    void OnRep_Health();
     // ==============================================================
 
-    // 아직은 미사용 중 
-    UPROPERTY(VisibleAnywhere, Replicated, Category = "Stat")
-    int32 Stamina;
+
 
 public:
 
@@ -171,10 +173,6 @@ public:
 
     // 콤보 평타용으로 콤보 인풋액션 입력시 CurrentIndex증가용 함수
     void CheckPendingCombo();
-
-    // 스킬애니메이션 모음집 함수
-    UFUNCTION(BlueprintCallable)
-    void PlaySkillAnimation(FName SkillName);
 
     // 스킬시전중에 다른 입력 못하는 함수
     UFUNCTION(BlueprintCallable)
@@ -200,4 +198,29 @@ public:
     // 데미지 적용 (공통 로직)
     UFUNCTION(BlueprintCallable, Category = "Skill")
     void ApplySkillDamage(FName SkillName, const TArray<AActor*>& Targets);
+
+    // =========================== 리플리케이션용 함수 ==============================
+
+    // 스킬애니메이션 모음집 함수
+    UFUNCTION(BlueprintCallable)
+    void PlaySkillAnimation(FName SkillName);
+
+
+    UFUNCTION(Server, Reliable)
+    void Server_PlaySkill(FName SkillName);
+
+    UFUNCTION(NetMulticast, Reliable)
+    void Multicast_PlaySkill(FName SkillName);
+
+
+
+    UFUNCTION(Server, Reliable)
+    void Server_ApplySkillDamage(FName SkillName);
+
+    UFUNCTION(NetMulticast, Reliable)
+    void Multicast_ApplySkillDamage(FName SkillName);
+
+    UFUNCTION(NetMulticast, Reliable)
+    void Multicast_ComboAttack();
+
 };

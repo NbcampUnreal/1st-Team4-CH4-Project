@@ -7,6 +7,18 @@
 
 ASW_Brall::ASW_Brall()
 {
+    // 리플리케이션 용
+    bReplicates = true;
+    SetReplicateMovement(true);
+
+    // 체력
+    MaxHealth = 500;
+    Health = MaxHealth;
+
+    // 기본 데미지
+    AttackDamage = 40;
+
+
     // 대시 충돌 용 몸 전체 박스 콜리전 생성
     DashCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("DashCollider"));
     DashCollider->SetupAttachment(RootComponent);
@@ -33,14 +45,10 @@ ASW_Brall::ASW_Brall()
     if (Combo1.Succeeded()) ComboMontages.Add(Combo1.Object);
     if (Combo2.Succeeded()) ComboMontages.Add(Combo2.Object);
     if (Combo3.Succeeded()) ComboMontages.Add(Combo3.Object);
-    
-    // 체력
-    MaxHealth = 500;
-    Health = MaxHealth;
 
     // 기본 스킬 설정
     FSkillData NormalSkillData;
-    NormalSkillData.Damage = 20.f;
+    NormalSkillData.DamageMultiplier = 1.5f; // 데미지 계수
     NormalSkillData.AttackType = ESkillAttackType::BoxTrace;
     NormalSkillData.Range = FVector(600.f, 200.f, 300.f); // X: 길이, Y: 폭, Z: 높이
     NormalSkillData.Offset = FVector(300.f, 0.f, 0.f);
@@ -48,7 +56,7 @@ ASW_Brall::ASW_Brall()
 
     // 스페셜 스킬 설정
     FSkillData SpecialSkillData;
-    SpecialSkillData.Damage = 55.f;
+    SpecialSkillData.DamageMultiplier = 1.5f; // 데미지 계수
     SpecialSkillData.AttackType = ESkillAttackType::MeleeBox; // Box
     SpecialSkillData.Range = FVector(300.f, 300.f, 200.f);  
     SpecialSkillData.Offset = FVector(200.f, 0.f, 0.f);        // 살짝 앞쪽으로
@@ -56,7 +64,7 @@ ASW_Brall::ASW_Brall()
 
     // 점프 공격
     FSkillData JumpAttackData;
-    JumpAttackData.Damage = 40.f;
+    JumpAttackData.DamageMultiplier = 1.5f; // 데미지 계수
     JumpAttackData.AttackType = ESkillAttackType::MeleeBox;
     JumpAttackData.Range = FVector(200.f, 200.f, 200.f); // 범위 설정
     JumpAttackData.Offset = FVector(200.f, 0.f, -50.f);    // 착지 지점 아래쪽
@@ -109,10 +117,10 @@ void ASW_Brall::OnSwordOverlap(UPrimitiveComponent* OverlappedComponent, AActor*
 {
     if (OtherActor && OtherActor != this && !AlreadyHitActors.Contains(OtherActor))
     {
-        int32 Damage = 15;
+        int32 Damage = FMath::RoundToInt(AttackDamage * 1.f);
         if (CurrentComboIndex == 2) // 1타
         {
-            Damage = 20;
+            Damage = AttackDamage  * 1 + 10;
         }
 
         FDamageEvent DamageEvent;
@@ -155,8 +163,44 @@ void ASW_Brall::DashSkill()
         false
     );
 }
-// =============================================================================================
 
+void ASW_Brall::ExecuteDesh()
+{
+    FVector DashDirection = GetActorForwardVector().GetSafeNormal();
+    float DashSpeed = 2000.f;
+
+    AlreadyHitActors.Empty();
+    DashCollider->SetCollisionEnabled(ECollisionEnabled::QueryOnly); // 박스 ON
+
+    UCharacterMovementComponent* MoveComp = GetCharacterMovement();
+    MoveComp->BrakingFrictionFactor = 0.f;
+    MoveComp->BrakingDecelerationWalking = 0.f;
+
+    LaunchCharacter(DashDirection * DashSpeed, true, true);
+
+    FTimerHandle DashResetHandle;
+    GetWorldTimerManager().SetTimer(DashResetHandle, FTimerDelegate::CreateLambda([this, MoveComp]()
+        {
+            MoveComp->BrakingFrictionFactor = 2.f;
+            MoveComp->BrakingDecelerationWalking = 2048.f;
+            DashCollider->SetCollisionEnabled(ECollisionEnabled::NoCollision); // 박스 off
+        }), 0.5f, false);
+}
+
+void ASW_Brall::OnDashBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+    UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
+    bool bFromSweep, const FHitResult& SweepResult)
+{
+    if (OtherActor && OtherActor != this && !AlreadyHitActors.Contains(OtherActor))
+    {
+        int32 Damage = FMath::RoundToInt(AttackDamage * 1.5f);
+
+        FDamageEvent DamageEvent;
+        OtherActor->TakeDamage(Damage, DamageEvent, GetController(), this);
+        AlreadyHitActors.Add(OtherActor);
+    }
+}
+// ==============================================================================================
 
 
 // 점프 공격용 ================================================================================
@@ -204,40 +248,4 @@ void ASW_Brall::JumpAttack()
 }
 // =============================================================================================
 
-void ASW_Brall::ExecuteDesh()
-{
-    FVector DashDirection = GetActorForwardVector().GetSafeNormal();
-    float DashSpeed = 2000.f;
 
-    AlreadyHitActors.Empty();
-    DashCollider->SetCollisionEnabled(ECollisionEnabled::QueryOnly); // 박스 ON
-
-    UCharacterMovementComponent* MoveComp = GetCharacterMovement();
-    MoveComp->BrakingFrictionFactor = 0.f;
-    MoveComp->BrakingDecelerationWalking = 0.f;
-
-    LaunchCharacter(DashDirection * DashSpeed, true, true);
-
-    FTimerHandle DashResetHandle;
-    GetWorldTimerManager().SetTimer(DashResetHandle, FTimerDelegate::CreateLambda([this, MoveComp]()
-        {
-            MoveComp->BrakingFrictionFactor = 2.f;
-            MoveComp->BrakingDecelerationWalking = 2048.f;
-            DashCollider->SetCollisionEnabled(ECollisionEnabled::NoCollision); // 박스 off
-        }), 0.5f, false);
-}
-
-void ASW_Brall::OnDashBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-    UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
-    bool bFromSweep, const FHitResult& SweepResult)
-{
-    if (OtherActor && OtherActor != this && !AlreadyHitActors.Contains(OtherActor))
-    {
-        int32 Damage = 30;
-
-        FDamageEvent DamageEvent;
-        OtherActor->TakeDamage(Damage, DamageEvent, GetController(), this);
-        AlreadyHitActors.Add(OtherActor);
-    }
-}
-// ==============================================================================================

@@ -66,4 +66,8 @@ public:
 	void RightHandEnd();
 	void LeftHandStart();
 	void LeftHandEnd();
+
+	// 궁극기 스킬용 함수
+	UFUNCTION()
+	void ThrowUltimateSkill();
 };
