@@ -13,6 +13,7 @@ UCLASS()
 class TEAM4_CH4_PROJECT_API ASW_Myth : public ASW_CharacterBase
 {
 	GENERATED_BODY()
+	
 public:
 	ASW_Myth();
 
