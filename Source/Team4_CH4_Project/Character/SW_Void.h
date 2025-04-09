@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Character/SW_CharacterBase.h"
+#include "SW_CharacterBase.h"
 #include "SW_Void.generated.h"
 
 /**
@@ -14,4 +14,11 @@ class TEAM4_CH4_PROJECT_API ASW_Void : public ASW_CharacterBase
 {
 	GENERATED_BODY()
 	
+public:
+	ASW_Void();
+
+public:
+	virtual void BeginPlay() override;
+	
 };
+
