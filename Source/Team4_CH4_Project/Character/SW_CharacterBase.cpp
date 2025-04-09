@@ -11,11 +11,23 @@
 
 ASW_CharacterBase::ASW_CharacterBase()
 {
+    // 리플리케이션 용
+    bReplicates = true;
+    SetReplicateMovement(true);
+
     PrimaryActorTick.bCanEverTick = true;
 
     bUseControllerRotationPitch = false;
     bUseControllerRotationRoll = false;
     bUseControllerRotationYaw = false;
+
+    // 그림자 Off
+    if (GetMesh())
+    {
+        GetMesh()->CastShadow = false;
+        GetMesh()->bCastDynamicShadow = false;
+        GetMesh()->bAffectDistanceFieldLighting = false;
+    }
 
     if (UCharacterMovementComponent* MoveComp = GetCharacterMovement())
     {
@@ -95,13 +107,6 @@ void ASW_CharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
     Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
-void ASW_CharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-    DOREPLIFETIME(ASW_CharacterBase, Health);
-    DOREPLIFETIME(ASW_CharacterBase, Stamina);
-}
-
 void ASW_CharacterBase::Player_Move(const FInputActionValue& _InputValue)
 {
     if (bIsLocked) return;
@@ -129,28 +134,34 @@ void ASW_CharacterBase::ComboAttack()
 {
     if (!GetMesh() || !ComboMontages.IsValidIndex(CurrentComboIndex)) return;
 
-    if (bCanNextCombo)
+    if (bIsAttacking)
     {
-        UAnimMontage* MontageToPlay = ComboMontages[CurrentComboIndex];
-        if (MontageToPlay)
+        // 콤보 입력 가능 타이밍일 때만 예약
+        if (bCanNextCombo)
         {
-            PlayAnimMontage(MontageToPlay);
-            bCanNextCombo = false;
-
-            FTimerHandle ComboResetTimer;
-            float MontageDuration = MontageToPlay->GetPlayLength();
-            GetWorldTimerManager().SetTimer(
-                ComboResetTimer,
-                this,
-                &ASW_CharacterBase::CheckPendingCombo,
-                MontageDuration * 0.8f,
-                false
-            );
+            bPendingNextCombo = true;
         }
+        return;
     }
-    else
+
+    // 콤보 시작
+    UAnimMontage* MontageToPlay = ComboMontages[CurrentComboIndex];
+    if (MontageToPlay)
     {
-        bPendingNextCombo = true;
+        PlayAnimMontage(MontageToPlay);
+        bIsAttacking = true;
+        bCanNextCombo = false;
+        bPendingNextCombo = false;
+
+        float MontageLength = MontageToPlay->GetPlayLength();
+        FTimerHandle ComboCheckTimer;
+        GetWorldTimerManager().SetTimer(
+            ComboCheckTimer,
+            this,
+            &ASW_CharacterBase::CheckPendingCombo,
+            MontageLength * 0.8f,
+            false
+        );
     }
 }
 
@@ -158,7 +169,6 @@ void ASW_CharacterBase::JumpAttack()
 {
     PlaySkillAnimation(FName("JumpAttack"));
 }
-
 void ASW_CharacterBase::NormalSkill()
 {
     PlaySkillAnimation(FName("NormalSkill"));
@@ -188,44 +198,104 @@ TArray<AActor*> ASW_CharacterBase::GetTargetsInRange_Implementation(FName SkillN
     switch (SkillData->AttackType)
     {
     case ESkillAttackType::MeleeSphere:
+    {
+        float Radius = SkillData->Range.X;
+
+        // 디버그용
+        DrawDebugSphere(GetWorld(), Location, Radius, 12, FColor::Green, false, 1.0f);
+
         UKismetSystemLibrary::SphereOverlapActors(
             GetWorld(),
             Location,
-            SkillData->Range.X,
+            Radius,
             TArray<TEnumAsByte<EObjectTypeQuery>>{ UEngineTypes::ConvertToObjectType(ECC_Pawn) },
             ACharacter::StaticClass(),
             ActorsToIgnore,
             HitActors
         );
         break;
+    }
 
     case ESkillAttackType::MeleeBox:
+    {
+        FVector Extent = SkillData->Range;
+
+        // 디버그용
+        DrawDebugBox(GetWorld(), Location, Extent, GetActorQuat(), FColor::Cyan, false, 1.f);
+
         UKismetSystemLibrary::BoxOverlapActors(
             GetWorld(),
             Location,
-            SkillData->Range,
+            Extent,
             TArray<TEnumAsByte<EObjectTypeQuery>>{ UEngineTypes::ConvertToObjectType(ECC_Pawn) },
             ACharacter::StaticClass(),
             ActorsToIgnore,
             HitActors
         );
         break;
+    }
+
+    case ESkillAttackType::BoxTrace:
+    {
+        FVector Start = GetActorLocation() + GetActorRotation().RotateVector(SkillData->Offset);
+        FVector End = Start + GetActorForwardVector() * 50.f; // 캐릭터 제외 위해 50 정도 앞으로 이동
+
+        FVector HalfSize = SkillData->Range * 0.5f;
+        FQuat Rotation = GetActorQuat();
+
+        TArray<FHitResult> HitResults;
+        FCollisionShape BoxShape = FCollisionShape::MakeBox(HalfSize);
+        FCollisionQueryParams Params;
+        Params.AddIgnoredActor(this);
+
+        bool bHit = GetWorld()->SweepMultiByChannel(
+            HitResults,
+            Start,
+            End,
+            Rotation,
+            ECC_Pawn,
+            BoxShape,
+            Params
+        );
+
+        // 디버그 박스
+        DrawDebugBox(GetWorld(), Start, HalfSize, Rotation, FColor::Purple, false, 1.5f, 0, 2.0f);
+
+        if (bHit)
+        {
+            for (const FHitResult& Hit : HitResults)
+            {
+                if (AActor* HitActor = Hit.GetActor())
+                {
+                    HitActors.AddUnique(HitActor);
+                }
+            }
+        }
+
+        break;
+    }
 
     case ESkillAttackType::RangedTrace:
     {
+        FVector Start = Location;
+        FVector End = Start + GetActorForwardVector() * SkillData->Range.X;
         FHitResult HitResult;
-        FVector End = Location + (GetActorForwardVector() * SkillData->Range.X);
+
+        // 디버그용
+        DrawDebugLine(GetWorld(), Start, End, FColor::Blue, false, 1.0f, 0, 2.0f);
+
         UKismetSystemLibrary::LineTraceSingle(
             GetWorld(),
-            Location,
+            Start,
             End,
             UEngineTypes::ConvertToTraceType(ECC_Pawn),
             false,
             ActorsToIgnore,
-            EDrawDebugTrace::ForDuration,
+            EDrawDebugTrace::None,
             HitResult,
             true
         );
+
         if (HitResult.bBlockingHit && HitResult.GetActor())
         {
             HitActors.Add(HitResult.GetActor());
@@ -234,11 +304,16 @@ TArray<AActor*> ASW_CharacterBase::GetTargetsInRange_Implementation(FName SkillN
     }
 
     case ESkillAttackType::RangedProjectile:
+    {
+        // 디버그용
+        DrawDebugSphere(GetWorld(), Location, 20.f, 8, FColor::Yellow, false, 1.0f);
+
         if (SkillData->ProjectileClass)
         {
             FActorSpawnParameters SpawnParams;
             SpawnParams.Owner = this;
             SpawnParams.Instigator = GetInstigator();
+
             AActor* Projectile = GetWorld()->SpawnActor<AActor>(
                 SkillData->ProjectileClass,
                 Location,
@@ -246,6 +321,10 @@ TArray<AActor*> ASW_CharacterBase::GetTargetsInRange_Implementation(FName SkillN
                 SpawnParams
             );
         }
+        break;
+    }
+
+    default:
         break;
     }
 
@@ -257,13 +336,14 @@ void ASW_CharacterBase::ApplySkillDamage(FName SkillName, const TArray<AActor*>&
     const FSkillData* SkillData = SkillDataMap.Find(SkillName);
     if (!SkillData) return;
 
-    float Damage = SkillData->Damage;
+    float FinalDamage = AttackDamage * SkillData->DamageMultiplier;
+
     for (AActor* Target : Targets)
     {
         if (Target && Target != this)
         {
             FDamageEvent DamageEvent;
-            Target->TakeDamage(Damage, DamageEvent, GetController(), this);
+            Target->TakeDamage(FinalDamage, DamageEvent, GetController(), this);
         }
     }
 }
@@ -305,24 +385,31 @@ void ASW_CharacterBase::SetLockedState(bool bLocked)
     }
 }
 
+void ASW_CharacterBase::SetMovementLocked(bool bLocked)
+{
+    bIsMovementLocked = bLocked;
+    if (UCharacterMovementComponent* MoveComp = GetCharacterMovement())
+    {
+        MoveComp->MaxWalkSpeed = bLocked ? 0.f : DefaultMoveSpeed;
+    }
+}
+
 void ASW_CharacterBase::CheckPendingCombo()
 {
     if (bPendingNextCombo)
     {
         bPendingNextCombo = false;
-        CurrentComboIndex++;
-        if (CurrentComboIndex >= 3)
-        {
-            ResetCombo();
-            return;
-        }
-
-        bCanNextCombo = true;
-        ComboAttack();
+        CurrentComboIndex = (CurrentComboIndex + 1) % ComboMontages.Num();
+        bIsAttacking = false; // 다음 콤보 재생 허용
+        ComboAttack();        // 다음 콤보 실행
     }
     else
     {
-        ResetCombo();
+        // 콤보 종료 처리
+        bIsAttacking = false;
+        bCanNextCombo = false;
+        bPendingNextCombo = false;
+        CurrentComboIndex = 0;
     }
 }
 
@@ -361,6 +448,8 @@ float ASW_CharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Dama
         {
             PlayAnimMontage(DeathMontage);
         }
+
+        SetLifeSpan(2.f);
     }
     else if (HitReactionMontage && !bIsLocked)
     {
@@ -369,3 +458,83 @@ float ASW_CharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 
     return DamageToApply;
 }
+
+// 리플리케이션되는 함수들================================================================================
+
+void ASW_CharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+    DOREPLIFETIME(ASW_CharacterBase, Health);
+    DOREPLIFETIME(ASW_CharacterBase, bIsLocked);
+    DOREPLIFETIME(ASW_CharacterBase, bIsAttacking);
+    DOREPLIFETIME(ASW_CharacterBase, bIsMovementLocked);
+}
+
+void ASW_CharacterBase::OnRep_Health()
+{
+    UpdateHealthBar();
+}
+
+void ASW_CharacterBase::Server_PlaySkill_Implementation(FName SkillName)
+{
+    if (bIsLocked) return;
+
+    if (SkillName == "ComboAttack")
+    {
+        ComboAttack();              
+        Multicast_ComboAttack();    
+    }
+    else
+    {
+        PlaySkillAnimation(SkillName);
+        Multicast_PlaySkill(SkillName);
+
+        if (SkillName == "DashSkill") DashSkill();
+        else if (SkillName == "JumpAttack")
+        {
+            if (GetCharacterMovement()->IsFalling()) 
+            {
+                JumpAttack(); 
+            }
+        }
+        else if (SkillName == "NormalSkill")
+        {
+
+        }
+        else if (SkillName == "SpecialSkill")
+        {
+
+        }
+    }
+}
+
+
+void ASW_CharacterBase::Multicast_PlaySkill_Implementation(FName SkillName)
+{
+    if (!HasAuthority()) 
+    {
+        PlaySkillAnimation(SkillName);
+    }
+}
+
+void ASW_CharacterBase::Server_ApplySkillDamage_Implementation(FName SkillName)
+{
+    TArray<AActor*> Targets = GetTargetsInRange(SkillName);
+    ApplySkillDamage(SkillName, Targets);
+    Multicast_ApplySkillDamage(SkillName);
+}
+
+void ASW_CharacterBase::Multicast_ApplySkillDamage_Implementation(FName SkillName)
+{
+
+}
+
+void ASW_CharacterBase::Multicast_ComboAttack_Implementation()
+{
+    if (!HasAuthority())
+    {
+        ComboAttack();
+    }
+}
+// ============================================================================================

@@ -104,10 +104,11 @@ void ASW_PlayerController::ComboAttack(const FInputActionValue& InputValue)
     {
         if (!PlayerCharacter->bIsLocked)
         {
-            PlayerCharacter->ComboAttack();
+            PlayerCharacter->Server_PlaySkill("ComboAttack");
         }
     }
 }
+
 
 void ASW_PlayerController::JumpAttack(const FInputActionValue& InputValue)
 {
@@ -115,7 +116,7 @@ void ASW_PlayerController::JumpAttack(const FInputActionValue& InputValue)
     {
         if (!PlayerCharacter->bIsLocked)
         {
-            PlayerCharacter->JumpAttack();
+            PlayerCharacter->Server_PlaySkill("JumpAttack");
         }
     }
 }
@@ -126,7 +127,7 @@ void ASW_PlayerController::NormalSkill(const FInputActionValue& InputValue)
     {
         if (!PlayerCharacter->bIsLocked)
         {
-            PlayerCharacter->NormalSkill();
+            PlayerCharacter->Server_PlaySkill("NormalSkill");
         }
     }
 }
@@ -137,7 +138,7 @@ void ASW_PlayerController::SpecialSkill(const FInputActionValue& InputValue)
     {
         if (!PlayerCharacter->bIsLocked)
         {
-            PlayerCharacter->SpecialSkill();
+            PlayerCharacter->Server_PlaySkill("SpecialSkill");
         }
     }
 }
@@ -148,7 +149,7 @@ void ASW_PlayerController::DashSkill(const FInputActionValue& InputValue)
     {
         if (!PlayerCharacter->bIsLocked)
         {
-            PlayerCharacter->DashSkill();
+            PlayerCharacter->Server_PlaySkill("DashSkill");
         }
     }
 }
