@@ -15,6 +15,8 @@ struct FInputActionValue;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDownTimeTickDelegate, int32, Seconds);
+
 UCLASS(config=Game)
 class ATeam4_CH4_ProjectCharacter : public ACharacter
 {
@@ -47,6 +49,19 @@ class ATeam4_CH4_ProjectCharacter : public ACharacter
 public:
 	ATeam4_CH4_ProjectCharacter();
 	
+	/****************TEST**************/
+	UFUNCTION(BlueprintCallable, Category = "Skill")
+	void StartDownTime(float DownTime);
+
+
+	UPROPERTY(BlueprintAssignable, Category = "Skill")
+	FDownTimeTickDelegate OnDownTimeTick;
+
+	FTimerHandle DownTime_TimerHandle;
+	float RemainingTime;
+
+	void UpdateCooldown();
+	/**********************************/
 
 protected:
 

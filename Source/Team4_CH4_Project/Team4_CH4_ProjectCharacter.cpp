@@ -10,6 +10,8 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "UI/SW_HUDManager.h"
+#include "UI/ViewModels/SW_SkillViewModel.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -125,5 +127,39 @@ void ATeam4_CH4_ProjectCharacter::Look(const FInputActionValue& Value)
 		// add yaw and pitch input to controller
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
+	}
+}
+
+void ATeam4_CH4_ProjectCharacter::StartDownTime(float DownTime)
+{
+	RemainingTime = DownTime;
+
+	GetWorld()->GetTimerManager().SetTimer(
+		DownTime_TimerHandle,
+		this,
+		&ATeam4_CH4_ProjectCharacter::UpdateCooldown,
+		1.0f,
+		true,
+		0.f
+	);
+
+	if (USW_HUDManager* HUDManager = GetGameInstance()->GetSubsystem<USW_HUDManager>())
+	{
+		if (USW_SkillViewModel* SkillViewModel = 
+			Cast<USW_SkillViewModel>(HUDManager->GetViewModel(EViewModelType::SkillViewModel)))
+		{
+			SkillViewModel->SetSkill1Time(DownTime);
+		}
+	}
+}
+
+void ATeam4_CH4_ProjectCharacter::UpdateCooldown()
+{
+	UE_LOG(LogTemp, Warning, TEXT("%f"), RemainingTime);
+	RemainingTime -= 1.0f;
+	OnDownTimeTick.Broadcast(FMath::CeilToInt(RemainingTime));
+	if (RemainingTime <= 0.f)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(DownTime_TimerHandle);
 	}
 }

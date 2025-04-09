@@ -6,9 +6,6 @@
 #include "MVVMViewModelBase.h"
 #include "SW_TimeViewModel.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class TEAM4_CH4_PROJECT_API USW_TimeViewModel : public UMVVMViewModelBase
 {

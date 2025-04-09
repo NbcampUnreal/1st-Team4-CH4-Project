@@ -4,20 +4,19 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "SW_PlayerInfoWidget.h"
+#include "../CharacterData/SW_CharacterType.h"
 #include "SW_SquadInfoWidget.generated.h"
 
-class UImage;
-class UProgressBar;
-class UTextBlock;
-
 UCLASS()
-class TEAM4_CH4_PROJECT_API USW_SquadInfoWidget : public UUserWidget
+class TEAM4_CH4_PROJECT_API USW_SquadInfoWidget : public USW_PlayerInfoWidget
 {
 	GENERATED_BODY()
 	
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
-	UImage* PlayerIcon;
+	virtual void SetThumbnailByType(ECharacterType Type) override;
+
+protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	UProgressBar* HealthBar;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))

@@ -5,3 +5,10 @@
 #include "Components/Image.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
+
+void USW_SquadInfoWidget::SetThumbnailByType(ECharacterType Type)
+{
+	Super::SetThumbnailByType(Type);
+
+	// PlayerThumbnail->SetBrushSize()
+}

@@ -20,5 +20,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	UProgressBar* HealthBar;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
-	UProgressBar* EnergyBar;
+	UProgressBar* StaminaBar;
+
+	UFUNCTION(BlueprintCallable)
+	void UpdateUsername(const FName& Username);
+	UFUNCTION(BlueprintCallable)
+	void UpdateHealthBar(const int32& CurrentHealth, const int32& MaxHealth);
+	UFUNCTION(BlueprintCallable)
+	void UpdateStaminaBar(const int32& CurrentStamina, const int32& MaxStamina);
 };
