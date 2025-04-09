@@ -114,8 +114,9 @@ void ASW_PlayerController::ComboAttack(const FInputActionValue& InputValue)
 void ASW_PlayerController::JumpAttack(const FInputActionValue& InputValue)
 {
     if (ASW_CharacterBase* PlayerCharacter = Cast<ASW_CharacterBase>(GetPawn()))
-    {
-        if (!PlayerCharacter->bIsLocked && PlayerCharacter->GetCharacterMovement()->IsFalling()) // 점프중일때만 실행되도록
+    {   
+        // 점프중일때만 실행되도록
+        if (!PlayerCharacter->bIsLocked && PlayerCharacter->GetCharacterMovement()->IsFalling()) 
         {
             PlayerCharacter->Server_PlaySkill("JumpAttack");
         }

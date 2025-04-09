@@ -61,4 +61,6 @@ void ASW_ThrowActor::ApplyThrowDamage(AActor* OtherActor)
 
     FDamageEvent DamageEvent;
     OtherActor->TakeDamage(Damage, DamageEvent, GetInstigatorController(), this);
+
+    Destroy();
 }
