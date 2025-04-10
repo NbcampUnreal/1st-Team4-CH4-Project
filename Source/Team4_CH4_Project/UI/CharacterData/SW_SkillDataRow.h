@@ -32,13 +32,4 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UTexture2D* Skill3Icon;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float DashTime;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float Skill1Time;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float Skill2Time;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float Skill3Time;
 };
