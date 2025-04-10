@@ -100,6 +100,9 @@ void ASW_CharacterBase::Tick(float DeltaTime)
     Acceleration = GetCharacterMovement()->GetCurrentAcceleration();
     VelocityLastFrame = Velocity;
     Velocity = GetCharacterMovement()->Velocity;
+
+    // 프레임마다 데미지 중복 방지용
+    SkillsAppliedThisFrame.Empty();
 }
 
 void ASW_CharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -482,31 +485,30 @@ void ASW_CharacterBase::Server_PlaySkill_Implementation(FName SkillName)
 
     if (SkillName == "ComboAttack")
     {
-        ComboAttack();              
-        Multicast_ComboAttack();    
+        ComboAttack();
+        Multicast_ComboAttack();
+        return;
     }
-    else
+
+    if (SkillName == "JumpAttack")
     {
-        PlaySkillAnimation(SkillName);
-        Multicast_PlaySkill(SkillName);
-
-        if (SkillName == "DashSkill") DashSkill();
-        else if (SkillName == "JumpAttack")
-        {
-            if (GetCharacterMovement()->IsFalling()) 
-            {
-                JumpAttack(); 
-            }
-        }
-        else if (SkillName == "NormalSkill")
-        {
-
-        }
-        else if (SkillName == "SpecialSkill")
-        {
-
-        }
+        if (!GetCharacterMovement()->IsFalling()) return;
+        JumpAttack();
     }
+    else if (SkillName == "DashSkill")
+    {
+        DashSkill(); 
+    }
+    else if (SkillName == "NormalSkill")
+    {
+        NormalSkill(); 
+    }
+    else if (SkillName == "SpecialSkill")
+    {
+        SpecialSkill(); 
+    }
+
+    Multicast_PlaySkill(SkillName);
 }
 
 
@@ -520,14 +522,26 @@ void ASW_CharacterBase::Multicast_PlaySkill_Implementation(FName SkillName)
 
 void ASW_CharacterBase::Server_ApplySkillDamage_Implementation(FName SkillName)
 {
+    // 데미지 중복 방지
+    if (SkillsAppliedThisFrame.Contains(SkillName)) return; 
+    SkillsAppliedThisFrame.Add(SkillName);
+
     TArray<AActor*> Targets = GetTargetsInRange(SkillName);
     ApplySkillDamage(SkillName, Targets);
+
     Multicast_ApplySkillDamage(SkillName);
 }
 
 void ASW_CharacterBase::Multicast_ApplySkillDamage_Implementation(FName SkillName)
 {
+    // 클라이언트에서는 데미지를 적용하지 않고 시각적 피드백만 처리
+    if (!HasAuthority())
+    {
+        // 피격 이펙트 재생 (필요 시 추가)
 
+
+        PlaySkillAnimation(SkillName); // 애니메이션만 재생
+    }
 }
 
 void ASW_CharacterBase::Multicast_ComboAttack_Implementation()

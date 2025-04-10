@@ -104,6 +104,8 @@ void ASW_Dubu::OnRightHandOverlap(UPrimitiveComponent* OverlappedComponent, AAct
 {
 	if (OtherActor && OtherActor != this && !AlreadyHitActors.Contains(OtherActor))
 	{
+		if (!HasAuthority()) return; 
+
 		int32 Damage = FMath::RoundToInt(AttackDamage * 1.f);
 
 		if (CurrentComboIndex == 0) // 1타
@@ -127,6 +129,8 @@ void ASW_Dubu::OnLeftHandOverlap(UPrimitiveComponent* OverlappedComponent, AActo
 {
 	if (OtherActor && OtherActor != this && !AlreadyHitActors.Contains(OtherActor))
 	{
+		if (!HasAuthority()) return; 
+
 		int32 Damage = AttackDamage;
 
 		if (CurrentComboIndex == 1) // 1타
@@ -145,6 +149,8 @@ void ASW_Dubu::OnLeftHandOverlap(UPrimitiveComponent* OverlappedComponent, AActo
 
 void ASW_Dubu::RightHandStart()
 {
+	if (!HasAuthority()) return; 
+
 	AlreadyHitActors.Empty(); //  매 콤보마다 초기화
 	RightHandCollider->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 }
@@ -156,6 +162,8 @@ void ASW_Dubu::RightHandEnd()
 
 void ASW_Dubu::LeftHandStart()
 {
+	if (!HasAuthority()) return;
+
 	AlreadyHitActors.Empty(); //  여기서도 초기화
 	LeftHandCollider->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 }
@@ -215,7 +223,6 @@ void ASW_Dubu::OnDashBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor
 // 점프 공격용 =================================================================================
 void ASW_Dubu::JumpAttack()
 {
-	if (!GetCharacterMovement()->IsFalling()) return;
 	if (bIsLocked) return;
 
 	bIsJumpAttacking = true;

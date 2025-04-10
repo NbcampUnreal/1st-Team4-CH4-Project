@@ -149,6 +149,12 @@ protected:
 
     UPROPERTY(VisibleAnywhere, Category = "Movement")
     FVector VelocityLastFrame;
+
+
+    // 리플리케이션 데미지 중복 방지용
+    UPROPERTY()
+    TSet<FName> SkillsAppliedThisFrame;
+
     
 
 

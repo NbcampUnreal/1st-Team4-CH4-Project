@@ -115,6 +115,8 @@ void ASW_Brall::OnSwordOverlap(UPrimitiveComponent* OverlappedComponent, AActor*
     UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
     bool bFromSweep, const FHitResult& SweepResult)
 {
+    if (!HasAuthority()) return;
+
     if (OtherActor && OtherActor != this && !AlreadyHitActors.Contains(OtherActor))
     {
         int32 Damage = FMath::RoundToInt(AttackDamage * 1.f);
@@ -131,6 +133,8 @@ void ASW_Brall::OnSwordOverlap(UPrimitiveComponent* OverlappedComponent, AActor*
 
 void ASW_Brall::SwordAttackStart()
 {
+    if (!HasAuthority()) return;
+
     AlreadyHitActors.Empty();
 
     if (SwordCollider)  // null 체크 추가
@@ -206,7 +210,6 @@ void ASW_Brall::OnDashBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActo
 // 점프 공격용 ================================================================================
 void ASW_Brall::JumpAttack()
 {
-    if (!GetCharacterMovement()->IsFalling()) return;
     if (bIsLocked) return;
 
     bIsJumpAttacking = true;
