@@ -8,9 +8,9 @@
 ASW_Void::ASW_Void()
 {
 	
-	static ConstructorHelpers::FObjectFinder<UAnimMontage> Combo1(TEXT("/Game/Characters/JSH/Void/NewFolder/AM_Void_Combo1.AM_Void_Combo1"));
-	static ConstructorHelpers::FObjectFinder<UAnimMontage> Combo2(TEXT("/Game/Characters/JSH/Void/NewFolder/AM_Void_Combo2.AM_Void_Combo2"));
-	static ConstructorHelpers::FObjectFinder<UAnimMontage> Combo3(TEXT("/Game/Characters/JSH/Void/NewFolder/AM_Void_Combo3.AM_Void_Combo3"));
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> Combo1(TEXT("/Game/Characters/Void/Animation/ComboAttack/AM_Void_Combo1.AM_Void_Combo1"));
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> Combo2(TEXT("/Game/Characters/Void/Animation/ComboAttack/AM_Void_Combo2.AM_Void_Combo2"));
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> Combo3(TEXT("/Game/Characters/Void/Animation/ComboAttack/AM_Void_Combo3.AM_Void_Combo3"));
 
 	if (Combo1.Succeeded()) ComboMontages.Add(Combo1.Object);
 	if (Combo2.Succeeded()) ComboMontages.Add(Combo2.Object);

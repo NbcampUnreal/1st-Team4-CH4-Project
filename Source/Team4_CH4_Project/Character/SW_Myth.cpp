@@ -8,9 +8,9 @@
 ASW_Myth::ASW_Myth()
 {
 	
-	static ConstructorHelpers::FObjectFinder<UAnimMontage> Combo1(TEXT("/Game/Characters/JSH/Myth/NewFolder/AM_Myth_Combo1.AM_Myth_Combo1"));
-	static ConstructorHelpers::FObjectFinder<UAnimMontage> Combo2(TEXT("/Game/Characters/JSH/Myth/NewFolder/AM_Myth_Combo2.AM_Myth_Combo2"));
-	static ConstructorHelpers::FObjectFinder<UAnimMontage> Combo3(TEXT("/Game/Characters/JSH/Myth/NewFolder/AM_Myth_Combo3.AM_Myth_Combo3"));
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> Combo1(TEXT("/Game/Characters/Myth/Animation/ComboAttack/AM_Myth_Combo1.AM_Myth_Combo1"));
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> Combo2(TEXT("/Game/Characters/Myth/Animation/ComboAttack/AM_Myth_Combo2.AM_Myth_Combo2"));
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> Combo3(TEXT("/Game/Characters/Myth/Animation/ComboAttack/AM_Myth_Combo3.AM_Myth_Combo3"));
 
 	if (Combo1.Succeeded()) ComboMontages.Add(Combo1.Object);
 	if (Combo2.Succeeded()) ComboMontages.Add(Combo2.Object);
