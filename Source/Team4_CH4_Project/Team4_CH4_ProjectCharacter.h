@@ -19,6 +19,8 @@ class USW_AttributeSet;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDownTimeTickDelegate, int32, Seconds);
+
 UCLASS(config=Game)
 class ATeam4_CH4_ProjectCharacter : public ACharacter
 {
@@ -50,9 +52,10 @@ class ATeam4_CH4_ProjectCharacter : public ACharacter
 
 public:
 	ATeam4_CH4_ProjectCharacter();
-	
+
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void OnRep_PlayerState() override;
+
 
 protected:
 

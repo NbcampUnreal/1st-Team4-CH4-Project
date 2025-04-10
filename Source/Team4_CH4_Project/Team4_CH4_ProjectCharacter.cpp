@@ -15,6 +15,7 @@
 #include "Team4_CH4_Project/GameAbilitySystem/Libraries/SW_AbilitySystemLibrary.h"
 #include "Team4_CH4_Project/GameAbilitySystem/AbilitySystemComponent/SW_AbilitySystemComponent.h"
 
+
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
 //////////////////////////////////////////////////////////////////////////
@@ -186,4 +187,5 @@ void ATeam4_CH4_ProjectCharacter::Look(const FInputActionValue& Value)
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
+
 }
