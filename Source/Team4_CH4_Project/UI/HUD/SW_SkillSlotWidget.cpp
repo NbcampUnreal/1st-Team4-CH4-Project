@@ -87,7 +87,10 @@ void USW_SkillSlotWidget::UpdateSkill1TimeText()
 	if (Skill1TimeText && GetWorld())
 	{
 		float RemainingTime = GetWorld()->GetTimerManager().GetTimerRemaining(Skill1TimerHandle);
-		FText RemainingTimeText = FText::FromString(FString::Printf(TEXT("%.0f"), RemainingTime));
+		FText RemainingTimeText = FText::FromString(
+			RemainingTime < 1.f ?
+			FString::Printf(TEXT("%.1f"), RemainingTime) :
+			FString::Printf(TEXT("%d"), FMath::TruncToInt32(RemainingTime)));
 		Skill1TimeText->SetText(RemainingTimeText);
 	}
 }
