@@ -15,7 +15,10 @@ public class Team4_CH4_Project : ModuleRules
             "Slate",
             "SlateCore",
             "EnhancedInput", 
-            "AnimGraphRuntime"   
+            "AnimGraphRuntime",
+            "GameplayAbilities",
+            "GameplayTasks",
+            "GameplayTags"
         });
 
         PublicIncludePaths.AddRange(new string[] {

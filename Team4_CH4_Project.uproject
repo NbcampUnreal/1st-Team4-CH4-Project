@@ -14,7 +14,8 @@
 				"CoreUObject",
 				"UMG",
 				"Engine",
-				"ModelViewViewModel"
+				"ModelViewViewModel",
+				"GameplayAbilities"
 			]
 		}
 	],
@@ -27,19 +28,7 @@
 			]
 		},
 		{
-			"Name": "PCG",
-			"Enabled": true
-		},
-		{
-			"Name": "PCGExternalDataInterop",
-			"Enabled": true
-		},
-		{
-			"Name": "PCGGeometryScriptInterop",
-			"Enabled": true
-		},
-		{
-			"Name": "PCGExtendedToolkit",
+			"Name": "GameplayAbilities",
 			"Enabled": true
 		},
 		{
