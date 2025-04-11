@@ -23,7 +23,8 @@ public class Team4_CH4_Project : ModuleRules
 
         PublicIncludePaths.AddRange(new string[] {
             "Team4_CH4_Project/Character",
-            "Team4_CH4_Project/Animation"
+            "Team4_CH4_Project/Animation",
+            "Team4_CH4_Project"
         });
 
     }

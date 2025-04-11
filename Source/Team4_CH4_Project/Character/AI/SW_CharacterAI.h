@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Character/SW_CharacterBase.h"
+#include "Team4_CH4_Project/Character/SW_CharacterBase.h"
 #include "SW_CharacterAI.generated.h"
 
 

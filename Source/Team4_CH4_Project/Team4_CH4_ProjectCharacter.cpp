@@ -10,7 +10,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
-#include "Team4_CH4_Project/Game/PlayerState/SW_PlayerState.h"
+#include "Team4_CH4_Project/Game/PlayerState/SW_TestPlayerState.h"
 #include "Team4_CH4_Project/GameAbilitySystem/Data/SW_TestCharacterClassInfo.h"
 #include "Team4_CH4_Project/GameAbilitySystem/Libraries/SW_TestAbilitySystemLibrary.h"
 #include "Team4_CH4_Project/GameAbilitySystem/AbilitySystemComponent/SW_TestAbilitySystemComponent.h"
@@ -115,7 +115,7 @@ void ATeam4_CH4_ProjectCharacter::SetupPlayerInputComponent(UInputComponent* Pla
 
 void ATeam4_CH4_ProjectCharacter::InitAbilityActorInfo()
 {
-	if (ASW_PlayerState* SWPlayerState = GetPlayerState<ASW_PlayerState>())
+	if (ASW_TestPlayerState* SWPlayerState = GetPlayerState<ASW_TestPlayerState>())
 	{
 		SWAbilitySystemComp = SWPlayerState->GetSW_AbilitySystemComponent();
 		SWAttributes = SWPlayerState->GetSW_Attributes();

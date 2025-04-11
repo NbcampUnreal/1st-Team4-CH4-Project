@@ -468,7 +468,7 @@ void ASW_CharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
     DOREPLIFETIME(ASW_CharacterBase, bIsLocked);
     DOREPLIFETIME(ASW_CharacterBase, bIsAttacking);
     DOREPLIFETIME(ASW_CharacterBase, bIsMovementLocked);
-    DOREPLIFETIME(ASW_CharacterBase, bDaed);
+    DOREPLIFETIME(ASW_CharacterBase, bDead);
 }
 
 void ASW_CharacterBase::OnRep_Health()

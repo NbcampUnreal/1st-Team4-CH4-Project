@@ -1,10 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Actor/SW_EffectActor.h"
+#include "Team4_CH4_Project/Actor/SW_EffectActor.h"
 #include "Components/SphereComponent.h"
 #include "AbilitySystemInterface.h"
-#include "AbilitySystem/SW_AttributeSet.h"
+#include "Team4_CH4_Project/AbilitySystem/SW_AttributeSet.h"
 
 ASW_EffectActor::ASW_EffectActor()
 {

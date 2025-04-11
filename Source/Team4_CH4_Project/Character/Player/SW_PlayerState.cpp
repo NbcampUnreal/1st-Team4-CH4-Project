@@ -2,8 +2,8 @@
 
 
 #include "SW_PlayerState.h"
-#include "AbilitySystem/SW_AbilitySystemComponent.h"
-#include "AbilitySystem/SW_AttributeSet.h"
+#include "Team4_CH4_Project/AbilitySystem/SW_AbilitySystemComponent.h"
+#include "Team4_CH4_Project/AbilitySystem/SW_AttributeSet.h"
 
 ASW_PlayerState::ASW_PlayerState()
 {

@@ -3,20 +3,20 @@
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
 #include "GameFramework/PlayerState.h"
-#include "SW_PlayerState.generated.h"
+#include "SW_TestPlayerState.generated.h"
 
 
 class USW_TestAbilitySystemComponent;
 class USW_TestAttributeSet;
 
 UCLASS()
-class TEAM4_CH4_PROJECT_API ASW_PlayerState : public APlayerState, public IAbilitySystemInterface
+class TEAM4_CH4_PROJECT_API ASW_TestPlayerState : public APlayerState, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
 public:
 
-	ASW_PlayerState();
+	ASW_TestPlayerState();
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
 	UFUNCTION(BlueprintPure)
