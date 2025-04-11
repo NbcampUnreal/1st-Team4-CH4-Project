@@ -19,4 +19,6 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category= "Custom Values|Class Defaults")
 	TObjectPtr<USW_CharacterClassInfo> ClassDefaults;
+
+	virtual void OnPostLogin(AController* NewPlayer) override;
 };
