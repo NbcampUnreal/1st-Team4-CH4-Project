@@ -10,6 +10,11 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "Team4_CH4_Project/Game/PlayerState/SW_PlayerState.h"
+#include "Team4_CH4_Project/GameAbilitySystem/Data/SW_CharacterClassInfo.h"
+#include "Team4_CH4_Project/GameAbilitySystem/Libraries/SW_AbilitySystemLibrary.h"
+#include "Team4_CH4_Project/GameAbilitySystem/AbilitySystemComponent/SW_AbilitySystemComponent.h"
+
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -54,6 +59,22 @@ ATeam4_CH4_ProjectCharacter::ATeam4_CH4_ProjectCharacter()
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
 
+void ATeam4_CH4_ProjectCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+	if (HasAuthority())
+	{
+		InitAbilityActorInfo();
+	}
+}
+
+void ATeam4_CH4_ProjectCharacter::OnRep_PlayerState()
+{
+	Super::OnRep_PlayerState();
+
+	InitAbilityActorInfo();
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Input
 
@@ -92,6 +113,46 @@ void ATeam4_CH4_ProjectCharacter::SetupPlayerInputComponent(UInputComponent* Pla
 	}
 }
 
+void ATeam4_CH4_ProjectCharacter::InitAbilityActorInfo()
+{
+	if (ASW_PlayerState* SWPlayerState = GetPlayerState<ASW_PlayerState>())
+	{
+		SWAbilitySystemComp = SWPlayerState->GetSW_AbilitySystemComponent();
+		SWAttributes = SWPlayerState->GetSW_Attributes();
+
+		if (IsValid(SWAbilitySystemComp))
+		{
+			SWAbilitySystemComp->InitAbilityActorInfo(SWPlayerState, this); 
+			
+
+			if (HasAuthority()) 
+			{
+				InitClassDefaults();
+			}
+		}
+	}
+}
+
+void ATeam4_CH4_ProjectCharacter::InitClassDefaults()
+{
+	if (!CharacterTag.IsValid())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("NO CHARACTER TAG SELECTED IN THIS CHARACTER %s"), *GetNameSafe(this));
+	}
+	else if (USW_CharacterClassInfo* ClassInfo = USW_AbilitySystemLibrary::GetCharacterClassDefaultInfo(this))
+	{
+		if (const FCharacterClassDefaultInfo* SelectedClassInfo = ClassInfo->ClassDefaultInfoMap.Find(CharacterTag))
+		{
+			if (IsValid(SWAbilitySystemComp))
+			{
+				SWAbilitySystemComp->AddCharacterAbilities(SelectedClassInfo->StartingAbilities);
+				SWAbilitySystemComp->AddCharacterPassiveAbilities(SelectedClassInfo->StartingPassive);
+				SWAbilitySystemComp->InitializeDefaultAttribute(SelectedClassInfo->DefaultAttribute);
+			}
+		}
+	}
+}
+
 void ATeam4_CH4_ProjectCharacter::Move(const FInputActionValue& Value)
 {
 	// input is a Vector2D
@@ -126,4 +187,5 @@ void ATeam4_CH4_ProjectCharacter::Look(const FInputActionValue& Value)
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
+
 }
