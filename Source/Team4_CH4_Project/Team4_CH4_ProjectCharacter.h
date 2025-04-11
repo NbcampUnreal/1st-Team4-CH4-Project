@@ -14,8 +14,8 @@ class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
 
-class USW_AbilitySystemComponent;
-class USW_AttributeSet;
+class USW_TestAbilitySystemComponent;
+class USW_TestAttributeSet;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
@@ -71,10 +71,10 @@ protected:
 private:
 
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	TObjectPtr<USW_AbilitySystemComponent> SWAbilitySystemComp;
+	TObjectPtr<USW_TestAbilitySystemComponent> SWAbilitySystemComp;
 
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	TObjectPtr<USW_AttributeSet> SWAttributes;
+	TObjectPtr<USW_TestAttributeSet> SWAttributes;
 
 	UPROPERTY(EditAnywhere, Category = "Custom Values|Character Info") // �ð迡 ��ġ�� �ν��Ͻ� ������ ����. ��Ȯ���� � ���������� �÷��̾ ���迡 �ٷ� ��ġ�ϰ� �ʹٸ� EditAnywhere �� ����ؾ��Ѵ�.
 	FGameplayTag CharacterTag;

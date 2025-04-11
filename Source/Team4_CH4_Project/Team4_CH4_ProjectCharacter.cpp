@@ -11,9 +11,9 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "Team4_CH4_Project/Game/PlayerState/SW_PlayerState.h"
-#include "Team4_CH4_Project/GameAbilitySystem/Data/SW_CharacterClassInfo.h"
-#include "Team4_CH4_Project/GameAbilitySystem/Libraries/SW_AbilitySystemLibrary.h"
-#include "Team4_CH4_Project/GameAbilitySystem/AbilitySystemComponent/SW_AbilitySystemComponent.h"
+#include "Team4_CH4_Project/GameAbilitySystem/Data/SW_TestCharacterClassInfo.h"
+#include "Team4_CH4_Project/GameAbilitySystem/Libraries/SW_TestAbilitySystemLibrary.h"
+#include "Team4_CH4_Project/GameAbilitySystem/AbilitySystemComponent/SW_TestAbilitySystemComponent.h"
 
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -139,7 +139,7 @@ void ATeam4_CH4_ProjectCharacter::InitClassDefaults()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("NO CHARACTER TAG SELECTED IN THIS CHARACTER %s"), *GetNameSafe(this));
 	}
-	else if (USW_CharacterClassInfo* ClassInfo = USW_AbilitySystemLibrary::GetCharacterClassDefaultInfo(this))
+	else if (USW_TestCharacterClassInfo* ClassInfo = USW_TestAbilitySystemLibrary::GetCharacterClassDefaultInfo(this))
 	{
 		if (const FCharacterClassDefaultInfo* SelectedClassInfo = ClassInfo->ClassDefaultInfoMap.Find(CharacterTag))
 		{
