@@ -91,7 +91,7 @@ public:
     UPROPERTY(EditAnywhere, Category = "Animation")
     UAnimMontage* DeathMontage;
     //===================================================
-    
+
 
 
     // ===================== 콤보 시스템용 ==============================
@@ -155,7 +155,6 @@ protected:
     UPROPERTY()
     TSet<FName> SkillsAppliedThisFrame;
 
-    
 
 
     // =======================캐릭터 체력 ============================
@@ -166,8 +165,17 @@ protected:
     UPROPERTY(VisibleAnywhere, ReplicatedUsing = OnRep_Health, Category = "Stat")
     int32 Health;
 
+    UPROPERTY(VisibleAnywhere, ReplicatedUsing = OnRep_Death, Category = "Stat")
+    bool bDead;
+
     UFUNCTION()
     void OnRep_Health();
+
+    UFUNCTION()
+    void OnRep_Death();
+
+    UFUNCTION()
+    void Character_Die();
     // ==============================================================
 
 

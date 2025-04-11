@@ -441,18 +441,13 @@ float ASW_CharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Dama
     if (DamageToApply <= 0) return 0.f;
 
     Health -= DamageToApply;
-    UpdateHealthBar();
+    //UpdateHealthBar();
 
     if (Health <= 0)
     {
         Health = 0;
-        SetLockedState(true);
-        if (DeathMontage)
-        {
-            PlayAnimMontage(DeathMontage);
-        }
+        Character_Die();
 
-        SetLifeSpan(2.f);
     }
     else if (HitReactionMontage && !bIsLocked)
     {
@@ -461,6 +456,7 @@ float ASW_CharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 
     return DamageToApply;
 }
+
 
 // 리플리케이션되는 함수들================================================================================
 
@@ -472,12 +468,33 @@ void ASW_CharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
     DOREPLIFETIME(ASW_CharacterBase, bIsLocked);
     DOREPLIFETIME(ASW_CharacterBase, bIsAttacking);
     DOREPLIFETIME(ASW_CharacterBase, bIsMovementLocked);
+    DOREPLIFETIME(ASW_CharacterBase, bDaed);
 }
 
 void ASW_CharacterBase::OnRep_Health()
 {
     UpdateHealthBar();
 }
+
+void ASW_CharacterBase::OnRep_Death()
+{
+    SetLockedState(true);
+    if (DeathMontage)
+    {
+        PlayAnimMontage(DeathMontage);
+    }
+}
+
+void ASW_CharacterBase::Character_Die()
+{
+    if (HasAuthority() && !bDead) // 서버에서만 처리
+    {
+        bDead = true;
+    }
+
+    SetLifeSpan(2.f);
+}
+
 
 void ASW_CharacterBase::Server_PlaySkill_Implementation(FName SkillName)
 {
@@ -488,12 +505,32 @@ void ASW_CharacterBase::Server_PlaySkill_Implementation(FName SkillName)
         ComboAttack();
         Multicast_ComboAttack();
         return;
+
     }
 
     if (SkillName == "JumpAttack")
     {
         if (!GetCharacterMovement()->IsFalling()) return;
         JumpAttack();
+        PlaySkillAnimation(SkillName);
+        Multicast_PlaySkill(SkillName);
+
+        if (SkillName == "DashSkill") DashSkill();
+        else if (SkillName == "JumpAttack")
+        {
+            if (GetCharacterMovement()->IsFalling())
+            {
+                JumpAttack();
+            }
+        }
+        else if (SkillName == "NormalSkill")
+        {
+
+        }
+        else if (SkillName == "SpecialSkill")
+        {
+
+        }
     }
     else if (SkillName == "DashSkill")
     {
@@ -514,7 +551,7 @@ void ASW_CharacterBase::Server_PlaySkill_Implementation(FName SkillName)
 
 void ASW_CharacterBase::Multicast_PlaySkill_Implementation(FName SkillName)
 {
-    if (!HasAuthority()) 
+    if (!HasAuthority())
     {
         PlaySkillAnimation(SkillName);
     }
