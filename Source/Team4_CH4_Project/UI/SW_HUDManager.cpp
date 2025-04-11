@@ -23,23 +23,16 @@ void USW_HUDManager::Initialize(FSubsystemCollectionBase& Collection)
 
 	FSoftObjectPath SkillTablePath(TEXT("/Game/UI/CharacterData/DT_SkillData.DT_SkillData"));
 	SkillDataTable = Cast<UDataTable>(SkillTablePath.TryLoad());
-
-	InitializeAllViewModels();
 }
 
 void USW_HUDManager::InitializeHUD()
 {
-	//InitializeAllViewModels();
+	InitializeAllViewModels();
 	if (!HUDWidget)
 	{
 		if (UClass* LoadedHUDWidgetClass = HUDWidgetClassPtr.LoadSynchronous())
 		{
 			HUDWidget = CreateWidget<UUserWidget>(GetGameInstance(), LoadedHUDWidgetClass, TEXT("HUDWidget"));
-			if (IsValid(HUDWidget))
-			{
-				HUDWidget->AddToViewport();
-				HideHUD();
-			}
 		}
 	}
 }
@@ -48,6 +41,7 @@ void USW_HUDManager::DisplayHUD()
 {
 	if (IsValid(HUDWidget))
 	{
+		HUDWidget->AddToViewport();
 		HUDWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	}
 }
@@ -67,7 +61,7 @@ void USW_HUDManager::RemoveHUD()
 		HUDWidget->RemoveFromParent();
 		HUDWidget = nullptr;
 	}
-	//RemoveAllViewModels();
+	RemoveAllViewModels();
 }
 
 UUserWidget* USW_HUDManager::GetHUDWidget()

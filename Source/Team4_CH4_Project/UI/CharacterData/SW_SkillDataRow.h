@@ -13,23 +13,23 @@ struct FSkillDataRow : public FTableRowBase
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	ECharacterType CharacterType;
+	ECharacterType CharacterType = ECharacterType::MAX;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UTexture2D* AttackIcon;
+	UTexture2D* AttackIcon = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UTexture2D* GuardIcon;
+	UTexture2D* GuardIcon = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UTexture2D* DashIcon;
+	UTexture2D* DashIcon = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UTexture2D* Skill1Icon;
+	UTexture2D* Skill1Icon = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UTexture2D* Skill2Icon;
+	UTexture2D* Skill2Icon = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UTexture2D* Skill3Icon;
+	UTexture2D* Skill3Icon = nullptr;
 };

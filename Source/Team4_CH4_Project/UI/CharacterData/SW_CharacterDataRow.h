@@ -13,7 +13,7 @@ struct FCharacterDataRow : public FTableRowBase
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	ECharacterType CharacterType;
+	ECharacterType CharacterType = ECharacterType::MAX;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FText DisplayName;
@@ -22,17 +22,17 @@ public:
 	UTexture2D* CharacterImage = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float Damage;
+	float Damage = 0.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float Defense;
+	float Defense = 0.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float Speed;
+	float Speed = 0.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 MaxHealth;
+	int32 MaxHealth = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 MaxStamina;
+	int32 MaxStamina = 0;
 };
