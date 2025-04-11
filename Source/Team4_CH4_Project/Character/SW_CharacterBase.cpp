@@ -69,9 +69,7 @@ ASW_CharacterBase::ASW_CharacterBase()
 
     bIsLocked = false;
     CurrentComboIndex = 0;
-    bCanNextCombo = true;
-    bPendingNextCombo = false;
-
+ 
     // MaxHealth 초기화 (자식 클래스에서 설정 가능하도록 기본값)
     MaxHealth = 100;
     Health = MaxHealth;
@@ -135,37 +133,14 @@ void ASW_CharacterBase::Player_Jump(const FInputActionValue& _InputValue)
 
 void ASW_CharacterBase::ComboAttack()
 {
-    if (!GetMesh() || !ComboMontages.IsValidIndex(CurrentComboIndex)) return;
+    if (!ComboMontages.IsValidIndex(CurrentComboIndex)) return;
 
-    if (bIsAttacking)
-    {
-        // 콤보 입력 가능 타이밍일 때만 예약
-        if (bCanNextCombo)
-        {
-            bPendingNextCombo = true;
-        }
-        return;
-    }
+    FString ComboKey = FString::Printf(TEXT("Combo%d"), CurrentComboIndex + 1);
+    FSkillData* SkillData = SkillDataMap.Find(*ComboKey);
+    if (!SkillData) return;
 
-    // 콤보 시작
-    UAnimMontage* MontageToPlay = ComboMontages[CurrentComboIndex];
-    if (MontageToPlay)
-    {
-        PlayAnimMontage(MontageToPlay);
-        bIsAttacking = true;
-        bCanNextCombo = false;
-        bPendingNextCombo = false;
-
-        float MontageLength = MontageToPlay->GetPlayLength();
-        FTimerHandle ComboCheckTimer;
-        GetWorldTimerManager().SetTimer(
-            ComboCheckTimer,
-            this,
-            &ASW_CharacterBase::CheckPendingCombo,
-            MontageLength * 0.8f,
-            false
-        );
-    }
+    PlayAnimMontage(ComboMontages[CurrentComboIndex]);
+    SetLockedState(true);
 }
 
 void ASW_CharacterBase::JumpAttack()
@@ -359,22 +334,21 @@ void ASW_CharacterBase::PlaySkillAnimation(FName SkillName)
     if (MontagePtr && *MontagePtr)
     {
         PlayAnimMontage(*MontagePtr);
+        return;
     }
-    else
+
+    if (USW_PlayerAnimInstance* Anim = Cast<USW_PlayerAnimInstance>(GetMesh()->GetAnimInstance()))
     {
-        if (USW_PlayerAnimInstance* Anim = Cast<USW_PlayerAnimInstance>(GetMesh()->GetAnimInstance()))
+        if (Anim->Implements<USW_PlayerAnimLayerInterface>())
         {
-            if (Anim->Implements<USW_PlayerAnimLayerInterface>())
-            {
-                if (SkillName == FName("JumpAttack"))
-                    ISW_PlayerAnimLayerInterface::Execute_PlayJumpAttack(Anim);
-                else if (SkillName == FName("DashSkill"))
-                    ISW_PlayerAnimLayerInterface::Execute_PlayDashSkill(Anim);
-                else if (SkillName == FName("NormalSkill"))
-                    ISW_PlayerAnimLayerInterface::Execute_PlayNormalSkill(Anim);
-                else if (SkillName == FName("SpecialSkill"))
-                    ISW_PlayerAnimLayerInterface::Execute_PlaySpecialSkill(Anim);
-            }
+            if (SkillName == FName("JumpAttack"))
+                ISW_PlayerAnimLayerInterface::Execute_PlayJumpAttack(Anim);
+            else if (SkillName == FName("DashSkill"))
+                ISW_PlayerAnimLayerInterface::Execute_PlayDashSkill(Anim);
+            else if (SkillName == FName("NormalSkill"))
+                ISW_PlayerAnimLayerInterface::Execute_PlayNormalSkill(Anim);
+            else if (SkillName == FName("SpecialSkill"))
+                ISW_PlayerAnimLayerInterface::Execute_PlaySpecialSkill(Anim);
         }
     }
 }
@@ -397,31 +371,22 @@ void ASW_CharacterBase::SetMovementLocked(bool bLocked)
     }
 }
 
-void ASW_CharacterBase::CheckPendingCombo()
+void ASW_CharacterBase::AdvanceCombo()
 {
-    if (bPendingNextCombo)
+    CurrentComboIndex++;
+    if (!ComboMontages.IsValidIndex(CurrentComboIndex))
     {
-        bPendingNextCombo = false;
-        CurrentComboIndex = (CurrentComboIndex + 1) % ComboMontages.Num();
-        bIsAttacking = false; // 다음 콤보 재생 허용
-        ComboAttack();        // 다음 콤보 실행
+        ResetCombo();
+        return;
     }
-    else
-    {
-        // 콤보 종료 처리
-        bIsAttacking = false;
-        bCanNextCombo = false;
-        bPendingNextCombo = false;
-        CurrentComboIndex = 0;
-    }
+
+    PlayAnimMontage(ComboMontages[CurrentComboIndex]);
+    SetLockedState(true);
 }
 
 void ASW_CharacterBase::ResetCombo()
 {
     CurrentComboIndex = 0;
-    bCanNextCombo = true;
-    bPendingNextCombo = false;
-    SetLockedState(false);
 }
 
 void ASW_CharacterBase::UpdateHealthBar()

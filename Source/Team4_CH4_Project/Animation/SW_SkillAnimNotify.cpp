@@ -12,14 +12,27 @@ void USkillAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBas
         {
             if (NotifyEventName == "BeginSkill")
             {
-                Character->SetLockedState(true); // 전체 입력 차단
+                Character->SetLockedState(true);     // 전체 인풋 차단
+                Character->bComboInputActive = false;
+                Character->bComboQueued = false;
             }
             else if (NotifyEventName == "EndSkill")
             {
-                Character->SetLockedState(false); // 전체 입력 해제
+                Character->SetLockedState(false);
+                Character->bComboInputActive = false;
+
+                if (Character->bComboQueued)
+                {
+                    Character->bComboQueued = false;
+                    Character->AdvanceCombo(); // 다음 콤보 실행
+                }
+                else
+                {
+                    Character->ResetCombo();   // 종료
+                }
             }
 
-            // 공격이 적용되는 노티파이
+            // 스킬 공격이 적용되는 노티파이 (스킬이름을 잘 넣어주어야한다.)
             else if (NotifyEventName == "ApplyDamage")
             {
                 if (Character->HasAuthority()) // 서버에서만 실행
@@ -28,10 +41,9 @@ void USkillAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBas
                 }
             }
 
-           // 캐릭터 콤보용 노티파이
             else if (NotifyEventName == "ComboInput")
             {
-                Character->bCanNextCombo = true; // 콤보 입력 가능
+                Character->bComboInputActive = true; // 콤보 입력 허용 타이밍
             }
 
             // 근접캐릭터 평타시 앞으로가는 거리
@@ -48,39 +60,6 @@ void USkillAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBas
                     Brall->LaunchCharacter(Forward * 1000.f, true, false);
                 }
             }
-            // 두부 평타 노티파이
-            else if (NotifyEventName == "RightHandStart")
-            {
-                if (ASW_Dubu* Dubu = Cast<ASW_Dubu>(Character))
-                {
-                    Dubu->SetMovementLocked(true); // 이동만 멈춤
-                    Dubu->RightHandStart();
-                }
-            }
-            else if (NotifyEventName == "RightHandEnd")
-            {
-                if (ASW_Dubu* Dubu = Cast<ASW_Dubu>(Character))
-                {
-                    Dubu->SetMovementLocked(false); // 이동 재개
-                    Dubu->RightHandEnd();
-                }
-            }
-            else if (NotifyEventName == "LeftHandStart")
-            {
-                if (ASW_Dubu* Dubu = Cast<ASW_Dubu>(Character))
-                {
-                    Dubu->SetMovementLocked(true); // 이동만 멈춤
-                    Dubu->LeftHandStart();
-                }
-            }
-            else if (NotifyEventName == "LeftHandEnd")
-            {
-                if (ASW_Dubu* Dubu = Cast<ASW_Dubu>(Character))
-                {
-                    Dubu->SetMovementLocked(false); // 이동 재개
-                    Dubu->LeftHandEnd();
-                }
-            }
 
             // 두부 궁극기 스킬
             else if (NotifyEventName == "ThrowActor")
@@ -88,25 +67,6 @@ void USkillAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBas
                 if (ASW_Dubu* Dubu = Cast<ASW_Dubu>(Character))
                 {
                     Dubu->ThrowUltimateSkill();
-                }
-            }
-
-
-            // 브랄 평타 노티파이
-            else if (NotifyEventName == "SwordStart")
-            {
-                if (ASW_Brall* Brall = Cast<ASW_Brall>(Character))
-                {
-                    Brall->SetMovementLocked(true); // 이동만 멈춤
-                    Brall->SwordAttackStart();
-                }
-            }
-            else if (NotifyEventName == "SwordEnd")
-            {
-                if (ASW_Brall* Brall = Cast<ASW_Brall>(Character))
-                {
-                    Brall->SetMovementLocked(false); // 이동 재개
-                    Brall->SwordAttackEnd();
                 }
             }
         }

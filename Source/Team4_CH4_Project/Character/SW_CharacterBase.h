@@ -101,15 +101,9 @@ public:
     UPROPERTY(VisibleAnywhere, Category = "Combo")
     int32 CurrentComboIndex = 0;
 
-    UPROPERTY(VisibleAnywhere, Category = "Combo")
-    bool bCanNextCombo = true;
+    bool bComboInputActive = false; // ComboInput 노티파이 도달 여부
 
-    UPROPERTY(VisibleAnywhere, Category = "Combo")
-    bool bPendingNextCombo = false;
-
-    // 점프중에 공격가능한지 확인하는 변수
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
-    bool bIsJumpAttacking;
+    bool bComboQueued = false;      // 키가 눌렸는지 저장
 
     // 공격중인지 확인하는 변수
     UPROPERTY(Replicated)
@@ -120,6 +114,15 @@ public:
     bool bIsMovementLocked;
     // ====================================================================
 
+
+    
+    // ============ 점프중에 공격가능한지 확인하는 변수 ======================
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
+    bool bIsJumpAttacking;
+    // ====================================================================
+  
+
+
     // === 스킬 애니메이션 관리 ===
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
     TMap<FName, UAnimMontage*> SkillMontages;
@@ -127,6 +130,10 @@ public:
     // 애니메이션 재생 중 입력 차단 상태
     UPROPERTY(Replicated)
     bool bIsLocked;
+
+    // 스킬 실행 중 이미 맞은 적을 저장하는 변수
+    UPROPERTY()
+    TSet<AActor*> AlreadyHitActors;
 
 protected:
 
@@ -174,11 +181,9 @@ protected:
 
 public:
 
-    // 콤보 평타 리셋용
-    void ResetCombo();
+    void AdvanceCombo();
 
-    // 콤보 평타용으로 콤보 인풋액션 입력시 CurrentIndex증가용 함수
-    void CheckPendingCombo();
+    void ResetCombo();
 
     // 스킬시전중에 다른 입력 못하는 함수
     UFUNCTION(BlueprintCallable)

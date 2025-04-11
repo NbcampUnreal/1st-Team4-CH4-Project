@@ -23,35 +23,11 @@ public:
 	// 대쉬 데미지용 박스 콜리전
 	UPROPERTY(VisibleAnywhere, Category = "Combat")
 	UBoxComponent* DashCollider;
-
-
-	// 손 충돌 처리용 =============================
-	// 오른손
-	UPROPERTY(VisibleAnywhere, Category = "Combat")
-	UBoxComponent* RightHandCollider;
-	// 왼손
-	UPROPERTY(VisibleAnywhere, Category = "Combat")
-	UBoxComponent* LeftHandCollider;
-	// 콤보 중 중복 타격 방지용
-	UPROPERTY()
-	TSet<AActor*> AlreadyHitActors;
 	// ============================================
 
 	// 궁극기용 던지는 액터 변수
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
     TSubclassOf<AActor> ThrowActorClass;
-
-	// 콤보 평타용 오른손 콜리전 데미지 함수
-	UFUNCTION()
-	void OnRightHandOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
-		bool bFromSweep, const FHitResult& SweepResult);
-	
-	// 콤보 평타용 왼손 콜리전 데미지 함수
-	UFUNCTION()
-	void OnLeftHandOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
-		bool bFromSweep, const FHitResult& SweepResult);
 
 	// 대쉬 스킬용 몸 전체 콜리전 데미지 함수
 	UFUNCTION()
@@ -61,11 +37,6 @@ public:
 
 
 public:
-	// 평타 노티파이용
-	void RightHandStart();
-	void RightHandEnd();
-	void LeftHandStart();
-	void LeftHandEnd();
 
 	// 궁극기 스킬용 함수
 	UFUNCTION()

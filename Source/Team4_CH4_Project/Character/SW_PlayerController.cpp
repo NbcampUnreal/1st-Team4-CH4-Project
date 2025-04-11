@@ -103,13 +103,20 @@ void ASW_PlayerController::ComboAttack(const FInputActionValue& InputValue)
 {
     if (ASW_CharacterBase* PlayerCharacter = Cast<ASW_CharacterBase>(GetPawn()))
     {
-        if (!PlayerCharacter->bIsLocked)
+        // 애니메이션 재생중엔 잠금이 걸리지만, ComboInput 노티파이가 활성화된 상태면 입력 저장 허용
+        if (PlayerCharacter->bIsLocked)
+        {
+            if (PlayerCharacter->bComboInputActive)
+            {
+                PlayerCharacter->bComboQueued = true;
+            }
+        }
+        else
         {
             PlayerCharacter->Server_PlaySkill("ComboAttack");
         }
     }
 }
-
 
 void ASW_PlayerController::JumpAttack(const FInputActionValue& InputValue)
 {
