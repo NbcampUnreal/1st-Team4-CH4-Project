@@ -1,19 +1,15 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "AbilitySystemInterface.h"
 #include "InputActionValue.h"
 #include "Components/WidgetComponent.h"
 #include "SW_HP.h"
 #include "GameFramework/DamageType.h"
-#include "UI/Widget/SW_HPBarWidget.h"
 #include "SW_CharacterBase.generated.h"
 
-class UAbilitySystemComponent;
-class UAttributeSet;
+class USpringArmComponent;
+class UCameraComponent;
 class UAnimMontage;
-
-//DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDownTimeTickDelegate, int32, Seconds);
 
 // 스킬 데미지 관련 =================================================================
 UENUM(BlueprintType)
@@ -46,9 +42,10 @@ struct FSkillData
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
     TSubclassOf<AActor> ProjectileClass;
 };
+// =============================================================================
 
-UCLASS(Abstract)
-class TEAM4_CH4_PROJECT_API ASW_CharacterBase : public ACharacter, public IAbilitySystemInterface
+UCLASS()
+class TEAM4_CH4_PROJECT_API ASW_CharacterBase : public ACharacter
 {
     GENERATED_BODY()
 
@@ -56,41 +53,7 @@ public:
     ASW_CharacterBase();
 
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-public:	
-	// Called every frame
-	//virtual void Tick(float DeltaTime) override;
-
-	//// Called to bind functionality to input
-	//virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-	//virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const;
-
-private:
-	// Movement Value
-	UPROPERTY(VisibleAnywhere, Replicated,  Category = "Movement")
-	float GroundSpeed;
-
-	UPROPERTY(VisibleAnywhere, Category = "Movement")
-	FVector Acceleration;
-
-	UPROPERTY(VisibleAnywhere, Category = "Movement")
-	FVector Velocity;
-
-	UPROPERTY(VisibleAnywhere, Category = "Movement")
-	FVector AccelerationLastFrame;
-
-	UPROPERTY(VisibleAnywhere, Category = "Movement")
-	FVector VelocityLastFrame;
-
-	// Skill
-	UPROPERTY(EditAnywhere, Category = "Skill")
-	FTimerHandle  QSkill_DownTime_TimerHandle;
-
-	UPROPERTY(EditAnywhere, Category = "Skill")
-	int32  Skill_DownTime_Remaining;
+    virtual void BeginPlay() override;
 
 public:
     virtual void Tick(float DeltaTime) override;
@@ -106,9 +69,15 @@ public:
     virtual void DashSkill();
 
 public:
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
+    USpringArmComponent* CameraBoom;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
+    UCameraComponent* FollowCamera;
+
     // 체력바
-    /*UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
-    UWidgetComponent* HealthBarWidget;*/
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
+    UWidgetComponent* HealthBarWidget;
 
     // 기본 데미지
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stat")
@@ -122,7 +91,8 @@ public:
     UPROPERTY(EditAnywhere, Category = "Animation")
     UAnimMontage* DeathMontage;
     //===================================================
-    
+
+
 
     // ===================== 콤보 시스템용 ==============================
     UPROPERTY(EditDefaultsOnly, Category = "Combo")
@@ -168,6 +138,19 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     float DefaultMoveSpeed = 600.f;
 
+    UPROPERTY(VisibleAnywhere, Category = "Movement")
+    FVector Acceleration;
+
+    UPROPERTY(VisibleAnywhere, Category = "Movement")
+    FVector Velocity;
+
+    UPROPERTY(VisibleAnywhere, Category = "Movement")
+    FVector AccelerationLastFrame;
+
+    UPROPERTY(VisibleAnywhere, Category = "Movement")
+    FVector VelocityLastFrame;
+
+
 
     // =======================캐릭터 체력 ============================
     UPROPERTY(EditDefaultsOnly, Category = "Stat")
@@ -190,6 +173,8 @@ protected:
     void Character_Die();
     // ==============================================================
 
+
+
 public:
 
     // 콤보 평타 리셋용
@@ -207,8 +192,8 @@ public:
     void SetMovementLocked(bool bLocked);
 
     // 캐릭터 체력바 함수
-    //UFUNCTION(BlueprintCallable)
-    //void UpdateHealthBar();
+    UFUNCTION(BlueprintCallable)
+    void UpdateHealthBar();
 
     // 데미지 처리
     UFUNCTION(BlueprintCallable, Category = "Stat")
@@ -247,42 +232,4 @@ public:
     UFUNCTION(NetMulticast, Reliable)
     void Multicast_ComboAttack();
 
-	/*UFUNCTION(BlueprintCallable, BlueprintPure)
-	bool InAir() const;*/
-
-	// Gameplay Ability System
-protected:
-	UPROPERTY()
-	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
-
-	UPROPERTY()
-	TObjectPtr<UAttributeSet> AttributeSet;
-
-public:
-	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
-	UAttributeSet* GetAttributeSet() const;
-
-// skill
-//public:
-//	UFUNCTION(BlueprintCallable, Category = "Skill")
-//	void StartDownTime(float DownTime);
-//
-//	
-//	UPROPERTY(BlueprintAssignable, Category = "Skill")
-//	FDownTimeTickDelegate OnDownTimeTick;
-
-//public:
-//	FTimerHandle DownTime_TimerHandle;
-//	float RemainingTime;
-
-	//void UpdateCooldown(float _remainingTime);
-
-
-// Widget
-protected:
-    UPROPERTY(EditDefaultsOnly, Category = "UI")
-    TSubclassOf<class UUserWidget> HealthBarWidgetClass;
-
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
-    UWidgetComponent* HealthBarWidgetComp;
 };

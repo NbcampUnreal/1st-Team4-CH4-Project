@@ -1,17 +1,13 @@
 #include "SW_CharacterBase.h"
 #include "GameFramework/CharacterMovementComponent.h"
-
 #include "Net/UnrealNetwork.h"
-#include "Animation/SW_PlayerAnimInstance.h"
-#include "Animation/SW_PlayerAnimLayerInterface.h"
+#include "SW_PlayerAnimInstance.h"
+#include "SW_PlayerAnimLayerInterface.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Engine/DamageEvents.h"
-#include "AbilitySystem/SW_AttributeSet.h"
-#include "UI/SW_HUDManager.h"
-//#include "UI/ViewModels/SW_SkillViewModel.h"
 
 ASW_CharacterBase::ASW_CharacterBase()
 {
@@ -44,42 +40,62 @@ ASW_CharacterBase::ASW_CharacterBase()
         MoveComp->BrakingFriction = 8.f;
     }
 
+    CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
+    CameraBoom->SetupAttachment(RootComponent);
+    CameraBoom->TargetArmLength = 1400.f;
+    CameraBoom->SetRelativeRotation(FRotator(-40.f, 0.f, 0.f));
+    CameraBoom->bUsePawnControlRotation = false;
+    CameraBoom->bInheritYaw = false;
+    CameraBoom->bInheritPitch = false;
+    CameraBoom->bInheritRoll = false;
+    CameraBoom->bDoCollisionTest = false;
+
+    FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
+    FollowCamera->SetupAttachment(CameraBoom);
+    FollowCamera->bUsePawnControlRotation = false;
+
+    HealthBarWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("HealthBar"));
+    HealthBarWidget->SetupAttachment(GetMesh());
+    HealthBarWidget->SetRelativeLocation(FVector(0.f, 0.f, 280.f));
+    HealthBarWidget->SetRelativeRotation(FRotator(180.f, 0.f, 0.f));
+    HealthBarWidget->SetUsingAbsoluteRotation(true);
+    HealthBarWidget->SetWidgetSpace(EWidgetSpace::World);
+    HealthBarWidget->SetDrawSize(FVector2D(200.f, 20.f));
+    HealthBarWidget->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    HealthBarWidget->SetGenerateOverlapEvents(false);
+    HealthBarWidget->SetCastShadow(false);
+    HealthBarWidget->bCastDynamicShadow = false;
+    HealthBarWidget->bAffectDistanceFieldLighting = false;
+
     bIsLocked = false;
     CurrentComboIndex = 0;
     bCanNextCombo = true;
     bPendingNextCombo = false;
 
-    // Hp Widget
-    HealthBarWidgetComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("HpBar"));
-    HealthBarWidgetComp->SetupAttachment(GetMesh());
-    HealthBarWidgetComp->SetWidgetSpace(EWidgetSpace::World);
-    HealthBarWidgetComp->SetRelativeLocation(FVector(0.f, 0.f, 280.f));
+    // MaxHealth 초기화 (자식 클래스에서 설정 가능하도록 기본값)
+    MaxHealth = 100;
+    Health = MaxHealth;
 }
 
 void ASW_CharacterBase::BeginPlay()
 {
     Super::BeginPlay();
-    //UpdateHealthBar();
-
-    if (HealthBarWidgetClass)
-    {
-        UUserWidget* HealthBarWidget = CreateWidget<UUserWidget>(GetWorld(), HealthBarWidgetClass);
-        if (HealthBarWidget)
-        {
-            HealthBarWidgetComp->SetWidget(HealthBarWidget);
-            HealthBarWidgetComp->SetDrawSize(FVector2D(100.f, 20.f));
-            HealthBarWidgetComp->SetUsingAbsoluteRotation(true);
-            HealthBarWidgetComp->SetRelativeRotation(FRotator(180.f, 0.f, 0.f));
-            HealthBarWidgetComp->SetCastShadow(false);
-        }
-    }
+    UpdateHealthBar();
 }
 
 void ASW_CharacterBase::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 
-    // Movement
+    if (HealthBarWidget)
+    {
+        FVector CameraLocation = GetWorld()->GetFirstPlayerController()->PlayerCameraManager->GetCameraLocation();
+        FVector ToCamera = CameraLocation - HealthBarWidget->GetComponentLocation();
+        FRotator LookAtRotation = FRotationMatrix::MakeFromX(ToCamera).Rotator();
+        LookAtRotation.Pitch = 0.f;
+        LookAtRotation.Roll = 0.f;
+    }
+
     AccelerationLastFrame = Acceleration;
     Acceleration = GetCharacterMovement()->GetCurrentAcceleration();
     VelocityLastFrame = Velocity;
@@ -156,27 +172,11 @@ void ASW_CharacterBase::JumpAttack()
 void ASW_CharacterBase::NormalSkill()
 {
     PlaySkillAnimation(FName("NormalSkill"));
-
-    IAbilitySystemInterface* ASCInterface = Cast<IAbilitySystemInterface>(this);
-    const USW_AttributeSet * SW_AttributeSet = Cast<USW_AttributeSet>(ASCInterface->GetAbilitySystemComponent()->GetAttributeSet(USW_AttributeSet::StaticClass()));
-    USW_AttributeSet* MutableAttributeSet = const_cast<USW_AttributeSet*>(SW_AttributeSet);
-    MutableAttributeSet->GetH_DownTime();
-
-    /*if (USW_HUDManager* HUDManager = GetGameInstance()->GetSubsystem<USW_HUDManager>())
-    {
-        if (USW_SkillViewModel* SkillViewModel =
-            Cast<USW_SkillViewModel>(HUDManager->GetViewModel(EViewModelType::SkillViewModel)))
-        {
-            SkillViewModel->Set[Dash / Skill1 등]Down(다운타임값);
-        }
-    }*/
 }
 
 void ASW_CharacterBase::SpecialSkill()
 {
     PlaySkillAnimation(FName("SpecialSkill"));
-
-    // 쿨타임 로직
 }
 
 void ASW_CharacterBase::DashSkill()
@@ -323,6 +323,7 @@ TArray<AActor*> ASW_CharacterBase::GetTargetsInRange_Implementation(FName SkillN
         }
         break;
     }
+
     default:
         break;
     }
@@ -420,16 +421,16 @@ void ASW_CharacterBase::ResetCombo()
     SetLockedState(false);
 }
 
-//void ASW_CharacterBase::UpdateHealthBar()
-//{
-//    if (!HealthBarWidget) return;
-//
-//    USW_HP* HP = Cast<USW_HP>(HealthBarWidget->GetUserWidgetObject());
-//    if (HP)
-//    {
-//        HP->UpdateHealthBar(Health, MaxHealth);
-//    }
-//}
+void ASW_CharacterBase::UpdateHealthBar()
+{
+    if (!HealthBarWidget) return;
+
+    USW_HP* HP = Cast<USW_HP>(HealthBarWidget->GetUserWidgetObject());
+    if (HP)
+    {
+        HP->UpdateHealthBar(Health, MaxHealth);
+    }
+}
 
 float ASW_CharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
@@ -443,7 +444,7 @@ float ASW_CharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Dama
     {
         Health = 0;
         Character_Die();
-        
+
     }
     else if (HitReactionMontage && !bIsLocked)
     {
@@ -453,23 +454,23 @@ float ASW_CharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Dama
     return DamageToApply;
 }
 
+
 // 리플리케이션되는 함수들================================================================================
 
 void ASW_CharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
-
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
     DOREPLIFETIME(ASW_CharacterBase, Health);
     DOREPLIFETIME(ASW_CharacterBase, bIsLocked);
     DOREPLIFETIME(ASW_CharacterBase, bIsAttacking);
     DOREPLIFETIME(ASW_CharacterBase, bIsMovementLocked);
-    DOREPLIFETIME(ASW_CharacterBase, bDead);
+    DOREPLIFETIME(ASW_CharacterBase, bDaed);
 }
 
 void ASW_CharacterBase::OnRep_Health()
 {
-    //UpdateHealthBar();
+    UpdateHealthBar();
 }
 
 void ASW_CharacterBase::OnRep_Death()
@@ -491,14 +492,15 @@ void ASW_CharacterBase::Character_Die()
     SetLifeSpan(2.f);
 }
 
+
 void ASW_CharacterBase::Server_PlaySkill_Implementation(FName SkillName)
 {
     if (bIsLocked) return;
 
     if (SkillName == "ComboAttack")
     {
-        ComboAttack();              
-        Multicast_ComboAttack();    
+        ComboAttack();
+        Multicast_ComboAttack();
     }
     else
     {
@@ -508,9 +510,9 @@ void ASW_CharacterBase::Server_PlaySkill_Implementation(FName SkillName)
         if (SkillName == "DashSkill") DashSkill();
         else if (SkillName == "JumpAttack")
         {
-            if (GetCharacterMovement()->IsFalling()) 
+            if (GetCharacterMovement()->IsFalling())
             {
-                JumpAttack(); 
+                JumpAttack();
             }
         }
         else if (SkillName == "NormalSkill")
@@ -527,7 +529,7 @@ void ASW_CharacterBase::Server_PlaySkill_Implementation(FName SkillName)
 
 void ASW_CharacterBase::Multicast_PlaySkill_Implementation(FName SkillName)
 {
-    if (!HasAuthority()) 
+    if (!HasAuthority())
     {
         PlaySkillAnimation(SkillName);
     }
@@ -545,41 +547,6 @@ void ASW_CharacterBase::Multicast_ApplySkillDamage_Implementation(FName SkillNam
 
 }
 
-// GAS
-UAbilitySystemComponent* ASW_CharacterBase::GetAbilitySystemComponent() const
-{
-	return AbilitySystemComponent;
-}
-
-UAttributeSet* ASW_CharacterBase::GetAttributeSet() const
-{
-	return AttributeSet;
-}
-
-//void ASW_CharacterBase::StartDownTime(float DownTime)
-//{
-//	RemainingTime = DownTime;
-//
-//	GetWorld()->GetTimerManager().SetTimer(
-//		DownTime_TimerHandle,
-//		this,
-//		&ASW_CharacterBase::UpdateCooldown,
-//		1.0f,
-//		true
-//	);
-//}
-//
-//void ASW_CharacterBase::UpdateCooldown()
-//{
-//	UE_LOG(LogTemp, Warning, TEXT("%f"), RemainingTime);
-//	RemainingTime -= 1.0f;
-//	OnDownTimeTick.Broadcast(FMath::CeilToInt(RemainingTime));
-//	if (RemainingTime <= 0.f)
-//	{
-//		GetWorld()->GetTimerManager().ClearTimer(DownTime_TimerHandle);
-//	}
-//}
-
 void ASW_CharacterBase::Multicast_ComboAttack_Implementation()
 {
     if (!HasAuthority())
@@ -587,3 +554,4 @@ void ASW_CharacterBase::Multicast_ComboAttack_Implementation()
         ComboAttack();
     }
 }
+// ============================================================================================
