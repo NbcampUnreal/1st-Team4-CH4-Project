@@ -53,7 +53,7 @@ public:
 	UMaterialInterface* ThirdMaterial;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Arrow Materials")
-	UMaterialInterface* DefaultMaterial;
+	UMaterialInterface* NormalSkillMaterial;
 
 
 protected:

@@ -91,19 +91,11 @@ void ASW_Myth::SpawnComboArrow()
                 case 2:
                     MeshComp->SetMaterial(0, ThirdMaterial); // 세 번째 머티리얼
                     break;
-                default:
-                    MeshComp->SetMaterial(0, DefaultMaterial); // 기본 머티리얼
-                    break;
                 }
             }
         }
     }
 }
-
-
-
-
-
 
 void ASW_Myth::ComboAttack()
 {
@@ -120,11 +112,50 @@ void ASW_Myth::NormalSkill()
     {
         return;
     }
-    SpawnArrow();
+
+    // 캐릭터의 기본 회전 값
+    FRotator BaseRotation = GetActorRotation();
+
+    // 부채꼴 각도를 설정 (예: -10도, 0도, +10도)
+    TArray<float> ArrowAngles = {-10.f, 0.f, 10.f};
+
+    // 각 각도에 따라 화살 생성
+    for (float Angle : ArrowAngles)
+    {
+        // 현재 화살 회전 각도 계산 (BaseRotation에 Yaw 값을 더하거나 뺌)
+        FRotator ArrowRotation = BaseRotation;
+        ArrowRotation.Yaw += Angle;
+
+        // 화살 스폰 위치: 캐릭터 전방으로 100 단위 거리
+        FVector SpawnLocation = GetActorLocation() + ArrowRotation.Vector() * 100.f;
+
+        // 화살 스폰
+        FActorSpawnParameters Params;
+        Params.Owner = this;
+        Params.Instigator = this;
+        AActor* Projectile = GetWorld()->SpawnActor<AActor>(ArrowProjectileClass, SpawnLocation, ArrowRotation, Params);
+
+        if (Projectile)
+        {
+            // StaticMeshComponent를 찾아 머티리얼 적용
+            if (UStaticMeshComponent* MeshComp = Projectile->FindComponentByClass<UStaticMeshComponent>())
+            {
+                if (NormalSkillMaterial) // ArrowMaterial이 설정되어 있다면 적용
+                {
+                    MeshComp->SetMaterial(0, NormalSkillMaterial);
+                }
+            }
+
+            // 필요 시 크기 조정
+            Projectile->SetActorScale3D(FVector(1.f));
+        }
+    }
 
     // 기본 스킬 애니메이션 재생
     PlaySkillAnimation(FName("NormalSkill"));
 }
+
+
 void ASW_Myth::DashAttack()
 {
     if (HasAuthority())
