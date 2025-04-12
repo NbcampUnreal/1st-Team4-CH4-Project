@@ -55,17 +55,17 @@ ASW_Dubu::ASW_Dubu()
 	if (Combo1.Succeeded())
 	{
 		ComboMontages.Add(Combo1.Object);
-		SkillMontages.Add(FName("Combo1"), Combo1.Object); 
+		SkillMontages.Add(FName("Combo1"), Combo1.Object);
 	}
 	if (Combo2.Succeeded())
 	{
 		ComboMontages.Add(Combo2.Object);
-		SkillMontages.Add(FName("Combo2"), Combo2.Object); 
+		SkillMontages.Add(FName("Combo2"), Combo2.Object);
 	}
 	if (Combo3.Succeeded())
 	{
 		ComboMontages.Add(Combo3.Object);
-		SkillMontages.Add(FName("Combo3"), Combo3.Object); 
+		SkillMontages.Add(FName("Combo3"), Combo3.Object);
 	}
 
 
