@@ -37,10 +37,80 @@ void ASW_Myth::BeginPlay()
     Super::BeginPlay();
 }
 
-void ASW_Myth::BasicAttack()
+AActor* ASW_Myth::SpawnArrow()
 {
-    // 부모의 ComboAttack()을 활용하여 3콤보 평타를 실행
-    ComboAttack();
+    if (!HasAuthority() || !ArrowProjectileClass)
+    {
+        return nullptr;
+    }
+
+    // 화살 스폰 위치 및 방향 설정 (캐릭터 앞쪽 100 단위)
+    FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * 100.f;
+    FRotator SpawnRotation = GetActorRotation();
+
+    FActorSpawnParameters Params;
+    Params.Owner = this;
+    Params.Instigator = this;
+
+    AActor* Projectile = GetWorld()->SpawnActor<AActor>(ArrowProjectileClass, SpawnLocation, SpawnRotation, Params);
+    if (Projectile)
+    {
+        Projectile->SetActorScale3D(FVector(1.f));  // 옵션: 크기 조정
+    }
+    
+    return Projectile;
+}
+
+void ASW_Myth::SpawnComboArrow()
+{
+    UE_LOG(LogTemp, Warning, TEXT("SpawnComboArrow called with ComboIndex: %d"), CurrentComboIndex);
+
+    AActor* Projectile = SpawnArrow();
+    if (Projectile)
+    {
+        if (ASW_Arrow* SpawnedArrow = Cast<ASW_Arrow>(Projectile))
+        {
+            float baseDamage = 20.f;
+            float comboAddedDamage = CurrentComboIndex * 20.f;
+            SpawnedArrow->Damage = baseDamage + comboAddedDamage;
+
+            UE_LOG(LogTemp, Warning, TEXT("Arrow Damage set to: %f"), SpawnedArrow->Damage);
+
+            // 화살의 외형 변경 로직 추가
+            UStaticMeshComponent* MeshComp = SpawnedArrow->FindComponentByClass<UStaticMeshComponent>();
+            if (MeshComp)
+            {
+                switch (CurrentComboIndex)
+                {
+                case 0:
+                    MeshComp->SetMaterial(0, FirstMaterial); // 첫 번째 머티리얼
+                    break;
+                case 1:
+                    MeshComp->SetMaterial(0, SecondMaterial); // 두 번째 머티리얼
+                    break;
+                case 2:
+                    MeshComp->SetMaterial(0, ThirdMaterial); // 세 번째 머티리얼
+                    break;
+                default:
+                    MeshComp->SetMaterial(0, DefaultMaterial); // 기본 머티리얼
+                    break;
+                }
+            }
+        }
+    }
+}
+
+
+
+
+
+
+void ASW_Myth::ComboAttack()
+{
+    UE_LOG(LogTemp, Warning, TEXT("BasicAttack started"));
+
+    // 부모 콤보 로직 호출
+    Super::ComboAttack();
 }
 
 void ASW_Myth::NormalSkill()
@@ -48,43 +118,13 @@ void ASW_Myth::NormalSkill()
     // 서버 권한 체크
     if (!HasAuthority())
     {
-        UE_LOG(LogTemp, Warning, TEXT("HasAuthority() == false"));
         return;
     }
-
-    // 화살 스폰 위치 및 방향 설정
-    FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * 100.f; // 캐릭터의 앞쪽 100 단위
-    FRotator SpawnRotation = GetActorRotation(); // 캐릭터가 바라보는 방향을 사용
-
-    FActorSpawnParameters Params;
-    Params.Owner = this;
-    Params.Instigator = this;
-
-    // 화살 생성
-    AActor* Projectile = GetWorld()->SpawnActor<AActor>(ArrowProjectileClass, SpawnLocation, SpawnRotation, Params);
-    if (Projectile)
-    {
-        UE_LOG(LogTemp, Warning, TEXT("화살 생성 성공!"));
-        // 화살의 스케일 설정 (옵션)
-        Projectile->SetActorScale3D(FVector(1.f)); // 필요 시 크기를 조정
-    }
-    else
-    {
-        UE_LOG(LogTemp, Error, TEXT("화살 생성 실패: ArrowProjectileClass = %s"), *ArrowProjectileClass->GetName());
-    }
+    SpawnArrow();
 
     // 기본 스킬 애니메이션 재생
     PlaySkillAnimation(FName("NormalSkill"));
 }
-
-
-
-
-
-
-
-
-
 void ASW_Myth::DashAttack()
 {
     if (HasAuthority())
@@ -114,6 +154,8 @@ void ASW_Myth::DashAttack()
         }, 0.2f, false);
     }
 }
+
+
 
 void ASW_Myth::UltimateSkill()
 {

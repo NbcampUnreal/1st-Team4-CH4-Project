@@ -15,7 +15,8 @@ public:
 
 	// 기본 평타 콤보 공격
 	UFUNCTION(BlueprintCallable, Category = "Myth")
-	void BasicAttack();
+	virtual void ComboAttack() override;
+	AActor* SpawnArrow();
 
 	// 일반 스킬: 애쉬 W 스타일, 부채꼴 화살 3발 발사
 	virtual void NormalSkill() override;
@@ -23,6 +24,7 @@ public:
 	// 대시 공격: 전방 화살 발사와 동시에 전방 대시 후 후방 회피(백덤블링)
 	UFUNCTION(BlueprintCallable, Category = "Myth")
 	void DashAttack();
+	void SpawnComboArrow();
 
 	// 궁극기: 무적 상태로 진입 후 좁은 범위로 화살 3발 발사
 	UFUNCTION(BlueprintCallable, Category = "Myth")
@@ -39,6 +41,20 @@ public:
 	// 궁극 사용 시 무적 상태 플래그
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Myth")
 	bool bIsInvincible;
+
+	// 화살 머테리얼들
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Arrow Materials")
+	UMaterialInterface* FirstMaterial;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Arrow Materials")
+	UMaterialInterface* SecondMaterial;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Arrow Materials")
+	UMaterialInterface* ThirdMaterial;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Arrow Materials")
+	UMaterialInterface* DefaultMaterial;
+
 
 protected:
 	// BeginPlay()를 오버라이드하는 경우, 헤더에 선언해줘야 합니다.

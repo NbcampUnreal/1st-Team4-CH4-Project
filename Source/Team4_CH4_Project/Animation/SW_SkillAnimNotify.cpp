@@ -2,6 +2,7 @@
 #include "SW_CharacterBase.h"
 #include "SW_Dubu.h"
 #include "SW_Brall.h"
+#include "SW_Myth.h"
 #include "SW_ThrowActor.h"
 
 void USkillAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
@@ -107,6 +108,22 @@ void USkillAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBas
                 {
                     Brall->SetMovementLocked(false); // 이동 재개
                     Brall->SwordAttackEnd();
+                }
+            }
+
+            else if (NotifyEventName == "FireArrow")
+            {
+                if (ASW_Myth* Myth = Cast<ASW_Myth>(Character))
+                {
+                    Myth->SpawnArrow();
+                }
+            }
+
+            else if (NotifyEventName == "FireComboArrow")
+            {
+                if (ASW_Myth* Myth = Cast<ASW_Myth>(Character))
+                {
+                    Myth->SpawnComboArrow();
                 }
             }
         }
