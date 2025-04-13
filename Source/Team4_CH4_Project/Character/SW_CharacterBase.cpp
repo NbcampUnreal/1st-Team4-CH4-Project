@@ -408,6 +408,28 @@ float ASW_CharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Dama
     Health -= DamageToApply;
     UpdateHealthBar();
 
+    // 공격당하면 카메라가 바라보고있는곳으로 이펙트 생성(캐릭터 중앙에)
+    if (HitEffect)
+    {
+        FVector SpawnLocation = GetActorLocation() + FVector(0.f, 0.f, 80.f);
+
+        if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
+        {
+            if (APlayerCameraManager* CamMgr = PC->PlayerCameraManager)
+            {
+                FRotator CameraRot = CamMgr->GetCameraRotation();
+                FRotator SpawnRotation = FRotator(0.f, CameraRot.Yaw, 0.f);
+
+                UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+                    GetWorld(),
+                    HitEffect,
+                    SpawnLocation,
+                    SpawnRotation
+                );
+            }
+        }
+    }
+
     if (Health <= 0)
     {
         Health = 0;

@@ -5,11 +5,14 @@
 #include "Components/WidgetComponent.h"
 #include "SW_HP.h"
 #include "GameFramework/DamageType.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraSystem.h"
 #include "SW_CharacterBase.generated.h"
 
 class USpringArmComponent;
 class UCameraComponent;
 class UAnimMontage;
+class UNiagaraSystem;
 
 // 스킬 데미지 관련 =================================================================
 UENUM(BlueprintType)
@@ -87,6 +90,10 @@ public:
     // 피격 애니메이션
     UPROPERTY(EditAnywhere, Category = "Animation")
     UAnimMontage* HitReactionMontage;
+
+    UPROPERTY(EditAnywhere, Category = "Animation")
+    UNiagaraSystem* HitEffect;
+
     // 사망 애니메이션
     UPROPERTY(EditAnywhere, Category = "Animation")
     UAnimMontage* DeathMontage;
