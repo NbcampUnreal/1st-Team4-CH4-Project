@@ -1,6 +1,7 @@
 #include "SW_Brall.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/BoxComponent.h"
+#include "SW_SkillEffectActor.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/DamageEvents.h"
 #include "Engine/EngineTypes.h"
@@ -223,6 +224,31 @@ void ASW_Brall::JumpAttack()
             PlaySkillAnimation(FName("JumpAttack"));
 
         }), 0.3f, false);
+}
+void ASW_Brall::Landed(const FHitResult& Hit)
+{
+    Super::Landed(Hit);
+
+    if (!bIsJumpAttacking) return;
+    bIsJumpAttacking = false;
+
+    FVector ForwardOffset = GetActorForwardVector() * 250.f; // 앞으로 50cm 정도
+    FVector SpawnLocation = Hit.ImpactPoint + FVector(0, 0, 10.f) + ForwardOffset;
+    FRotator SpawnRotation = FRotator::ZeroRotator;
+
+    FActorSpawnParameters Params;
+    Params.Owner = this;
+
+    if (JumpLandEffectClass)
+    {
+        ASkillEffectActor* Effect = GetWorld()->SpawnActor<ASkillEffectActor>(
+            JumpLandEffectClass, SpawnLocation, SpawnRotation, Params);
+
+        if (Effect)
+        {
+            Effect->InitEffect(SpawnLocation, SpawnRotation);
+        }
+    }
 }
 // =============================================================================================
 

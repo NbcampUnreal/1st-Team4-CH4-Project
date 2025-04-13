@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "SW_CharacterBase.h"
+#include "SW_SkillEffectActor.h"
 #include "SW_Brall.generated.h"
 
 class UBoxComponent;
@@ -18,6 +19,9 @@ public:
     virtual void BeginPlay() override;
     virtual void DashSkill() override;
     virtual void JumpAttack() override;
+    // 점프어택 착지시 나이아가라 이펙트용
+    virtual void Landed(const FHitResult& Hit) override;
+
 
 public:
     FTimerHandle DashTimerHandle;
@@ -32,6 +36,10 @@ protected:
     // 대쉬용 캐릭터 몸 콜리전
     UPROPERTY(VisibleAnywhere, Category = "Combat")
     UBoxComponent* DashCollider; // ✅ 대시 데미지용 박스 콜리전 추가
+
+    // 점프어택 이펙트 블루프린트 클래스 지정용
+    UPROPERTY(EditAnywhere, Category = "Effect")
+    TSubclassOf<ASkillEffectActor> JumpLandEffectClass;
 
     // 대쉬 스킬용 몸 전체 콜리전 데미지 함수
     UFUNCTION()

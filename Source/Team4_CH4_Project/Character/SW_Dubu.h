@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "SW_CharacterBase.h"
+#include "SW_SkillEffectActor.h"
 #include "SW_Dubu.generated.h"
 
 class UBoxComponent;
@@ -17,6 +18,8 @@ public:
 	virtual void BeginPlay() override;
 	virtual void DashSkill() override;
 	virtual void JumpAttack() override;
+	// 점프어택 착지시 나이아가라 이펙트용
+	virtual void Landed(const FHitResult& Hit) override;
 
 public:
 	
@@ -24,6 +27,10 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "Combat")
 	UBoxComponent* DashCollider;
 	// ============================================
+
+	// 점프어택 이펙트 블루프린트 클래스 지정용
+	UPROPERTY(EditAnywhere, Category = "Effect")
+	TSubclassOf<ASkillEffectActor> JumpLandEffectClass;
 
 	// 궁극기용 던지는 액터 변수
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
