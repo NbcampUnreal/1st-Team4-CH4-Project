@@ -35,6 +35,14 @@ void USW_HUDManager::InitializeHUD()
 			HUDWidget = CreateWidget<UUserWidget>(GetGameInstance(), LoadedHUDWidgetClass, TEXT("HUDWidget"));
 		}
 	}
+
+	// Initialize Level and Exp values
+	if (USW_LevelExpViewModel* LevelExpViewModel = Cast<USW_LevelExpViewModel>(GetViewModel(EViewModelType::PlayerInfoViewModel)))
+	{
+		LevelExpViewModel->SetCurrentExp(0);
+		LevelExpViewModel->SetMaxExp(100);
+		LevelExpViewModel->SetCurrentLevel(1);
+	}
 }
 
 void USW_HUDManager::DisplayHUD()

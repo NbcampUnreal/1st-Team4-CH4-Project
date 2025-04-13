@@ -8,13 +8,6 @@
 void USW_SkillWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	GetWorld()->GetTimerManager().SetTimer(
-		DownHandle,
-		this,
-		&USW_SkillWidget::StopSkillTimer,
-		0.2f,
-		true
-	);
 }
 
 void USW_SkillWidget::SetSkillIcon(UTexture2D* Icon)
@@ -22,6 +15,14 @@ void USW_SkillWidget::SetSkillIcon(UTexture2D* Icon)
 	if (SkillIcon && IsValid(Icon))
 	{
 		SkillIcon->SetBrushFromTexture(Icon);
+	}
+}
+
+void USW_SkillWidget::SetInputText(const FText& InText)
+{
+	if (InputText && !InText.IsEmpty())
+	{
+		InputText->SetText(InText);
 	}
 }
 

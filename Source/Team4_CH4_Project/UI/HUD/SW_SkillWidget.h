@@ -18,6 +18,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	UImage* SkillIcon;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UTextBlock* InputText;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	UTextBlock* DownTimeText;
 	UPROPERTY(BlueprintReadOnly)
 	FTimerHandle DownHandle;
@@ -30,6 +32,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void SetSkillIcon(UTexture2D* Icon);
+	UFUNCTION(BlueprintCallable)
+	void SetInputText(const FText& InText);
 	UFUNCTION(BlueprintCallable)
 	void StartSkillTimer(const float& DownTime);
 	UFUNCTION(BlueprintCallable)

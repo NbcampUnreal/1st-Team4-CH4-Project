@@ -8,6 +8,7 @@
 UENUM(BlueprintType)
 enum class ECharacterType : uint8
 {
+	START,
 	Dubu	UMETA(DisplayName = "Dubu"),
 	Brall	UMETA(DisplayName = "Brall"),
 	Myth	UMETA(DisplayName = "Myth"),
