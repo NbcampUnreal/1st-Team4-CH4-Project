@@ -3,10 +3,11 @@
 
 #include "UI/Widget/SW_HPBarWidget.h"
 #include "Components/ProgressBar.h"
+#include "UI/Controller/SW_HPBarWidgetController.h"
 
 void USW_HPBarWidget::UpdateHealthBar()
 {
-    int c = 0;
+
 }
 
 void USW_HPBarWidget::NativeConstruct()
@@ -15,12 +16,18 @@ void USW_HPBarWidget::NativeConstruct()
 
     HealthProgressBar = Cast<UProgressBar>(GetWidgetFromName(TEXT("HealthProgressBar")));
 
-    if (!IsValid(HealthProgressBar))
+    USW_HPBarWidgetController* HpBarControllerRef = Cast<USW_HPBarWidgetController>(WidgetController);
+    if (HpBarControllerRef)
     {
-        UE_LOG(LogTemp, Warning, TEXT("No Hp Progress Bar"));
+        float MaxHealth = HpBarControllerRef->GetMaxHealth();
+        if (MaxHealth > 0.f)
+        {
+            float Health = HpBarControllerRef->GetHealth();
+            float percent = Health / MaxHealth;
+            HealthProgressBar->SetPercent(percent);
+            UE_LOG(LogTemp, Warning, TEXT("percent : %f"), percent);
+        }
     }
-
-    UE_LOG(LogTemp, Warning, TEXT("Hp Widget Native On Construct"));
 }
 
 void USW_HPBarWidget::NativeOnInitialized()

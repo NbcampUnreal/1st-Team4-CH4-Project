@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UI/Controller/SW_WidgetController.h"
+#include "AbilitySystemComponent.h"
 #include "SW_HPBarWidgetController.generated.h"
 
 UCLASS()
@@ -14,6 +15,12 @@ public:
 	virtual void BroadcastInitialValue() override;
 	virtual void BindCallbacksToDependencies() override;
 
-	//UPROPERTY(BlueprintAssignable, Category = "GAS|Attribute")
+	UFUNCTION(BlueprintCallable, Category = "Attribute")
+	float GetHealth() const;
 
+	UFUNCTION(BlueprintCallable, Category = "Attribute")
+	float GetMaxHealth() const;
+
+protected:
+	void OnHealthChanged(const FOnAttributeChangeData& Data);
 };

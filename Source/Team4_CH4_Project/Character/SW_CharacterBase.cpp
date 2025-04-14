@@ -18,6 +18,7 @@
 // Widget
 #include "WidgetComponent/SW_HPBarWidgetComponent.h"
 #include "UI/Widget/SW_HPBarWidget.h"
+#include "UI/Controller/SW_HPBarWidgetController.h"
 
 ASW_CharacterBase::ASW_CharacterBase()
 {
@@ -55,22 +56,14 @@ ASW_CharacterBase::ASW_CharacterBase()
     bCanNextCombo = true;
     bPendingNextCombo = false;
 
-    
-    
     // WidgetComponent
-    //HealthBarWidgetComponent = CreateDefaultSubobject<USW_HPBarWidgetComponent>(TEXT("HPBarWidgetComponent"));
-    HealthBarWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("HPBarWidgetComponent"));
+    HealthBarWidgetComponent = CreateDefaultSubobject<USW_HPBarWidgetComponent>(TEXT("THPBarWidgetComponent"));
     HealthBarWidgetComponent->SetupAttachment(GetMesh());
-    HealthBarWidgetComponent->SetWidgetSpace(EWidgetSpace::Screen);
-    HealthBarWidgetComponent->SetRelativeLocation(FVector(0.f, 0.f, 280.f));
-    HealthBarWidgetComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void ASW_CharacterBase::BeginPlay()
 {
     Super::BeginPlay();
-
-    FString tempName = GetName();
 }
 
 void ASW_CharacterBase::Tick(float DeltaTime)

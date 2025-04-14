@@ -247,5 +247,5 @@ protected:
     TObjectPtr<UWidgetComponent> HealthBarWidgetComponent;
 
     //UPROPERTY(EditAnywhere, Category = "UI")
-    //TSubclassOf<USW_HPBarWidget> HealthBarWidgetClass;
+    //TSubclassOf<UUserWidget> HealthBarWidgetClass;
 };

@@ -11,6 +11,8 @@
 #include "AbilitySystem/SW_AbilitySystemComponent.h"
 #include "AbilitySystem/SW_AttributeSet.h"
 #include "UI/HUD_SJE/SW_HUD.h"
+#include "UI/Controller/SW_HPBarWidgetController.h"
+#include "UI/Widget/SW_HPBarWidget.h"
 
 ASW_CharacterPlayer::ASW_CharacterPlayer()
 	: ASW_CharacterBase()
@@ -95,6 +97,19 @@ void ASW_CharacterPlayer::InitAbilityActorInfo()
 		if (ASW_HUD* SW_HUD = Cast<ASW_HUD>(SW_PlayerController->GetHUD()))
 		{
 			SW_HUD->InitOverlay(SW_PlayerController, SW_PlayerState, AbilitySystemComponent, AttributeSet);
+		}
+
+		USW_HPBarWidgetController* HpBarWidgetControllerRef = NewObject<USW_HPBarWidgetController>();
+		if (HpBarWidgetControllerRef)
+		{
+			FWidgetControllerParams Params(SW_PlayerController, SW_PlayerState, AbilitySystemComponent, AttributeSet);
+			HpBarWidgetControllerRef->SetWidgetControllerParams(Params);
+
+			USW_HPBarWidget* HPBarWidgetRef = Cast<USW_HPBarWidget>(HealthBarWidgetComponent->GetWidget());
+			if(HPBarWidgetRef)
+			{
+				HPBarWidgetRef->SetWidgetController(HpBarWidgetControllerRef);
+			}
 		}
 	}
 }
