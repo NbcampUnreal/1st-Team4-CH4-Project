@@ -1,4 +1,5 @@
 #include "SW_SkillAnimNotify.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "SW_CharacterBase.h"
 #include "SW_Dubu.h"
 #include "SW_Brall.h"
@@ -47,18 +48,84 @@ void USkillAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBas
                 Character->bComboInputActive = true; // 콤보 입력 허용 타이밍
             }
 
-            // 근접캐릭터 평타시 앞으로가는 거리
+            // 근접캐릭터 평타시 바라보는곳으로 500만큼 이동 
             else if (NotifyEventName == "DoForwardMove")
             {
                 if (ASW_Dubu* Dubu = Cast<ASW_Dubu>(Character))
                 {
+                    UCharacterMovementComponent* MoveComp = Dubu->GetCharacterMovement();
+
+                    MoveComp->BrakingFrictionFactor = 0.f;
+                    MoveComp->BrakingDecelerationWalking = 0.f;
+
                     FVector Forward = Dubu->GetActorForwardVector();
-                    Dubu->LaunchCharacter(Forward * 800.f, true, false);
+                    Dubu->LaunchCharacter(Forward * 1000.f, true, true); // Z도 override
+
+                    MoveComp->bIgnoreBaseRotation = true;
+
+                    FTimerHandle ResetHandle;
+                    Dubu->GetWorldTimerManager().SetTimer(ResetHandle, [Dubu]()
+                        {
+                            if (IsValid(Dubu))
+                            {
+                                UCharacterMovementComponent* MoveComp = Dubu->GetCharacterMovement();
+                                MoveComp->BrakingFrictionFactor = 2.f;
+                                MoveComp->BrakingDecelerationWalking = 2048.f;
+                            }
+                        }, 0.2f, false);
                 }
                 else if (ASW_Brall* Brall = Cast<ASW_Brall>(Character))
                 {
+                    UCharacterMovementComponent* MoveComp = Brall->GetCharacterMovement();
+
+                    MoveComp->BrakingFrictionFactor = 0.f;
+                    MoveComp->BrakingDecelerationWalking = 0.f;
+
                     FVector Forward = Brall->GetActorForwardVector();
-                    Brall->LaunchCharacter(Forward * 1000.f, true, false);
+                    Brall->LaunchCharacter(Forward * 1000.f, true, true); // Z도 override
+
+                    MoveComp->bIgnoreBaseRotation = true;
+
+                    FTimerHandle ResetHandle;
+                    Brall->GetWorldTimerManager().SetTimer(ResetHandle, [Brall]()
+                        {
+                            if (IsValid(Brall))
+                            {
+                                UCharacterMovementComponent* MoveComp = Brall->GetCharacterMovement();
+                                MoveComp->BrakingFrictionFactor = 2.f;
+                                MoveComp->BrakingDecelerationWalking = 2048.f;
+                            }
+                        }, 0.2f, false);
+                }
+            }
+
+            // 원거리 Myth 캐릭터 대쉬 스킬시 뒤로 1400만큼 이동
+            else if (NotifyEventName == "DoBackwardMove")
+            {
+                if (ASW_Myth* Myth = Cast<ASW_Myth>(Character))
+                {
+                    UCharacterMovementComponent* MoveComp = Myth->GetCharacterMovement();
+
+                    MoveComp->BrakingFrictionFactor = 0.f;
+                    MoveComp->BrakingDecelerationWalking = 0.f;
+
+                    // 루트모션 무시하고 이동 강제 적용
+                    FVector Backward = -Myth->GetActorForwardVector();
+                    Myth->LaunchCharacter(Backward * 2000.f, true, true); // Z도 override
+
+                    // 루트모션 끄기 (애니메이션에서 꺼도 되지만 코드로 강제로 껐음)
+                    MoveComp->bIgnoreBaseRotation = true;
+
+                    FTimerHandle ResetHandle;
+                    Myth->GetWorldTimerManager().SetTimer(ResetHandle, [Myth]()
+                        {
+                            if (IsValid(Myth))
+                            {
+                                UCharacterMovementComponent* MoveComp = Myth->GetCharacterMovement();
+                                MoveComp->BrakingFrictionFactor = 2.f;
+                                MoveComp->BrakingDecelerationWalking = 2048.f;
+                            }
+                        }, 0.2f, false);
                 }
             }
 

@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "SW_CharacterBase.h"
+#include "SW_Arrow.h"
 #include "SW_Myth.generated.h"
 
 UCLASS()
@@ -12,26 +13,27 @@ class TEAM4_CH4_PROJECT_API ASW_Myth : public ASW_CharacterBase
 public:
 	ASW_Myth();
 
-	UFUNCTION(BlueprintCallable, Category = "Myth")
 	virtual void ComboAttack() override;
 	AActor* SpawnArrow();
 
 	virtual void NormalSkill() override;
 
-	UFUNCTION(BlueprintCallable, Category = "Myth")
-	void DashAttack();
+	virtual void BeginPlay() override;
+
+	virtual void DashSkill() override;
+
+	virtual void JumpAttack() override;
+
 	void ExecuteDash();
 	void SpawnComboArrow();
 
 	UFUNCTION(BlueprintCallable, Category = "Myth")
 	void UltimateSkill();
 
-	UFUNCTION(BlueprintCallable, Category = "Myth")
-	void DownAttack();
-
 	// 궁수 전용 투사체 클래스 (화살)
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Myth")
-	TSubclassOf<AActor> ArrowProjectileClass;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Myth")
+	TSubclassOf<ASW_Arrow> ArrowProjectileClass;
+
 
 	// 궁극 사용 시 무적 상태 플래그
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Myth")
@@ -51,8 +53,4 @@ public:
 	UMaterialInterface* NormalSkillMaterial;
 	
     FTimerHandle DashTimerHandle;
-
-
-protected:
-	virtual void BeginPlay() override;
 };

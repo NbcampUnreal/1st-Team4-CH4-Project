@@ -14,23 +14,19 @@ public:
 	ASW_Void();
 
 	// 기본 공격: 투사체 3콤보 (3번째 투사체는 2배 크기로 생성)
-	UFUNCTION(BlueprintCallable, Category = "Void")
-	void BasicAttack();
+	virtual void ComboAttack() override;
 
 	// 일반 스킬: 기본 공격과 유사하게 투사체 발사
 	virtual void NormalSkill() override;
 
+	virtual void JumpAttack() override;
+
+	// 이동 스킬: 투사체와 위치 교환 혹은 전방 텔레포트
+	virtual void DashSkill() override;
+
 	// 궁극기: 텔레포트 및 추가 효과 연계 궁극기
 	UFUNCTION(BlueprintCallable, Category = "Void")
 	void UltimateSkill();
-
-	// 이동 스킬: 투사체와 위치 교환 혹은 전방 텔레포트
-	UFUNCTION(BlueprintCallable, Category = "Void")
-	void MovementSkill();
-
-	// 다운 어택: 공격 없이 방어막 획득 및 착지하는 이동 스킬
-	UFUNCTION(BlueprintCallable, Category = "Void")
-	void DownAttack();
 
 	// 마법사의 투사체 클래스 (SW_Magic 기반)
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Void")

@@ -11,10 +11,26 @@ ASW_Void::ASW_Void()
     static ConstructorHelpers::FObjectFinder<UAnimMontage> Combo1(TEXT("/Game/Characters/Void/Animation/ComboAttack/AM_Void_Combo1.AM_Void_Combo1"));
     static ConstructorHelpers::FObjectFinder<UAnimMontage> Combo2(TEXT("/Game/Characters/Void/Animation/ComboAttack/AM_Void_Combo2.AM_Void_Combo2"));
     static ConstructorHelpers::FObjectFinder<UAnimMontage> Combo3(TEXT("/Game/Characters/Void/Animation/ComboAttack/AM_Void_Combo3.AM_Void_Combo3"));
-
     if (Combo1.Succeeded()) ComboMontages.Add(Combo1.Object);
     if (Combo2.Succeeded()) ComboMontages.Add(Combo2.Object);
     if (Combo3.Succeeded()) ComboMontages.Add(Combo3.Object);
+
+    if (Combo1.Succeeded())
+    {
+        ComboMontages.Add(Combo1.Object);
+        SkillMontages.Add(FName("Combo1"), Combo1.Object);
+    }
+    if (Combo2.Succeeded())
+    {
+        ComboMontages.Add(Combo2.Object);
+        SkillMontages.Add(FName("Combo2"), Combo2.Object);
+    }
+    if (Combo3.Succeeded())
+    {
+        ComboMontages.Add(Combo3.Object);
+        SkillMontages.Add(FName("Combo3"), Combo3.Object);
+    }
+
 
     // 스탯 초기화
     MaxHealth = 80;
@@ -35,7 +51,7 @@ void ASW_Void::BeginPlay()
     Super::BeginPlay();
 }
 
-void ASW_Void::BasicAttack()
+void ASW_Void::ComboAttack()
 {
     if (HasAuthority() && SpellProjectileClass)
     {
@@ -59,7 +75,8 @@ void ASW_Void::BasicAttack()
             }
         }
     }
-    PlaySkillAnimation(FName("BasicAttack"));
+    // ApplyCombo Notify사용으로 차후 수정 필요
+    //PlaySkillAnimation(FName("BasicAttack"));
 }
 
 void ASW_Void::NormalSkill()
@@ -89,6 +106,25 @@ void ASW_Void::NormalSkill()
     PlaySkillAnimation(FName("NormalSkill"));
 }
 
+void ASW_Void::JumpAttack()
+{
+    if (HasAuthority())
+    {
+        // 이동 멈춤 및 방어막 획득 (방어막 로직은 별도 구현)
+        GetCharacterMovement()->StopMovementImmediately();
+        UE_LOG(LogTemp, Log, TEXT("Void DownAttack: Shield activated."));
+    }
+    PlaySkillAnimation(FName("JumpAttack"));
+}
+
+void ASW_Void::DashSkill()
+{
+    // 전방 600 단위 이동(텔레포트)
+    FVector TeleportLocation = GetActorLocation() + GetActorForwardVector() * 600.f;
+    TeleportLocation.Z = GetActorLocation().Z;
+    TeleportTo(TeleportLocation, GetActorRotation());
+    PlaySkillAnimation(FName("DashSkill"));
+}
 
 
 void ASW_Void::UltimateSkill()
@@ -103,25 +139,5 @@ void ASW_Void::UltimateSkill()
         // 예시: 단일 강력한 투사체 발사 (추가 효과는 필요에 따라 구현)
         GetWorld()->SpawnActor<AActor>(SpellProjectileClass, SpawnLocation, SpawnRotation, SpawnParams);
     }
-    PlaySkillAnimation(FName("UltimateSkill"));
-}
-
-void ASW_Void::MovementSkill()
-{
-    // 전방 600 단위 이동(텔레포트)
-    FVector TeleportLocation = GetActorLocation() + GetActorForwardVector() * 600.f;
-    TeleportLocation.Z = GetActorLocation().Z;
-    TeleportTo(TeleportLocation, GetActorRotation());
-    PlaySkillAnimation(FName("MovementSkill"));
-}
-
-void ASW_Void::DownAttack()
-{
-    if (HasAuthority())
-    {
-        // 이동 멈춤 및 방어막 획득 (방어막 로직은 별도 구현)
-        GetCharacterMovement()->StopMovementImmediately();
-        UE_LOG(LogTemp, Log, TEXT("Void DownAttack: Shield activated."));
-    }
-    PlaySkillAnimation(FName("DownAttack"));
+    PlaySkillAnimation(FName("SpecialSkill"));
 }

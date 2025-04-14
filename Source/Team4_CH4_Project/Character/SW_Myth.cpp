@@ -1,5 +1,4 @@
 #include "SW_Myth.h"
-#include "SW_Arrow.h" 
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
@@ -11,16 +10,45 @@ ASW_Myth::ASW_Myth()
     static ConstructorHelpers::FObjectFinder<UAnimMontage> Combo1(TEXT("/Game/Characters/Myth/Animation/ComboAttack/AM_Myth_Combo1.AM_Myth_Combo1"));
     static ConstructorHelpers::FObjectFinder<UAnimMontage> Combo2(TEXT("/Game/Characters/Myth/Animation/ComboAttack/AM_Myth_Combo2.AM_Myth_Combo2"));
     static ConstructorHelpers::FObjectFinder<UAnimMontage> Combo3(TEXT("/Game/Characters/Myth/Animation/ComboAttack/AM_Myth_Combo3.AM_Myth_Combo3"));
-    
     if (Combo1.Succeeded()) ComboMontages.Add(Combo1.Object);
     if (Combo2.Succeeded()) ComboMontages.Add(Combo2.Object);
     if (Combo3.Succeeded()) ComboMontages.Add(Combo3.Object);
 
+    if (Combo1.Succeeded())
+    {
+        ComboMontages.Add(Combo1.Object);
+        SkillMontages.Add(FName("Combo1"), Combo1.Object);
+    }
+    if (Combo2.Succeeded())
+    {
+        ComboMontages.Add(Combo2.Object);
+        SkillMontages.Add(FName("Combo2"), Combo2.Object);
+    }
+    if (Combo3.Succeeded())
+    {
+        ComboMontages.Add(Combo3.Object);
+        SkillMontages.Add(FName("Combo3"), Combo3.Object);
+    }
+
+
     // 스탯 초기화
-    MaxHealth = 80;
+    MaxHealth = 400;
     Health = MaxHealth;
+
+    // 기본 데미지
     AttackDamage = 30.f;
 
+    // 3단 콤보 평타용 콜리전 설정
+    FSkillData Combo1Data;
+    Combo1Data.DamageMultiplier = 1.0f;
+    Combo1Data.AttackType = ESkillAttackType::RangedProjectile; 
+    Combo1Data.Range = FVector(100.f); // 의미 없음. 투사체 방식
+    Combo1Data.Offset = FVector(100.f, 0.f, 0.f);
+    Combo1Data.ProjectileClass = ArrowProjectileClass; // 던지는 액터
+
+    SkillDataMap.Add("Combo1", Combo1Data);
+    SkillDataMap.Add("Combo2", Combo1Data);
+    SkillDataMap.Add("Combo3", Combo1Data);
     // 대쉬 스킬 데이터 초기화
     FSkillData DashSkillData;
     DashSkillData.DamageMultiplier = 1.5;
@@ -39,11 +67,6 @@ void ASW_Myth::BeginPlay()
 
 AActor* ASW_Myth::SpawnArrow()
 {
-    if (!HasAuthority() || !ArrowProjectileClass)
-    {
-        return nullptr;
-    }
-
     FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * 100.f;
     FRotator SpawnRotation = GetActorRotation();
 
@@ -79,8 +102,6 @@ AActor* ASW_Myth::SpawnArrow()
 
 void ASW_Myth::SpawnComboArrow()
 {
-    UE_LOG(LogTemp, Warning, TEXT("SpawnComboArrow called with ComboIndex: %d"), CurrentComboIndex);
-
     AActor* Projectile = SpawnArrow();
     if (Projectile)
     {
@@ -89,8 +110,6 @@ void ASW_Myth::SpawnComboArrow()
             float baseDamage = 20.f;
             float comboAddedDamage = CurrentComboIndex * 20.f;
             SpawnedArrow->Damage = baseDamage + comboAddedDamage;
-
-            UE_LOG(LogTemp, Warning, TEXT("Arrow Damage set to: %f"), SpawnedArrow->Damage);
 
             UStaticMeshComponent* MeshComp = SpawnedArrow->FindComponentByClass<UStaticMeshComponent>();
             if (MeshComp)
@@ -114,8 +133,6 @@ void ASW_Myth::SpawnComboArrow()
 
 void ASW_Myth::ComboAttack()
 {
-    UE_LOG(LogTemp, Warning, TEXT("BasicAttack started"));
-
     Super::ComboAttack();
 }
 
@@ -127,8 +144,8 @@ void ASW_Myth::NormalSkill()
         return;
     }
 
-    // 캐릭터의 기본 회전 값
-    FRotator BaseRotation = GetActorRotation();
+    // 조준 방향 기준으로 회전 설정
+    FRotator BaseRotation = GetControlRotation(); 
 
     // 부채꼴 각도를 설정 (예: -10도, 0도, +10도)
     TArray<float> ArrowAngles = {-10.f, 0.f, 10.f};
@@ -184,62 +201,23 @@ void ASW_Myth::NormalSkill()
     PlaySkillAnimation(FName("NormalSkill"));
 }
 
-void ASW_Myth::DashAttack()
+void ASW_Myth::DashSkill()
 {
-    UE_LOG(LogTemp, Warning, TEXT("DashAttack 함수 호출됨"));
-
-    if (!HasAuthority())
-    {
-        UE_LOG(LogTemp, Warning, TEXT("DashAttack: HasAuthority() false, 실행 중단"));
-        return;
-    }
-    
-    if (ArrowProjectileClass)
-    {
-        FVector SpawnLocation = GetMesh()->GetSocketLocation(TEXT("ArrowSocket"));
-        FRotator SpawnRotation = GetControlRotation();
-        FActorSpawnParameters SpawnParams;
-        SpawnParams.Owner = this;
-        SpawnParams.Instigator = GetInstigator();
-        
-        AActor* SpawnedArrow = GetWorld()->SpawnActor<AActor>(ArrowProjectileClass, SpawnLocation, SpawnRotation, SpawnParams);
-        if (SpawnedArrow)
-        {
-            UE_LOG(LogTemp, Warning, TEXT("DashAttack: 화살 생성 성공"));
-        }
-        else
-        {
-            UE_LOG(LogTemp, Error, TEXT("DashAttack: 화살 생성 실패"));
-        }
-    }
-    else
-    {
-        UE_LOG(LogTemp, Error, TEXT("DashAttack: ArrowProjectileClass가 설정되어 있지 않음"));
-    }
-    
-    GetWorldTimerManager().SetTimer(
-        DashTimerHandle,
-        this,
-        &ASW_Myth::ExecuteDash,
-        0.3f,
-        false
-    );
-}
-
-void ASW_Myth::ExecuteDash()
-{
-    // 후방 회피(백덤블링) 동작 실행
-    FVector Backward = -GetActorForwardVector();
-    float EvadeSpeed = 600.f;
-    LaunchCharacter(Backward * EvadeSpeed, true, true);
-    
-    UE_LOG(LogTemp, Warning, TEXT("DashAttack: 후방 회피 실행, EvadeSpeed: %f"), EvadeSpeed);
-    
     // 후방 회피 애니메이션 실행
-    PlaySkillAnimation(FName("DashAttack"));
+    PlaySkillAnimation(FName("DashSkill"));
 }
 
-
+void ASW_Myth::JumpAttack()
+{
+    if (HasAuthority())
+    {
+        // 다운 어택: 단순히 보는 방향의 반대쪽으로 이동 (뒤로 백덤블링)
+        FVector DownDirection = -GetActorForwardVector();
+        float DownSpeed = 1000.f;
+        LaunchCharacter(DownDirection * DownSpeed, true, true);
+        PlaySkillAnimation(FName("JumpAttack"));
+    }
+}
 
 void ASW_Myth::UltimateSkill()
 {
@@ -269,17 +247,6 @@ void ASW_Myth::UltimateSkill()
             }
         }
     }
-    PlaySkillAnimation(FName("UltimateSkill"));
+    PlaySkillAnimation(FName("SpecialSkill"));
 }
 
-void ASW_Myth::DownAttack()
-{
-    if (HasAuthority())
-    {
-        // 다운 어택: 단순히 보는 방향의 반대쪽으로 이동 (뒤로 백덤블링)
-        FVector DownDirection = -GetActorForwardVector();
-        float DownSpeed = 1000.f;
-        LaunchCharacter(DownDirection * DownSpeed, true, true);
-        PlaySkillAnimation(FName("DownAttack"));
-    }
-}
