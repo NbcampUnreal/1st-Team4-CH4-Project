@@ -33,6 +33,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetSkillIcons(ECharacterType Type);
 	UFUNCTION(BlueprintCallable)
+	void PlaySkillAnim(ESkillType SkillType);
+	UFUNCTION(BlueprintCallable)
 	void StartDashDown(const float& DownTime);
 	UFUNCTION(BlueprintCallable)
 	void StartSkill1Down(const float& DownTime);

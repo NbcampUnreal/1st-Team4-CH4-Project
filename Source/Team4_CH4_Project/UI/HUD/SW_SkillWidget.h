@@ -21,6 +21,8 @@ public:
 	UTextBlock* InputText;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	UTextBlock* DownTimeText;
+	UPROPERTY(Transient, meta = (BindWidgetAnim))
+	UWidgetAnimation* SkillAnim;
 	UPROPERTY(BlueprintReadOnly)
 	FTimerHandle DownHandle;
 	UPROPERTY(BlueprintReadOnly)
@@ -40,4 +42,6 @@ public:
 	void UpdateSkillTimer();
 	UFUNCTION(BlueprintCallable)
 	void StopSkillTimer();
+	UFUNCTION(BlueprintCallable)
+	void PlaySkillAnim();
 };

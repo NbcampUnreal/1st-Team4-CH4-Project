@@ -13,13 +13,21 @@ void USW_SkillViewModel::SetSkill2Time(const float& DownTime)
 	UE_MVVM_SET_PROPERTY_VALUE(Skill2Time, DownTime);
 	UE_MVVM_BROADCAST_FIELD_VALUE_CHANGED(GetSkill2Time);
 }
+
 void USW_SkillViewModel::SetSkill3Time(const float& DownTime)
 {
 	UE_MVVM_SET_PROPERTY_VALUE(Skill3Time, DownTime);
 	UE_MVVM_BROADCAST_FIELD_VALUE_CHANGED(GetSkill3Time);
 }
+
 void USW_SkillViewModel::SetDashTime(const float& DownTime)
 {
 	UE_MVVM_SET_PROPERTY_VALUE(DashTime, DownTime);
 	UE_MVVM_BROADCAST_FIELD_VALUE_CHANGED(GetDashTime);
+}
+
+void USW_SkillViewModel::SetUsedSkillType(const ESkillType& SkillType)
+{
+	UE_MVVM_SET_PROPERTY_VALUE(UsedSkillType, SkillType);
+	UE_MVVM_BROADCAST_FIELD_VALUE_CHANGED(GetUsedSkillType);
 }

@@ -86,3 +86,12 @@ void USW_SkillWidget::StopSkillTimer()
 		SkillIcon->SetColorAndOpacity(FLinearColor(1.f, 1.f, 1.f, 1.f));
 	}
 }
+
+void USW_SkillWidget::PlaySkillAnim()
+{
+	if (SkillAnim)
+	{
+		PlayAnimation(SkillAnim);
+	}
+}
+

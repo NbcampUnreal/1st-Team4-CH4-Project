@@ -25,7 +25,6 @@ void USW_SkillSlotWidget::SetSkillIcons(ECharacterType Type)
 				GuardWidget->SetSkillIcon(SkillData.GuardIcon);
 			}
 			*/
-
 			if (DashWidget && IsValid(SkillData.DashIcon))
 			{
 				DashWidget->SetSkillIcon(SkillData.DashIcon);
@@ -50,6 +49,37 @@ void USW_SkillSlotWidget::SetSkillIcons(ECharacterType Type)
 			}
 			*/
 		}
+	}
+}
+
+void USW_SkillSlotWidget::PlaySkillAnim(ESkillType SkillType)
+{
+	switch (SkillType)
+	{
+	case ESkillType::Attack:
+		if (AttackWidget)
+		{
+			AttackWidget->PlaySkillAnim();
+		}
+		break;
+	case ESkillType::Dash:
+		if (DashWidget)
+		{
+			DashWidget->PlaySkillAnim();
+		}
+		break;
+	case ESkillType::Skill1:
+		if (Skill1Widget)
+		{
+			Skill1Widget->PlaySkillAnim();
+		}
+		break;
+	case ESkillType::Skill2:
+		if (Skill2Widget)
+		{
+			Skill2Widget->PlaySkillAnim();
+		}
+		break;
 	}
 }
 

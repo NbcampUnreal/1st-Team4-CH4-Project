@@ -14,6 +14,10 @@ class TEAM4_CH4_PROJECT_API USW_SkillViewModel : public UMVVMViewModelBase
 
 public:
 	UFUNCTION(BlueprintPure, FieldNotify)
+	ESkillType GetUsedSkillType() const { return UsedSkillType; };
+	UFUNCTION(BlueprintCallable)
+	void SetUsedSkillType(const ESkillType& SkillType);
+	UFUNCTION(BlueprintPure, FieldNotify)
 	float GetSkill1Time() const { return Skill1Time; };
 	UFUNCTION(BlueprintCallable)
 	void SetSkill1Time(const float& DownTime);
@@ -31,6 +35,8 @@ public:
 	void SetDashTime(const float& DownTime);
 
 private:
+	UPROPERTY(BlueprintReadWrite, FieldNotify, Getter, Setter, meta = (AllowPrivateAccess))
+	ESkillType UsedSkillType;
 	UPROPERTY(BlueprintReadWrite, FieldNotify, Getter, Setter, meta = (AllowPrivateAccess))
 	float Skill1Time;
 	UPROPERTY(BlueprintReadWrite, FieldNotify, Getter, Setter, meta = (AllowPrivateAccess))
