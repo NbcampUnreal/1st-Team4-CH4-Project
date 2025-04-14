@@ -2,108 +2,115 @@
 
 
 #include "SW_SkillSlotWidget.h"
-#include "../SW_HUDManager.h"
+#include "SW_SkillWidget.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
 
-void USW_SkillSlotWidget::SetSkillIcons(ECharacterType CharacterType)
+void USW_SkillSlotWidget::SetSkillIcons(ECharacterType Type)
 {
 	if (UGameInstance* GameInstance = GetGameInstance())
 	{
 		if (USW_HUDManager* HUDManager = GameInstance->GetSubsystem<USW_HUDManager>())
 		{
-			FSkillDataRow SkillData = HUDManager->GetSkillData(CharacterType);
+			FSkillDataRow SkillData = HUDManager->GetSkillData(Type);
 
-			if (AttackIcon && IsValid(SkillData.AttackIcon))
+			if (AttackWidget && IsValid(SkillData.AttackIcon))
 			{
-				AttackIcon->SetBrushFromTexture(SkillData.AttackIcon);
+				AttackWidget->SetSkillIcon(SkillData.AttackIcon);
+				AttackWidget->SetInputText(FText::FromString(TEXT("U")));
+			}
+			/*
+			if (GuardWidget && IsValid(SkillData.GuardIcon))
+			{
+				GuardWidget->SetSkillIcon(SkillData.GuardIcon);
+			}
+			*/
+			if (DashWidget && IsValid(SkillData.DashIcon))
+			{
+				DashWidget->SetSkillIcon(SkillData.DashIcon);
+				DashWidget->SetInputText(FText::FromString(TEXT("I")));
 			}
 
-			if (GuardIcon && IsValid(SkillData.GuardIcon))
+			if (Skill1Widget && IsValid(SkillData.Skill1Icon))
 			{
-				GuardIcon->SetBrushFromTexture(SkillData.GuardIcon);
+				Skill1Widget->SetSkillIcon(SkillData.Skill1Icon);
+				Skill1Widget->SetInputText(FText::FromString(TEXT("H")));
 			}
 
-			if (DashIcon && IsValid(SkillData.DashIcon))
+			if (Skill2Widget && IsValid(SkillData.Skill2Icon))
 			{
-				DashIcon->SetBrushFromTexture(SkillData.DashIcon);
+				Skill2Widget->SetSkillIcon(SkillData.Skill2Icon);
+				Skill2Widget->SetInputText(FText::FromString(TEXT("J")));
 			}
-
-			if (Skill1Icon && IsValid(SkillData.Skill1Icon))
+			/*
+			if (Skill3Widget && IsValid(SkillData.Skill3Icon))
 			{
-				Skill1Icon->SetBrushFromTexture(SkillData.Skill1Icon);
+				Skill3Widget->SetSkillIcon(SkillData.Skill3Icon);
 			}
-
-			if (Skill2Icon && IsValid(SkillData.Skill2Icon))
-			{
-				Skill2Icon->SetBrushFromTexture(SkillData.Skill2Icon);
-			}
-
-			if (Skill3Icon && IsValid(SkillData.Skill3Icon))
-			{
-				Skill3Icon->SetBrushFromTexture(SkillData.Skill3Icon);
-			}
+			*/
 		}
 	}
 }
 
-void USW_SkillSlotWidget::StartSkill1Timer(const float& RemainingTime)
+void USW_SkillSlotWidget::PlaySkillAnim(ESkillType SkillType)
 {
-	if (RemainingTime <= 0)
+	switch (SkillType)
 	{
-		return;
-	}
-
-	if (Skill1TimeText && Skill1Icon)
-	{
-		Skill1TimeText->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		Skill1Icon->SetColorAndOpacity(FLinearColor(0.f, 0.f, 0.f, 0.5f));
-	}
-
-	if (GetWorld())
-	{
-		GetWorld()->GetTimerManager().SetTimer(
-			Skill1UpdateHandle,
-			this,
-			&USW_SkillSlotWidget::UpdateSkill1TimeText,
-			0.1f,
-			true
-		);
-	}
-	if (GetWorld())
-	{
-		GetWorld()->GetTimerManager().SetTimer(
-			Skill1TimerHandle,
-			this,
-			&USW_SkillSlotWidget::StopSkill1Timer,
-			RemainingTime,
-			false
-		);
+	case ESkillType::Attack:
+		if (AttackWidget)
+		{
+			AttackWidget->PlaySkillAnim();
+		}
+		break;
+	case ESkillType::Dash:
+		if (DashWidget)
+		{
+			DashWidget->PlaySkillAnim();
+		}
+		break;
+	case ESkillType::Skill1:
+		if (Skill1Widget)
+		{
+			Skill1Widget->PlaySkillAnim();
+		}
+		break;
+	case ESkillType::Skill2:
+		if (Skill2Widget)
+		{
+			Skill2Widget->PlaySkillAnim();
+		}
+		break;
 	}
 }
 
-void USW_SkillSlotWidget::UpdateSkill1TimeText()
+void USW_SkillSlotWidget::StartDashDown(const float& DownTime)
 {
-	if (Skill1TimeText && GetWorld())
+	if (DashWidget && DownTime > 0.f)
 	{
-		float RemainingTime = GetWorld()->GetTimerManager().GetTimerRemaining(Skill1TimerHandle);
-		FText RemainingTimeText = FText::FromString(FString::Printf(TEXT("%.0f"), RemainingTime));
-		Skill1TimeText->SetText(RemainingTimeText);
+		DashWidget->StartSkillTimer(DownTime);
 	}
 }
 
-void USW_SkillSlotWidget::StopSkill1Timer()
+void USW_SkillSlotWidget::StartSkill1Down(const float& DownTime)
 {
-	if (Skill1TimeText && Skill1Icon)
+	if (Skill1Widget && DownTime > 0.f)
 	{
-		Skill1TimeText->SetVisibility(ESlateVisibility::Collapsed);
-		Skill1Icon->SetColorAndOpacity(FLinearColor(1.f, 1.f, 1.f, 1.f));
-	}
-	if (GetWorld())
-	{
-		GetWorld()->GetTimerManager().ClearTimer(Skill1TimerHandle);
-		GetWorld()->GetTimerManager().ClearTimer(Skill1UpdateHandle);
+		Skill1Widget->StartSkillTimer(DownTime);
 	}
 }
 
+void USW_SkillSlotWidget::StartSkill2Down(const float& DownTime)
+{
+	if (Skill2Widget && DownTime > 0.f)
+	{
+		Skill2Widget->StartSkillTimer(DownTime);
+	}
+}
 
+void USW_SkillSlotWidget::StartSkill3Down(const float& DownTime)
+{
+	if (Skill3Widget && DownTime > 0.f)
+	{
+		Skill3Widget->StartSkillTimer(DownTime);
+	}
+}
