@@ -34,6 +34,11 @@ void ASW_GameMode::DelayedTravelToLobby()
 	}
 }
 
+TArray<APlayerController*> ASW_GameMode::GetPlayerControllers()
+{
+	return PlayerControllers;
+}
+
 void ASW_GameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);

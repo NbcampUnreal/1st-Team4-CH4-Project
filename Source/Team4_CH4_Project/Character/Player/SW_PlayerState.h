@@ -17,6 +17,9 @@ class TEAM4_CH4_PROJECT_API ASW_PlayerState : public APlayerState, public IAbili
 public:
 	ASW_PlayerState();
 
+	void SetPlayerKill(int Count);
+
+	int GetPlayerKill() const;
 protected:
 	UPROPERTY()
 	TObjectPtr<USW_AbilitySystemComponent> AbilitySystemComponent;
@@ -24,6 +27,10 @@ protected:
 	UPROPERTY()
 	TObjectPtr<USW_AttributeSet> AttributeSet;
 
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	
+	UPROPERTY(Replicated)
+	int PlayerKill;
 public:
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	USW_AttributeSet* GetAttributeSet() const;

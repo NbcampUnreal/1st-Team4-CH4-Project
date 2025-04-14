@@ -24,6 +24,9 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void PopUpResult();
 
+	UFUNCTION()
+	TArray<APlayerController*> GetPlayerControllers();
+	
 	UPROPERTY(EditDefaultsOnly, Category = "GameEndLevel")
 	FString LobbyMapName;
 protected:

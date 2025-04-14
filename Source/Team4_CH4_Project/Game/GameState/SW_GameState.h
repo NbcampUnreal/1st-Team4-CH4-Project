@@ -4,6 +4,8 @@
 #include "GameFramework/GameState.h"
 #include "SW_GameState.generated.h"
 
+class ASW_PlayerState;
+
 UCLASS()
 class TEAM4_CH4_PROJECT_API ASW_GameState : public AGameState
 {
@@ -29,7 +31,7 @@ public:
 	void OnRep_DoEndGame();
 
 	UFUNCTION()
-	void OnRep_StackKill(APlayerController* KilledPlayerController);
+	void OnRep_RoundOver();
 	
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category="RoundSettings")
 	float RoundDuration;
@@ -50,5 +52,7 @@ protected:
 	bool bGameEnd;
 
 	TArray<APlayerController*> PlayerControllers;
+
+	TArray<ASW_PlayerState*> PlayerStatesByKills;
 private:
 };

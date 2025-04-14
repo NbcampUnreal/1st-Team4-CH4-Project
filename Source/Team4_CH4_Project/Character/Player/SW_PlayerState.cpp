@@ -4,6 +4,7 @@
 #include "SW_PlayerState.h"
 #include "Team4_CH4_Project/AbilitySystem/SW_AbilitySystemComponent.h"
 #include "Team4_CH4_Project/AbilitySystem/SW_AttributeSet.h"
+#include "Net/UnrealNetwork.h"
 
 ASW_PlayerState::ASW_PlayerState()
 {
@@ -14,6 +15,23 @@ ASW_PlayerState::ASW_PlayerState()
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
 
 	AttributeSet = CreateDefaultSubobject<USW_AttributeSet>("AttributeSet");
+}
+
+void ASW_PlayerState::SetPlayerKill(int Count)
+{
+	PlayerKill += Count;
+}
+
+int ASW_PlayerState::GetPlayerKill() const
+{
+	return PlayerKill;
+}
+
+void ASW_PlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(ASW_PlayerState, PlayerKill);
+
 }
 
 UAbilitySystemComponent* ASW_PlayerState::GetAbilitySystemComponent() const

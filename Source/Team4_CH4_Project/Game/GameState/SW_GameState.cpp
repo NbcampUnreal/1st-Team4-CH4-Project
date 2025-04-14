@@ -2,13 +2,15 @@
 
 
 #include "Team4_CH4_Project/Game/GameState/SW_GameState.h"
-#include "Team4_CH4_Project/Game/GameMode//SW_GameMode.h"
+#include "Team4_CH4_Project/Game/GameMode/SW_GameMode.h"
 #include "Net/UnrealNetwork.h"
 #include "GameFramework/PlayerController.h"
 #include "EngineUtils.h"
 #include "GameFramework/GameSession.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerState.h"
+#include "Player/SW_PlayerState.h"
+
 ASW_GameState::ASW_GameState()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -16,7 +18,11 @@ ASW_GameState::ASW_GameState()
 	RoundTimeLeft = RoundDuration;
 	CurrentPlayerAmount = 0;
 	bPlayerIn = false;
-
+	bGameEnd = false;
+	if (ASW_GameMode* SWGameMode = (ASW_GameMode*)(GetWorld()->GetAuthGameMode()))
+	{
+		PlayerControllers = SWGameMode->GetPlayerControllers();
+	}
 }
 
 void ASW_GameState::BeginPlay()
@@ -38,13 +44,11 @@ void ASW_GameState::OnRep_DoEndGame()
 	bGameEnd = true;
 }
 
-void ASW_GameState::OnRep_StackKill(APlayerController* KilledPlayerController)
+void ASW_GameState::OnRep_RoundOver()
 {
 	for (APlayerController* PlayerController : PlayerControllers)
 	{
-		if (PlayerController == KilledPlayerController)
-		{
-		}
+		PlayerStatesByKills.Add(PlayerController->GetPlayerState<ASW_PlayerState*>);
 	}
 }
 
