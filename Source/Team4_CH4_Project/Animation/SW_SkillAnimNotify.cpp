@@ -2,6 +2,7 @@
 #include "SW_CharacterBase.h"
 #include "SW_Dubu.h"
 #include "SW_Brall.h"
+#include "SW_Myth.h"
 #include "SW_ThrowActor.h"
 
 void USkillAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
@@ -67,6 +68,22 @@ void USkillAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBas
                 if (ASW_Dubu* Dubu = Cast<ASW_Dubu>(Character))
                 {
                     Dubu->ThrowUltimateSkill();
+                }
+            }
+
+            else if (NotifyEventName == "FireArrow")
+            {
+                if (ASW_Myth* Myth = Cast<ASW_Myth>(Character))
+                {
+                    Myth->SpawnArrow();
+                }
+            }
+
+            else if (NotifyEventName == "FireComboArrow")
+            {
+                if (ASW_Myth* Myth = Cast<ASW_Myth>(Character))
+                {
+                    Myth->SpawnComboArrow();
                 }
             }
         }
