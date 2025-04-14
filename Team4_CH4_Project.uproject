@@ -14,7 +14,8 @@
 				"CoreUObject",
 				"UMG",
 				"Engine",
-				"ModelViewViewModel"
+				"ModelViewViewModel",
+				"GameplayAbilities"
 			]
 		}
 	],
@@ -48,6 +49,10 @@
 		},
 		{
 			"Name": "ModelViewViewModel",
+			"Enabled": true
+		},
+		{
+			"Name": "GameplayAbilities",
 			"Enabled": true
 		}
 	]

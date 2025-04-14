@@ -10,24 +10,29 @@
 #include "Player/SW_PlayerState.h"
 #include "AbilitySystem/SW_AbilitySystemComponent.h"
 #include "AbilitySystem/SW_AttributeSet.h"
+#include "UI/HUD_SJE/SW_HUD.h"
 
 ASW_CharacterPlayer::ASW_CharacterPlayer()
 	: ASW_CharacterBase()
 {
-	SpringBoomLength = 300.f;
-
-	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
+	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->TargetArmLength = SpringBoomLength;
-	CameraBoom->bUsePawnControlRotation = true;
+	CameraBoom->TargetArmLength = 1400.f;
+	CameraBoom->SetRelativeRotation(FRotator(-40.f, 0.f, 0.f));
+	CameraBoom->bUsePawnControlRotation = false;
+	CameraBoom->bInheritYaw = false;
+	CameraBoom->bInheritPitch = false;
+	CameraBoom->bInheritRoll = false;
+	CameraBoom->bDoCollisionTest = false;
 
-	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
+	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom);
 	FollowCamera->bUsePawnControlRotation = false;
+}
 
-	bUseControllerRotationYaw = false;
-	GetCharacterMovement()->bOrientRotationToMovement = true;
-	GetCharacterMovement()->RotationRate = FRotator(0.f, 540.f, 0.f);
+void ASW_CharacterPlayer::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
 }
 
 void ASW_CharacterPlayer::BeginPlay()
@@ -80,6 +85,16 @@ void ASW_CharacterPlayer::InitAbilityActorInfo()
 	ASW_PlayerState* SW_PlayerState = GetPlayerState<ASW_PlayerState>();
 	check(SW_PlayerState);
 	SW_PlayerState->GetAbilitySystemComponent()->InitAbilityActorInfo(SW_PlayerState, this);
-	AbilitySystemComponent = SW_PlayerState->GetAbilitySystemComponent();
-	AttributeSet = SW_PlayerState->GetAttributeSet();
+
+	AbilitySystemComponent = Cast<USW_AbilitySystemComponent>(SW_PlayerState->GetAbilitySystemComponent());
+	AttributeSet = Cast<USW_AttributeSet>(SW_PlayerState->GetAttributeSet());
+	
+	
+	if (ASW_PlayerController* SW_PlayerController = Cast<ASW_PlayerController>(GetController()))
+	{
+		if (ASW_HUD* SW_HUD = Cast<ASW_HUD>(SW_PlayerController->GetHUD()))
+		{
+			SW_HUD->InitOverlay(SW_PlayerController, SW_PlayerState, AbilitySystemComponent, AttributeSet);
+		}
+	}
 }

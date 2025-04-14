@@ -5,11 +5,17 @@
 #include "Components/WidgetComponent.h"
 #include "SW_HP.h"
 #include "GameFramework/DamageType.h"
+#include "AbilitySystemInterface.h"
 #include "SW_CharacterBase.generated.h"
 
-class USpringArmComponent;
-class UCameraComponent;
+
 class UAnimMontage;
+class USW_AbilitySystemComponent;
+class USW_AttributeSet;
+class USW_HPBarWidgetComponent;
+class USW_HPBarWidget;
+
+//DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDownTimeTickDelegate, int32, Seconds);
 
 // 스킬 데미지 관련 =================================================================
 UENUM(BlueprintType)
@@ -42,10 +48,9 @@ struct FSkillData
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
     TSubclassOf<AActor> ProjectileClass;
 };
-// =============================================================================
 
-UCLASS()
-class TEAM4_CH4_PROJECT_API ASW_CharacterBase : public ACharacter
+UCLASS(Abstract)
+class TEAM4_CH4_PROJECT_API ASW_CharacterBase : public ACharacter, public IAbilitySystemInterface
 {
     GENERATED_BODY()
 
@@ -53,7 +58,31 @@ public:
     ASW_CharacterBase();
 
 protected:
+    // Called when the game starts or when spawned
     virtual void BeginPlay() override;
+private:
+    // Movement Value
+    UPROPERTY(VisibleAnywhere, Replicated, Category = "Movement")
+    float GroundSpeed;
+
+    UPROPERTY(VisibleAnywhere, Category = "Movement")
+    FVector Acceleration;
+
+    UPROPERTY(VisibleAnywhere, Category = "Movement")
+    FVector Velocity;
+
+    UPROPERTY(VisibleAnywhere, Category = "Movement")
+    FVector AccelerationLastFrame;
+
+    UPROPERTY(VisibleAnywhere, Category = "Movement")
+    FVector VelocityLastFrame;
+
+    // Skill
+    UPROPERTY(EditAnywhere, Category = "Skill")
+    FTimerHandle  QSkill_DownTime_TimerHandle;
+
+    UPROPERTY(EditAnywhere, Category = "Skill")
+    int32  Skill_DownTime_Remaining;
 
 public:
     virtual void Tick(float DeltaTime) override;
@@ -69,16 +98,6 @@ public:
     virtual void DashSkill();
 
 public:
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
-    USpringArmComponent* CameraBoom;
-
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
-    UCameraComponent* FollowCamera;
-
-    // 체력바
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
-    UWidgetComponent* HealthBarWidget;
-
     // 기본 데미지
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stat")
     float AttackDamage = 50.f;
@@ -91,7 +110,6 @@ public:
     UPROPERTY(EditAnywhere, Category = "Animation")
     UAnimMontage* DeathMontage;
     //===================================================
-
 
 
     // ===================== 콤보 시스템용 ==============================
@@ -138,19 +156,6 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     float DefaultMoveSpeed = 600.f;
 
-    UPROPERTY(VisibleAnywhere, Category = "Movement")
-    FVector Acceleration;
-
-    UPROPERTY(VisibleAnywhere, Category = "Movement")
-    FVector Velocity;
-
-    UPROPERTY(VisibleAnywhere, Category = "Movement")
-    FVector AccelerationLastFrame;
-
-    UPROPERTY(VisibleAnywhere, Category = "Movement")
-    FVector VelocityLastFrame;
-
-
 
     // =======================캐릭터 체력 ============================
     UPROPERTY(EditDefaultsOnly, Category = "Stat")
@@ -173,8 +178,6 @@ protected:
     void Character_Die();
     // ==============================================================
 
-
-
 public:
 
     // 콤보 평타 리셋용
@@ -190,10 +193,6 @@ public:
     // 멈추거나 다시 움직일 수있게 해주는 함수
     UFUNCTION(BlueprintCallable)
     void SetMovementLocked(bool bLocked);
-
-    // 캐릭터 체력바 함수
-    UFUNCTION(BlueprintCallable)
-    void UpdateHealthBar();
 
     // 데미지 처리
     UFUNCTION(BlueprintCallable, Category = "Stat")
@@ -232,4 +231,21 @@ public:
     UFUNCTION(NetMulticast, Reliable)
     void Multicast_ComboAttack();
 
+// Gameplay Ability System
+protected:
+    UPROPERTY()
+    TObjectPtr<USW_AbilitySystemComponent> AbilitySystemComponent;
+
+    UPROPERTY()
+    TObjectPtr<USW_AttributeSet> AttributeSet;
+
+    virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+
+// Widget Component
+protected:
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+    TObjectPtr<UWidgetComponent> HealthBarWidgetComponent;
+
+    //UPROPERTY(EditAnywhere, Category = "UI")
+    //TSubclassOf<USW_HPBarWidget> HealthBarWidgetClass;
 };

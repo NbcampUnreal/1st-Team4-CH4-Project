@@ -36,6 +36,24 @@ public:
 	FGameplayAttributeData MaxMana;
 	ATTRIBUTE_ACCESSORS(USW_AttributeSet, MaxMana);
 
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_AT, Category = "Vital Attributes")
+	FGameplayAttributeData AT;
+	ATTRIBUTE_ACCESSORS(USW_AttributeSet, AT);
+
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_DF, Category = "Vital Attributes")
+	FGameplayAttributeData DF;
+	ATTRIBUTE_ACCESSORS(USW_AttributeSet, DF);
+
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_H_DownTime, Category = "Sikll Attributes")
+	FGameplayAttributeData H_DownTime;
+	ATTRIBUTE_ACCESSORS(USW_AttributeSet, H_DownTime);
+
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_J_DownTime, Category = "Sikll Attributes")
+	FGameplayAttributeData J_DownTime;
+	ATTRIBUTE_ACCESSORS(USW_AttributeSet, J_DownTime);
+
+
+	// vital
 	UFUNCTION()
 	void OnRep_Health(const FGameplayAttributeData& Old_Health) const;
 
@@ -47,6 +65,19 @@ public:
 
 	UFUNCTION()
 	void OnRep_MaxMana(const FGameplayAttributeData& Old_MaxMana) const;
+
+	UFUNCTION()
+	void OnRep_AT(const FGameplayAttributeData& Old_AT) const;
+
+	UFUNCTION()
+	void OnRep_DF(const FGameplayAttributeData& Old_DF) const;
+
+	// skill
+	UFUNCTION()
+	void OnRep_H_DownTime(const FGameplayAttributeData& Old_Q_DownTime) const;
+
+	UFUNCTION()
+	void OnRep_J_DownTime(const FGameplayAttributeData& Old_R_DownTime) const;
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };

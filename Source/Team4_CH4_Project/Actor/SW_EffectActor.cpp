@@ -1,45 +1,34 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Actor/SW_EffectActor.h"
-#include "Components/SphereComponent.h"
+#include "SW_EffectActor.h"
 #include "AbilitySystemInterface.h"
-#include "AbilitySystem/SW_AttributeSet.h"
+#include "AbilitySystemBlueprintLibrary.h"
+#include "AbilitySystemComponent.h"
 
 ASW_EffectActor::ASW_EffectActor()
 {
 	PrimaryActorTick.bCanEverTick = false;
-	Mesh = CreateDefaultSubobject<UStaticMeshComponent>("Mesh");
-	SetRootComponent(Mesh);
 
-	Sphere = CreateDefaultSubobject<USphereComponent>("Sphere");
-	Sphere->SetupAttachment(GetRootComponent());
+	SetRootComponent(CreateDefaultSubobject<USceneComponent>(TEXT("SceneRoot"))); 
 }
 
 void ASW_EffectActor::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	// bind ASW_EffectActor::OnOverlap to Sphere->OnComponentBeginOverlap
-	Sphere->OnComponentBeginOverlap.AddDynamic(this, &ASW_EffectActor::OnOverlap);
-	Sphere->OnComponentEndOverlap.AddDynamic(this, &ASW_EffectActor::EndOverlap);
 }
 
-// TODO : Change this to apply a Gameplay Effect. For now, using const_cast as a hack.
-void ASW_EffectActor::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void ASW_EffectActor::ApplyEffectToTarget(AActor* TargetActor, TSubclassOf<UGameplayEffect> GameplayEffectClass)
 {
-	if (IAbilitySystemInterface* ASCInterface = Cast<IAbilitySystemInterface>(OtherActor))
-	{
-		const USW_AttributeSet* SW_AttributeSet = Cast<USW_AttributeSet>(ASCInterface->GetAbilitySystemComponent()->GetAttributeSet(USW_AttributeSet::StaticClass()));
-		
-		USW_AttributeSet* MutableAuraAttributeSet = const_cast<USW_AttributeSet*>(SW_AttributeSet);
-		MutableAuraAttributeSet->SetHealth(SW_AttributeSet->GetHealth() + 25.f);
-		Destroy();
-	}
+	UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(TargetActor);
+	if (TargetASC == nullptr) return;
+
+	check(GameplayEffectClass);
+	
+	FGameplayEffectContextHandle EffectContextHandle = TargetASC->MakeEffectContext();
+	EffectContextHandle.AddSourceObject(this);
+	FGameplayEffectSpecHandle EffectSpecHandle = TargetASC->MakeOutgoingSpec(GameplayEffectClass, 1.f, EffectContextHandle);
+	TargetASC->ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data.Get());
+	UE_LOG(LogTemp, Warning, TEXT("ApplyEffectToTarget Fucn called"));
 }
-
-void ASW_EffectActor::EndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
-{
-
-}
-

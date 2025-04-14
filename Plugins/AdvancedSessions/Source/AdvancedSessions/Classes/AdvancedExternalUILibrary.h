@@ -7,7 +7,6 @@
 #include "Online.h"
 #include "Engine/LocalPlayer.h"
 #include "OnlineSubsystem.h"
-#include "BlueprintDataDefinitions.h"
 //#include "OnlineFriendsInterface.h"
 //#include "OnlineUserInterface.h"
 //#include "OnlineMessageInterface.h"

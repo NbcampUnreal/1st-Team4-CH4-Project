@@ -1,3 +1,4 @@
+using System.IO;
 using UnrealBuildTool;
 
 public class Team4_CH4_Project : ModuleRules
@@ -15,7 +16,8 @@ public class Team4_CH4_Project : ModuleRules
             "Slate",
             "SlateCore",
             "EnhancedInput", 
-            "AnimGraphRuntime"   
+            "AnimGraphRuntime",
+            "GameplayAbilities"
         });
 
         PublicIncludePaths.AddRange(new string[] {
@@ -23,5 +25,11 @@ public class Team4_CH4_Project : ModuleRules
             "Team4_CH4_Project/Animation"
         });
 
+        PrivateDependencyModuleNames.AddRange(new string[] {
+            "GameplayTags", 
+            "GameplayTasks"
+        });
+
+        PublicIncludePaths.AddRange(new string[] { Path.Combine(ModuleDirectory) });
     }
 }

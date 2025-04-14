@@ -6,6 +6,7 @@
 #include "InputActionValue.h"
 
 ASW_Brall::ASW_Brall()
+    : ASW_CharacterPlayer()
 {
     // 리플리케이션 용
     bReplicates = true;

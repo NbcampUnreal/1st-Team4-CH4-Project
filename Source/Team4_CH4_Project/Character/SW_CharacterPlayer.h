@@ -17,6 +17,8 @@ class TEAM4_CH4_PROJECT_API ASW_CharacterPlayer : public ASW_CharacterBase
 public:
 	ASW_CharacterPlayer();
 
+	virtual void Tick(float DeltaTime) override;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* CameraBoom;
 
@@ -24,8 +26,8 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
-	float SpringBoomLength;
+	/*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
+	float SpringBoomLength;*/
 
 public:
 	/** Returns CameraBoom subobject **/

@@ -1,12 +1,12 @@
 #pragma once
 #include "CoreMinimal.h"
-#include "SW_CharacterBase.h"
+#include "SW_CharacterPlayer.h"
 #include "SW_Brall.generated.h"
 
 class UBoxComponent;
 
 UCLASS()
-class TEAM4_CH4_PROJECT_API ASW_Brall : public ASW_CharacterBase
+class TEAM4_CH4_PROJECT_API ASW_Brall : public ASW_CharacterPlayer
 {
     GENERATED_BODY()
 
