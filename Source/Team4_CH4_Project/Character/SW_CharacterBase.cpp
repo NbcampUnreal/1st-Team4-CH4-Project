@@ -8,6 +8,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Engine/DamageEvents.h"
+#include "Game/GameState/SW_GameState.h"
 
 ASW_CharacterBase::ASW_CharacterBase()
 {
@@ -490,6 +491,12 @@ void ASW_CharacterBase::Character_Die()
     if (HasAuthority() && !bDead) // 서버에서만 처리
     {
         bDead = true;
+        if (ASW_GameState* SWGS = GetWorld()->GetGameState<ASW_GameState>())
+        {
+            SWGS->SetCurrentPlayerAmount(-1);
+            UE_LOG(LogTemp, Warning, TEXT("Player Dead"));
+            SWGS->ShowDebug();
+        }
     }
 
     SetLifeSpan(2.f);

@@ -6,7 +6,6 @@ USW_TestCharacterClassInfo* USW_TestAbilitySystemLibrary::GetCharacterClassDefau
 {
 	if (const ASW_GameMode* SWGamemode = Cast<ASW_GameMode>(UGameplayStatics::GetGameMode(WorldContextObject)))
 	{
-		return SWGamemode->GetCharacterClassDefaultInfo();
 	}
 
 	return nullptr;

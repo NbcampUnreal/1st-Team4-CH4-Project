@@ -15,34 +15,40 @@ public:
 	virtual void BeginPlay() override;
 
 	virtual void Tick(float DeltaSeconds) override;
+
+	UFUNCTION()
+	void SetCurrentPlayerAmount(int AddAmount);
+
+	UFUNCTION(BlueprintCallable)
+	float GetRoundTimeLeft();
+
+	UFUNCTION()
+	void ShowDebug() const;
+
+	UFUNCTION()
+	void OnRep_DoEndGame();
+
+	UFUNCTION()
+	void OnRep_StackKill(APlayerController* KilledPlayerController);
 	
-
-	// 라운드가 종료되었는지 여부
-	UPROPERTY(BlueprintReadOnly, Replicated)
-	bool bIsRoundOver;
-
-	// 현재 생존한 플레이어 수
-	UPROPERTY(BlueprintReadOnly, Replicated)
-	int32 RemainingPlayers;
-
-	// 승리한 플레이어 이름 (한 명 남았을 경우)
-	UPROPERTY(BlueprintReadOnly, Replicated)
-	FString WinningPlayerName;
-
-	// 라운드 총 지속 시간 (초)
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category="RoundSettings")
 	float RoundDuration;
 
-	void SetRoundTime(float SetCurrentRoundTime);
+	
 protected:
-	UPROPERTY(BlueprintReadOnly, Replicated)
-	float RoundTime;
+	
+	UPROPERTY(Replicated, BlueprintReadWrite, Category="RoundSettings")
+	float RoundTimeLeft;
+	
+	UPROPERTY(Replicated, BlueprintReadWrite, Category="CurrentGame")
+	int CurrentPlayerAmount;
 
-	FTimerHandle RoundTimerHandle;
-	FTimerHandle CheckStateTimerHandle;
+	UPROPERTY(Replicated, BlueprintReadWrite, Category="CurrentGame")
+	bool bPlayerIn;
 
-	void UpdateRoundTime();
-	void CheckGameState();
-	UFUNCTION()
-	void EndGame() const;
+	UPROPERTY(BlueprintReadWrite, Category="CurrentGame")
+	bool bGameEnd;
+
+	TArray<APlayerController*> PlayerControllers;
+private:
 };

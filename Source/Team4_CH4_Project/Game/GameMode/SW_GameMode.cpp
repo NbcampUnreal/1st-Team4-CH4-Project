@@ -6,74 +6,66 @@
 
 ASW_GameMode::ASW_GameMode()
 {
-	/*static ConstructorHelpers::FClassFinder<APawn> PlayerPawnBPClass(TEXT("/Game/ThirdPerson/Blueprints/BP_ThirdPersonCharacter"));
-if (PlayerPawnBPClass.Class != NULL)
-{
-	DefaultPawnClass = PlayerPawnBPClass.Class;
-}
-
-static ConstructorHelpers::FClassFinder<APlayerController> PlayerControllerBPClass(TEXT("/Game/ThirdPerson/Blueprints/BP_ThirdPersonPlayerController"));
-if (PlayerControllerBPClass.Class != NULL)
-{
-	PlayerControllerClass = PlayerControllerBPClass.Class;
-}
-*/
-	// ResultWidgetClass는 에디터에서 할당
-}
-
-void ASW_GameMode::HandleGameOver()
-{
-	if (HasAuthority() && !bGameOverHandled)
-	{
-		bGameOverHandled = true;
-		ShowResultWidget();
-	}
 }
 
 void ASW_GameMode::BeginPlay()
 {
 	Super::BeginPlay();
-	// 게임 스테이트 얻기
-	UWorld* ThisWorld = GetWorld();
-	if (ASW_GameState* TempGameState = Cast<ASW_GameState>(GetWorld()->GetGameState()))
+}
+
+
+void ASW_GameMode::HandleGameEnd()
+{
+	UE_LOG(LogTemp, Warning, TEXT("HandleGameEnd Entrance"));
+	FTimerHandle GameEndTimerHandle;
+	GetWorldTimerManager().SetTimer(GameEndTimerHandle, this, &ASW_GameMode::DelayedTravelToLobby, 5.0f, false);
+}
+
+void ASW_GameMode::DelayedTravelToLobby()
+{
+	if (HasAuthority() && !LobbyMapName.IsEmpty())
 	{
-		TempGameState->RoundDuration = 240.0f; // C++에서 기본값 설정 가능
-		TempGameState->SetRoundTime(TempGameState->RoundDuration);
+		// 서버 트래블 시작
+		GetWorld()->ServerTravel(LobbyMapName);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Failed to travel to lobby: Not a server or LobbyMapName is empty."));
 	}
 }
 
-USW_TestCharacterClassInfo* ASW_GameMode:: GetCharacterClassDefaultInfo() const
+void ASW_GameMode::PostLogin(APlayerController* NewPlayer)
 {
-	return ClassDefaults;
-}
-
-void ASW_GameMode::OnPostLogin(AController* NewPlayer)
-{
-	Super::OnPostLogin(NewPlayer);
-
-	int Controllers = GetWorld()->GetNumPlayerControllers();
-	UE_LOG(LogTemp, Warning, TEXT("The PlayerController value is: %d"), Controllers);
-}
-
-void ASW_GameMode::ShowResultWidget()
-{
-	if (HasAuthority() && ResultWidgetClass)
+	Super::PostLogin(NewPlayer);
+	PlayerControllers.Add(NewPlayer);
+	UE_LOG(LogTemp, Warning, TEXT("PostLoginTest"));
+	if (ASW_GameState* SWGS = GetWorld()->GetGameState<ASW_GameState>())
 	{
-		/*for (APlayerController* PC : UGameplayStatics::GetAllPlayerControllers(this))
+		SWGS->SetCurrentPlayerAmount(1);
+		UE_LOG(LogTemp, Warning, TEXT("Player Add"));
+		SWGS->ShowDebug();
+	}
+	
+}
+
+void ASW_GameMode::Logout(AController* Exiting)
+{
+	Super::Logout(Exiting);
+	if (PlayerControllers.Num() > 0)
+	{
+		for (APlayerController* PC : PlayerControllers)
 		{
-			if (PC && PC->IsLocalPlayerController())
+			if (PC==Exiting)
 			{
-				UUserWidget* ResultWidget = CreateWidget<UUserWidget>(PC, ResultWidgetClass);
-				if (ResultWidget)
-				{
-					ResultWidget->AddToViewport();
-					// 필요하다면 결과 위젯에 정보 전달 (GameState 참조 등)
-					PC->bShowMouseCursor = true;
-					PC->SetInputMode(FInputModeUIOnly::FInputModeUIOnly());
-				}
+				PlayerControllers.Remove(PC);
 			}
 		}
-		*/
 	}
 }
 
+void ASW_GameMode::Multicast_EndGame_Implementation()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Round Is Over"));
+	PopUpResult();
+	HandleGameEnd();
+}
