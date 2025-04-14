@@ -1,5 +1,5 @@
 #include "SW_Myth.h"
-#include "SW_Arrow.h"  // SW_Arrow: 화살 투사체 클래스 (SW_ThrowActor 기반)
+#include "SW_Arrow.h" 
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
@@ -44,7 +44,6 @@ AActor* ASW_Myth::SpawnArrow()
         return nullptr;
     }
 
-    // 화살 스폰 위치 및 방향 설정 (캐릭터 앞쪽 100 단위)
     FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * 100.f;
     FRotator SpawnRotation = GetActorRotation();
 
@@ -52,14 +51,31 @@ AActor* ASW_Myth::SpawnArrow()
     Params.Owner = this;
     Params.Instigator = this;
 
+    // 화살 생성
     AActor* Projectile = GetWorld()->SpawnActor<AActor>(ArrowProjectileClass, SpawnLocation, SpawnRotation, Params);
     if (Projectile)
     {
-        Projectile->SetActorScale3D(FVector(1.f));  // 옵션: 크기 조정
+        Projectile->SetActorScale3D(FVector(1.f));
+
+        FTimerHandle TimerHandle;
+        GetWorld()->GetTimerManager().SetTimer(
+            TimerHandle,
+            [Projectile]()
+            {
+                if (IsValid(Projectile)) // IsValid로 화살이 유효한지 확인
+                {
+                    Projectile->Destroy();
+                }
+            },
+            1.0f, // 지속 시간 (초)
+            false // 반복 여부
+        );
     }
-    
+
     return Projectile;
 }
+
+
 
 void ASW_Myth::SpawnComboArrow()
 {
@@ -76,7 +92,6 @@ void ASW_Myth::SpawnComboArrow()
 
             UE_LOG(LogTemp, Warning, TEXT("Arrow Damage set to: %f"), SpawnedArrow->Damage);
 
-            // 화살의 외형 변경 로직 추가
             UStaticMeshComponent* MeshComp = SpawnedArrow->FindComponentByClass<UStaticMeshComponent>();
             if (MeshComp)
             {
@@ -101,7 +116,6 @@ void ASW_Myth::ComboAttack()
 {
     UE_LOG(LogTemp, Warning, TEXT("BasicAttack started"));
 
-    // 부모 콤보 로직 호출
     Super::ComboAttack();
 }
 
@@ -140,7 +154,7 @@ void ASW_Myth::NormalSkill()
             // StaticMeshComponent를 찾아 머티리얼 적용
             if (UStaticMeshComponent* MeshComp = Projectile->FindComponentByClass<UStaticMeshComponent>())
             {
-                if (NormalSkillMaterial) // ArrowMaterial이 설정되어 있다면 적용
+                if (NormalSkillMaterial) // NormalSkillMaterial이 설정되어 있다면 적용
                 {
                     MeshComp->SetMaterial(0, NormalSkillMaterial);
                 }
@@ -148,6 +162,21 @@ void ASW_Myth::NormalSkill()
 
             // 필요 시 크기 조정
             Projectile->SetActorScale3D(FVector(1.f));
+
+            // 1초 후에 화살 제거 (Destroy)
+            FTimerHandle TimerHandle;
+            GetWorld()->GetTimerManager().SetTimer(
+                TimerHandle,
+                [Projectile]()
+                {
+                    if (IsValid(Projectile))
+                    {
+                        Projectile->Destroy();
+                    }
+                },
+                1.0f,      // 1초 후 실행
+                false      // 반복 실행 아님
+            );
         }
     }
 
@@ -155,35 +184,59 @@ void ASW_Myth::NormalSkill()
     PlaySkillAnimation(FName("NormalSkill"));
 }
 
-
 void ASW_Myth::DashAttack()
 {
-    if (HasAuthority())
+    UE_LOG(LogTemp, Warning, TEXT("DashAttack 함수 호출됨"));
+
+    if (!HasAuthority())
     {
-        // 전방으로 화살 발사
-        if (ArrowProjectileClass)
-        {
-            FVector SpawnLocation = GetMesh()->GetSocketLocation("ArrowSocket");
-            FRotator SpawnRotation = GetControlRotation();
-            FActorSpawnParameters SpawnParams;
-            SpawnParams.Owner = this;
-            SpawnParams.Instigator = GetInstigator();
-            GetWorld()->SpawnActor<AActor>(ArrowProjectileClass, SpawnLocation, SpawnRotation, SpawnParams);
-        }
-        // 전방 대시
-        FVector DashDirection = GetActorForwardVector().GetSafeNormal();
-        float DashSpeed = 2000.f;
-        LaunchCharacter(DashDirection * DashSpeed, true, true);
-        // 0.2초 후 후방 회피(백덤블링) 실행
-        FTimerHandle BackTumbleTimer;
-        GetWorldTimerManager().SetTimer(BackTumbleTimer, [this]()
-        {
-            FVector Backward = -GetActorForwardVector();
-            float EvadeSpeed = 600.f;
-            LaunchCharacter(Backward * EvadeSpeed, true, true);
-            PlaySkillAnimation(FName("DashAttack"));
-        }, 0.2f, false);
+        UE_LOG(LogTemp, Warning, TEXT("DashAttack: HasAuthority() false, 실행 중단"));
+        return;
     }
+    
+    if (ArrowProjectileClass)
+    {
+        FVector SpawnLocation = GetMesh()->GetSocketLocation(TEXT("ArrowSocket"));
+        FRotator SpawnRotation = GetControlRotation();
+        FActorSpawnParameters SpawnParams;
+        SpawnParams.Owner = this;
+        SpawnParams.Instigator = GetInstigator();
+        
+        AActor* SpawnedArrow = GetWorld()->SpawnActor<AActor>(ArrowProjectileClass, SpawnLocation, SpawnRotation, SpawnParams);
+        if (SpawnedArrow)
+        {
+            UE_LOG(LogTemp, Warning, TEXT("DashAttack: 화살 생성 성공"));
+        }
+        else
+        {
+            UE_LOG(LogTemp, Error, TEXT("DashAttack: 화살 생성 실패"));
+        }
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("DashAttack: ArrowProjectileClass가 설정되어 있지 않음"));
+    }
+    
+    GetWorldTimerManager().SetTimer(
+        DashTimerHandle,
+        this,
+        &ASW_Myth::ExecuteDash,
+        0.3f,
+        false
+    );
+}
+
+void ASW_Myth::ExecuteDash()
+{
+    // 후방 회피(백덤블링) 동작 실행
+    FVector Backward = -GetActorForwardVector();
+    float EvadeSpeed = 600.f;
+    LaunchCharacter(Backward * EvadeSpeed, true, true);
+    
+    UE_LOG(LogTemp, Warning, TEXT("DashAttack: 후방 회피 실행, EvadeSpeed: %f"), EvadeSpeed);
+    
+    // 후방 회피 애니메이션 실행
+    PlaySkillAnimation(FName("DashAttack"));
 }
 
 
