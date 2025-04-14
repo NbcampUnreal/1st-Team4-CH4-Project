@@ -23,9 +23,12 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
     UStaticMeshComponent* MeshComp;
+protected:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
     UBoxComponent* CollisionComp;
+
+public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Throw")
     float MoveSpeed = 2000.f;

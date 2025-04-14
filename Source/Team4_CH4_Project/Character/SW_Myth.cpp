@@ -2,7 +2,9 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
+#include "SW_MythSpawnActor.h"
 #include "UObject/ConstructorHelpers.h"
+#include "Components/BoxComponent.h"
 
 ASW_Myth::ASW_Myth()
 {
@@ -41,7 +43,7 @@ ASW_Myth::ASW_Myth()
     // 3단 콤보 평타용 콜리전 설정
     FSkillData Combo1Data;
     Combo1Data.DamageMultiplier = 1.0f;
-    Combo1Data.AttackType = ESkillAttackType::RangedProjectile; 
+    Combo1Data.AttackType = ESkillAttackType::RangedProjectile;
     Combo1Data.Range = FVector(100.f); // 의미 없음. 투사체 방식
     Combo1Data.Offset = FVector(100.f, 0.f, 0.f);
     Combo1Data.ProjectileClass = ArrowProjectileClass; // 던지는 액터
@@ -49,6 +51,8 @@ ASW_Myth::ASW_Myth()
     SkillDataMap.Add("Combo1", Combo1Data);
     SkillDataMap.Add("Combo2", Combo1Data);
     SkillDataMap.Add("Combo3", Combo1Data);
+
+
     // 대쉬 스킬 데이터 초기화
     FSkillData DashSkillData;
     DashSkillData.DamageMultiplier = 1.5;
@@ -68,30 +72,49 @@ void ASW_Myth::BeginPlay()
 AActor* ASW_Myth::SpawnArrow()
 {
     FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * 100.f;
-    FRotator SpawnRotation = GetActorRotation();
+
+    FVector TargetLocation;
+
+    if (bIsJumpAttacking)
+    {
+        // 점프어택일 때는 MythSpawnActor가 생성될 위치로 화살발사
+        TargetLocation = GetActorLocation() + GetActorForwardVector() * 250.f + FVector(0, 0, -60.f);
+    }
+    else
+    {
+        TargetLocation = SpawnLocation + GetActorForwardVector() * 1000.f; // 그냥 전방으로
+    }
+
+    FVector Direction = (TargetLocation - SpawnLocation).GetSafeNormal();
+    FRotator SpawnRotation = Direction.Rotation();
 
     FActorSpawnParameters Params;
     Params.Owner = this;
     Params.Instigator = this;
 
-    // 화살 생성
     AActor* Projectile = GetWorld()->SpawnActor<AActor>(ArrowProjectileClass, SpawnLocation, SpawnRotation, Params);
     if (Projectile)
     {
         Projectile->SetActorScale3D(FVector(1.f));
+
+        if (ASW_Arrow* Arrow = Cast<ASW_Arrow>(Projectile))
+        {
+            Arrow->SpawnActorClass = MythSpawnActorClass;
+            Arrow->OwnerCharacter = this;
+        }
 
         FTimerHandle TimerHandle;
         GetWorld()->GetTimerManager().SetTimer(
             TimerHandle,
             [Projectile]()
             {
-                if (IsValid(Projectile)) // IsValid로 화살이 유효한지 확인
+                if (IsValid(Projectile))
                 {
                     Projectile->Destroy();
                 }
             },
-            1.0f, // 지속 시간 (초)
-            false // 반복 여부
+            1.0f,
+            false
         );
     }
 
@@ -145,10 +168,10 @@ void ASW_Myth::NormalSkill()
     }
 
     // 조준 방향 기준으로 회전 설정
-    FRotator BaseRotation = GetControlRotation(); 
+    FRotator BaseRotation = GetControlRotation();
 
     // 부채꼴 각도를 설정 (예: -10도, 0도, +10도)
-    TArray<float> ArrowAngles = {-10.f, 0.f, 10.f};
+    TArray<float> ArrowAngles = { -10.f, 0.f, 10.f };
 
     // 각 각도에 따라 화살 생성
     for (float Angle : ArrowAngles)
@@ -209,14 +232,38 @@ void ASW_Myth::DashSkill()
 
 void ASW_Myth::JumpAttack()
 {
-    if (HasAuthority())
+    if (!HasAuthority()) return;
+
+    bIsJumpAttacking = true;
+
+    GetWorld()->GetTimerManager().SetTimer(JumpAttackFlagTimerHandle, [this]()
+        {
+            bIsJumpAttacking = false;
+        }, 0.5f, false);
+
+    LaunchCharacter(-GetActorForwardVector() * 1000.f, true, true);
+
+    if (MythSpawnActorClass)
     {
-        // 다운 어택: 단순히 보는 방향의 반대쪽으로 이동 (뒤로 백덤블링)
-        FVector DownDirection = -GetActorForwardVector();
-        float DownSpeed = 1000.f;
-        LaunchCharacter(DownDirection * DownSpeed, true, true);
-        PlaySkillAnimation(FName("JumpAttack"));
+        FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * 400.f + FVector(0, 0, -70.f);
+        FRotator SpawnRotation = GetActorRotation(); // 회전값을 캐릭터 방향과 일치시킴
+
+        FActorSpawnParameters Params;
+        Params.Owner = this;
+        Params.Instigator = this;
+
+        AActor* Spawned = GetWorld()->SpawnActor<AActor>(MythSpawnActorClass, SpawnLocation, SpawnRotation, Params);
+        if (ASW_MythSpawnActor* DamageZone = Cast<ASW_MythSpawnActor>(Spawned))
+        {
+            DamageZone->OwnerCharacter = this;
+            DamageZone->Damage = AttackDamage;
+            DamageZone->DamageMultiplier = 2.f;        // 2배 데미지
+            DamageZone->Range = FVector(300.f);        // 스킬 충돌 반경
+            DamageZone->Offset = FVector(0.f, 0.f, 0.f); // 필요시 위치 오프셋
+        }
     }
+
+    PlaySkillAnimation(FName("JumpAttack"));
 }
 
 void ASW_Myth::UltimateSkill()
@@ -227,9 +274,9 @@ void ASW_Myth::UltimateSkill()
         // 3초 후 무적 해제
         FTimerHandle InvincibleTimer;
         GetWorldTimerManager().SetTimer(InvincibleTimer, [this]()
-        {
-            bIsInvincible = false;
-        }, 3.f, false);
+            {
+                bIsInvincible = false;
+            }, 3.f, false);
 
         // 궁극: 좁은 범위로 화살 3발 발사
         if (ArrowProjectileClass)
