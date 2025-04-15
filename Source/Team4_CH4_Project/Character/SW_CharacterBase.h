@@ -142,19 +142,6 @@ public:
     UPROPERTY()
     TSet<AActor*> AlreadyHitActors;
 
-    //캐릭터의 사망 여부 getter,setter
-    UFUNCTION()
-    void SetPlayerbDead(bool IsDead);
-
-    UFUNCTION()
-    bool GetPlayerbDead();
-
-    //캐릭터 사망 후 함수
-
-    UFUNCTION()
-    void CharacterDeath();
-    
-    
 protected:
 
     // 스킬 데이터 (기본값은 자식 클래스에서 설정)
@@ -197,12 +184,7 @@ protected:
     void OnRep_Health();
     // ==============================================================
 
-    // =======================캐릭터 사망 =============================
 
-    UPROPERTY(Replicated)
-    bool bDead;
-    
-    // ==============================================================
 
 public:
 

@@ -4,6 +4,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
+#include "NiagaraComponent.h"
 #include "UObject/ConstructorHelpers.h"
 
 ASW_Void::ASW_Void()
@@ -31,8 +32,7 @@ ASW_Void::ASW_Void()
 
     // 스탯 초기화
     MaxHealth = 450;
-    Health = 50l;
-    /*Health = MaxHealth;*/
+    Health = MaxHealth;
     AttackDamage = 30.f;
 
     // 콤보
@@ -67,19 +67,80 @@ void ASW_Void::BeginPlay()
 {
     Super::BeginPlay();
 }
+// ============================================= 콤보어택 =============================================
 
 void ASW_Void::ComboAttack()
 {
     Super::ComboAttack();
 }
 
+void ASW_Void::SpawnComboMagic()
+{
+    if (!HasAuthority() || !SpellProjectileClass) return;
+
+    FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * 100.f;
+    FRotator SpawnRotation = GetActorRotation();
+
+    FActorSpawnParameters Params;
+    Params.Owner = this;
+    Params.Instigator = this;
+
+    AActor* Projectile = GetWorld()->SpawnActor<AActor>(SpellProjectileClass, SpawnLocation, SpawnRotation, Params);
+    if (ASW_Magic* Magic = Cast<ASW_Magic>(Projectile))
+    {
+        Magic->Damage = AttackDamage * (CurrentComboIndex + 1);
+
+        if (UStaticMeshComponent* MeshComp = Magic->FindComponentByClass<UStaticMeshComponent>())
+        {
+            if (ComboMaterial)
+            {
+                MeshComp->SetMaterial(0, ComboMaterial);
+            }
+        }
+
+        if (ComboEffect)
+        {
+            UNiagaraFunctionLibrary::SpawnSystemAttached(
+                ComboEffect,
+                Magic->GetRootComponent(),
+                NAME_None,
+                FVector::ZeroVector,
+                FRotator::ZeroRotator,
+                EAttachLocation::KeepRelativeOffset,
+                true);
+        }
+
+        // 메시 크기설정 1타 = 1.0, 2타 = 1.5, 3타 = 2.0
+        float ScaleMultiplier = 1.0f + (CurrentComboIndex * 0.5f);
+        Magic->SetActorScale3D(FVector(ScaleMultiplier));
+
+        if (ComboEffect)
+        {
+            UNiagaraComponent* NiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAttached(
+                ComboEffect,
+                Magic->GetRootComponent(),
+                NAME_None,
+                FVector::ZeroVector,
+                FRotator::ZeroRotator,
+                EAttachLocation::KeepRelativeOffset,
+                true);
+
+            if (NiagaraComp)
+            {
+                NiagaraComp->SetWorldScale3D(FVector(ScaleMultiplier));
+            }
+        }
+    }
+}
+// ===================================================================================================
+
+
+
+
+
+// ============================================= 노멀스킬 =============================================
 void ASW_Void::NormalSkill()
 {
-    if (HasAuthority())
-    {
-        CurrentComboIndex = -1;
-    }
-
     PlaySkillAnimation(FName("NormalSkill"));
 }
 
@@ -98,16 +159,37 @@ void ASW_Void::SpawnNormalMagic()
     AActor* Projectile = GetWorld()->SpawnActor<AActor>(SpellProjectileClass, SpawnLocation, SpawnRotation, Params);
     if (ASW_Magic* Magic = Cast<ASW_Magic>(Projectile))
     {
-        Magic->CurrentComboIndex = -1;
-        Magic->NormalStaticMesh = NormalMesh;
-        Magic->NormalSkillMaterial = NormalMaterial;
-        Magic->NormalSkillNiagara = NormalEffect;
         Magic->Damage = AttackDamage * 1.5f;
 
-        Magic->ApplyVisualSettings();
+        if (UStaticMeshComponent* MeshComp = Magic->FindComponentByClass<UStaticMeshComponent>())
+        {
+            if (NormalMaterial) MeshComp->SetMaterial(0, NormalMaterial);
+            if (NormalMesh) MeshComp->SetStaticMesh(NormalMesh);
+        }
+
+        if (NormalEffect)
+        {
+            UNiagaraFunctionLibrary::SpawnSystemAttached(
+                NormalEffect,
+                Magic->GetRootComponent(),
+                NAME_None,
+                FVector::ZeroVector,
+                FRotator::ZeroRotator,
+                EAttachLocation::KeepRelativeOffset,
+                true);
+        }
+
+        Magic->SetActorScale3D(FVector(1.5f));
     }
 }
+// ===================================================================================================
 
+
+
+
+
+
+// =============================================점프어택 =============================================
 void ASW_Void::JumpAttack()
 {
     if (!HasAuthority() || bIsLocked) return;
@@ -138,6 +220,12 @@ void ASW_Void::JumpAttack()
             MoveComp->BrakingDecelerationWalking = 2048.f;
         }), 0.5f, false);
 }
+// ===================================================================================================
+
+
+
+
+// ============================================= 대쉬스킬 =============================================
 
 void ASW_Void::DashSkill()
 {
@@ -151,38 +239,12 @@ void ASW_Void::ExecuteDashTeleport()
 
     TeleportTo(TeleportLocation, GetActorRotation());
 }
+// ====================================================================================================
 
-void ASW_Void::SpawnComboMagic()
-{
-    if (!HasAuthority() || !SpellProjectileClass) return;
 
-    FString ComboKey = FString::Printf(TEXT("Combo%d"), CurrentComboIndex + 1);
-    FSkillData* SkillData = SkillDataMap.Find(FName(*ComboKey));
-    if (!SkillData) return;
 
-    FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * SkillData->Offset.X;
-    FRotator SpawnRotation = GetActorRotation();
 
-    FActorSpawnParameters Params;
-    Params.Owner = this;
-    Params.Instigator = this;
-
-    AActor* Projectile = GetWorld()->SpawnActor<AActor>(SpellProjectileClass, SpawnLocation, SpawnRotation, Params);
-    if (ASW_Magic* Magic = Cast<ASW_Magic>(Projectile))
-    {
-        Magic->CurrentComboIndex = CurrentComboIndex;
-        Magic->Combo1_M = Combo1Material;
-        Magic->Combo2_M = Combo2Material;
-        Magic->Combo3_M = Combo3Material;
-        Magic->ComboEffectNiagara = ComboEffect;
-
-        Magic->ComboScale = FVector(1.5f);
-
-        Magic->Damage = AttackDamage + CurrentComboIndex * 10.f;
-
-        Magic->ApplyVisualSettings();
-    }
-}
+// ============================================= 스페셜스킬 ============================================
 
 void ASW_Void::SpecialSkill()
 {
@@ -219,3 +281,4 @@ void ASW_Void::SpecialSkill()
 
         }), 1.35f, false);
 }
+// ===================================================================================================

@@ -32,13 +32,7 @@ public:
 
 	// 공격스킬마다 다른 메시/머티리얼/나이아가라 생성용 ========================
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Void|Visual")
-	UMaterialInterface* Combo1Material;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Void|Visual")
-	UMaterialInterface* Combo2Material;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Void|Visual")
-	UMaterialInterface* Combo3Material;
+	UMaterialInterface* ComboMaterial;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Void|Visual")
 	UNiagaraSystem* ComboEffect;

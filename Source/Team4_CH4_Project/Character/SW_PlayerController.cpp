@@ -103,6 +103,11 @@ void ASW_PlayerController::ComboAttack(const FInputActionValue& InputValue)
 {
     if (ASW_CharacterBase* PlayerCharacter = Cast<ASW_CharacterBase>(GetPawn()))
     {
+        if (PlayerCharacter->GetCharacterMovement()->IsFalling())
+        {
+            return;
+        }
+
         // 애니메이션 재생중엔 잠금이 걸리지만, ComboInput 노티파이가 활성화된 상태면 입력 저장 허용
         if (PlayerCharacter->bIsLocked)
         {
@@ -135,7 +140,7 @@ void ASW_PlayerController::NormalSkill(const FInputActionValue& InputValue)
 {
     if (ASW_CharacterBase* PlayerCharacter = Cast<ASW_CharacterBase>(GetPawn()))
     {
-        if (!PlayerCharacter->bIsLocked)
+        if (!PlayerCharacter->bIsLocked && !PlayerCharacter->GetCharacterMovement()->IsFalling())
         {
             PlayerCharacter->Server_PlaySkill("NormalSkill");
         }
@@ -146,7 +151,7 @@ void ASW_PlayerController::SpecialSkill(const FInputActionValue& InputValue)
 {
     if (ASW_CharacterBase* PlayerCharacter = Cast<ASW_CharacterBase>(GetPawn()))
     {
-        if (!PlayerCharacter->bIsLocked)
+        if (!PlayerCharacter->bIsLocked && !PlayerCharacter->GetCharacterMovement()->IsFalling())
         {
             PlayerCharacter->Server_PlaySkill("SpecialSkill");
         }
@@ -157,7 +162,7 @@ void ASW_PlayerController::DashSkill(const FInputActionValue& InputValue)
 {
     if (ASW_CharacterBase* PlayerCharacter = Cast<ASW_CharacterBase>(GetPawn()))
     {
-        if (!PlayerCharacter->bIsLocked)
+        if (!PlayerCharacter->bIsLocked && !PlayerCharacter->GetCharacterMovement()->IsFalling())
         {
             PlayerCharacter->Server_PlaySkill("DashSkill");
         }

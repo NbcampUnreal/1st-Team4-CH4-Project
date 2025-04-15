@@ -18,7 +18,8 @@ public:
 	ASW_Myth();
 
 	virtual void ComboAttack() override;
-	AActor* SpawnArrow();
+
+	AActor* SpawnArrow(bool bFanShape, bool bIsNormalSkill = false);
 
 	virtual void BeginPlay() override;
 
