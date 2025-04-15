@@ -26,6 +26,7 @@ void ASW_GameMode::DelayedTravelToLobby()
 	if (HasAuthority() && !LobbyMapName.IsEmpty())
 	{
 		// 서버 트래블 시작
+		CreateSession();
 		GetWorld()->ServerTravel(LobbyMapName);
 	}
 	else
@@ -56,7 +57,7 @@ void ASW_GameMode::PostLogin(APlayerController* NewPlayer)
 void ASW_GameMode::Logout(AController* Exiting)
 {
 	Super::Logout(Exiting);
-	if (PlayerControllers.Num() > 0)
+	if (PlayerControllers.IsValidIndex(0))
 	{
 		for (APlayerController* PC : PlayerControllers)
 		{
@@ -64,6 +65,7 @@ void ASW_GameMode::Logout(AController* Exiting)
 			{
 				PlayerControllers.Remove(PC);
 			}
+			else break;
 		}
 	}
 }

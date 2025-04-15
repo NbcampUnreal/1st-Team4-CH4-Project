@@ -14,15 +14,11 @@
 ASW_GameState::ASW_GameState()
 {
 	PrimaryActorTick.bCanEverTick = true;
-	RoundDuration = 5.f;
+	RoundDuration = 180.f;
 	RoundTimeLeft = RoundDuration;
 	CurrentPlayerAmount = 0;
 	bPlayerIn = false;
 	bGameEnd = false;
-	if (ASW_GameMode* SWGameMode = (ASW_GameMode*)(GetWorld()->GetAuthGameMode()))
-	{
-		PlayerControllers = SWGameMode->GetPlayerControllers();
-	}
 }
 
 void ASW_GameState::BeginPlay()
@@ -46,10 +42,7 @@ void ASW_GameState::OnRep_DoEndGame()
 
 void ASW_GameState::OnRep_RoundOver()
 {
-	for (APlayerController* PlayerController : PlayerControllers)
-	{
-		PlayerStatesByKills.Add(PlayerController->GetPlayerState<ASW_PlayerState*>);
-	}
+	
 }
 
 void ASW_GameState::Tick(float DeltaSeconds)

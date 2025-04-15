@@ -51,8 +51,6 @@ protected:
 	UPROPERTY(BlueprintReadWrite, Category="CurrentGame")
 	bool bGameEnd;
 
-	TArray<APlayerController*> PlayerControllers;
-
 	TArray<ASW_PlayerState*> PlayerStatesByKills;
 private:
 };

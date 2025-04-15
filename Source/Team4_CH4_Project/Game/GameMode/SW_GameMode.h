@@ -24,6 +24,9 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void PopUpResult();
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void CreateSession();
+	
 	UFUNCTION()
 	TArray<APlayerController*> GetPlayerControllers();
 	
