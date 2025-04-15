@@ -156,26 +156,8 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     float DefaultMoveSpeed = 600.f;
 
-
-    // =======================캐릭터 체력 ============================
-    UPROPERTY(EditDefaultsOnly, Category = "Stat")
-    int32 MaxHealth;
-
-    // 체력 리플리케이션
-    UPROPERTY(VisibleAnywhere, ReplicatedUsing = OnRep_Health, Category = "Stat")
-    int32 Health;
-
-    UPROPERTY(VisibleAnywhere, ReplicatedUsing = OnRep_Death, Category = "Stat")
-    bool bDead;
-
-    UFUNCTION()
-    void OnRep_Health();
-
-    UFUNCTION()
-    void OnRep_Death();
-
-    UFUNCTION()
-    void Character_Die();
+    //UFUNCTION()
+    //void Character_Die();
     // ==============================================================
 
 public:
@@ -244,8 +226,5 @@ protected:
 // Widget Component
 protected:
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-    TObjectPtr<UWidgetComponent> HealthBarWidgetComponent;
-
-    //UPROPERTY(EditAnywhere, Category = "UI")
-    //TSubclassOf<UUserWidget> HealthBarWidgetClass;
+    TObjectPtr<UWidgetComponent> HpBarWidgetComponent;
 };

@@ -16,15 +16,16 @@ class TEAM4_CH4_PROJECT_API USW_HPBarWidget : public USW_UserWidget
 	
 protected:
 	UPROPERTY(meta = (BindWidget))
-	UProgressBar* HealthProgressBar;
+	UProgressBar* HPProgressBar;
 
 public:
-	UFUNCTION()
-	void UpdateHealthBar();
-
-	//UFUNCTION()
 	virtual void NativeConstruct() override;
 
+	virtual void NativeOnInitialized() override;	
+
 	UFUNCTION()
-	virtual void NativeOnInitialized() override;
+	void ChangePercent(float _Health, float _MaxHealth);
+
+
 };
+

@@ -19,15 +19,4 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-
-private:
-	UPROPERTY()
-	USW_AbilitySystemComponent* ASC;
-
-	UPROPERTY()
-	USW_AttributeSet* AS;
-
-public:
-	UFUNCTION()
-	void SetASC(USW_AbilitySystemComponent* _ASC, USW_AttributeSet* _AS);
 };

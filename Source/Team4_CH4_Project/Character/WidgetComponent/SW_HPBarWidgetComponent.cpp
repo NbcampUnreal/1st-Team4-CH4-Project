@@ -14,14 +14,3 @@ void USW_HPBarWidgetComponent::BeginPlay()
 {
 	Super::BeginPlay();
 }
-
-void USW_HPBarWidgetComponent::SetASC(USW_AbilitySystemComponent* _ASC, USW_AttributeSet* _AS)
-{
-	ASC = _ASC;
-	AS = _AS;
-
-	if (ASC && AS)
-	{
-		//ASC->GetGameplayAttributeValueChangeDelegate(AS->GetHealthAttribute()).AddUObject(this, &USW_HPBarWidget::UpdateHealthBar);
-	}
-}

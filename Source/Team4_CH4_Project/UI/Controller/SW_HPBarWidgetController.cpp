@@ -6,24 +6,42 @@
 
 void USW_HPBarWidgetController::BroadcastInitialValue()
 {
+	if (AttributeSet)
+	{
+		const USW_AttributeSet* AuraAttributeSet = CastChecked<USW_AttributeSet>(AttributeSet);
+		OnHealthChanged.Broadcast(AuraAttributeSet->GetHealth(), AuraAttributeSet->GetMaxHealth());
+		OnMaxHealthChanged.Broadcast(AuraAttributeSet->GetHealth(), AuraAttributeSet->GetMaxHealth());
+	}
 }
 
 void USW_HPBarWidgetController::BindCallbacksToDependencies()
 {
+	if (AttributeSet)
+	{
+		const USW_AttributeSet* SW_AttributeSet = CastChecked<USW_AttributeSet>(AttributeSet);
+		AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(SW_AttributeSet->GetHealthAttribute()).AddUObject(this, &USW_HPBarWidgetController::HealthChanged);
+		AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(SW_AttributeSet->GetMaxHealthAttribute()).AddUObject(this, &USW_HPBarWidgetController::MaxHealthChanged);
+	}
 }
 
-float USW_HPBarWidgetController::GetHealth() const
+void USW_HPBarWidgetController::HealthChanged(const FOnAttributeChangeData& Data) const
 {
-	const USW_AttributeSet* AS = Cast<USW_AttributeSet>(AttributeSet);
-	return IsValid(AS) ? AS->GetHealth() : 0.f;
+	float MaxHealth;
+	if (AttributeSet)
+	{
+		const USW_AttributeSet* AuraAttributeSet = CastChecked<USW_AttributeSet>(AttributeSet);
+		MaxHealth = AuraAttributeSet->GetMaxHealth();
+	}
+	OnHealthChanged.Broadcast(Data.NewValue, MaxHealth);
 }
 
-float USW_HPBarWidgetController::GetMaxHealth() const
+void USW_HPBarWidgetController::MaxHealthChanged(const FOnAttributeChangeData& Data) const
 {
-	const USW_AttributeSet* AS = Cast<USW_AttributeSet>(AttributeSet);
-	return IsValid(AS) ? AS->GetMaxHealth() : 0.f;
-}
-
-void USW_HPBarWidgetController::OnHealthChanged(const FOnAttributeChangeData& Data)
-{
+	float Health;
+	if (AttributeSet)
+	{
+		const USW_AttributeSet* AuraAttributeSet = CastChecked<USW_AttributeSet>(AttributeSet);
+		Health = AuraAttributeSet->GetHealth();
+	}
+	OnMaxHealthChanged.Broadcast(Health, Data.NewValue);
 }

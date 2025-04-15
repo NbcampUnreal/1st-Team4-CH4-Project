@@ -57,8 +57,8 @@ ASW_CharacterBase::ASW_CharacterBase()
     bPendingNextCombo = false;
 
     // WidgetComponent
-    HealthBarWidgetComponent = CreateDefaultSubobject<USW_HPBarWidgetComponent>(TEXT("THPBarWidgetComponent"));
-    HealthBarWidgetComponent->SetupAttachment(GetMesh());
+    HpBarWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("HpBarWidgetComponent"));
+    HpBarWidgetComponent->SetupAttachment(GetMesh());
 }
 
 void ASW_CharacterBase::BeginPlay()
@@ -418,24 +418,25 @@ void ASW_CharacterBase::ResetCombo()
 
 float ASW_CharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-    int32 DamageToApply = FMath::Clamp(FMath::RoundToInt(DamageAmount), 0, Health);
-    if (DamageToApply <= 0) return 0.f;
+    //int32 DamageToApply = FMath::Clamp(FMath::RoundToInt(DamageAmount), 0, Health);
+    //if (DamageToApply <= 0) return 0.f;
 
-    Health -= DamageToApply;
-    //UpdateHealthBar();
+    //Health -= DamageToApply;
+    ////UpdateHealthBar();
 
-    if (Health <= 0)
-    {
-        Health = 0;
-        Character_Die();
+    //if (Health <= 0)
+    //{
+    //    Health = 0;
+    //    Character_Die();
 
-    }
-    else if (HitReactionMontage && !bIsLocked)
-    {
-        PlayAnimMontage(HitReactionMontage);
-    }
+    //}
+    //else if (HitReactionMontage && !bIsLocked)
+    //{
+    //    PlayAnimMontage(HitReactionMontage);
+    //}
 
-    return DamageToApply;
+    //return DamageToApply;
+    return 50;
 }
 
 // 리플리케이션되는 함수들================================================================================
@@ -445,36 +446,35 @@ void ASW_CharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-    DOREPLIFETIME(ASW_CharacterBase, Health);
     DOREPLIFETIME(ASW_CharacterBase, bIsLocked);
     DOREPLIFETIME(ASW_CharacterBase, bIsAttacking);
     DOREPLIFETIME(ASW_CharacterBase, bIsMovementLocked);
-    DOREPLIFETIME(ASW_CharacterBase, bDead);
+    //DOREPLIFETIME(ASW_CharacterBase, bDead);
 }
 
-void ASW_CharacterBase::OnRep_Health()
-{
-    //UpdateHealthBar();
-}
-
-void ASW_CharacterBase::OnRep_Death()
-{
-    SetLockedState(true);
-    if (DeathMontage)
-    {
-        PlayAnimMontage(DeathMontage);
-    }
-}
-
-void ASW_CharacterBase::Character_Die()
-{
-    if (HasAuthority() && !bDead) // 서버에서만 처리
-    {
-        bDead = true;
-    }
-
-    SetLifeSpan(2.f);
-}
+//void ASW_CharacterBase::OnRep_Health()
+//{
+//    //UpdateHealthBar();
+//}
+//
+//void ASW_CharacterBase::OnRep_Death()
+//{
+//    SetLockedState(true);
+//    if (DeathMontage)
+//    {
+//        PlayAnimMontage(DeathMontage);
+//    }
+//}
+//
+//void ASW_CharacterBase::Character_Die()
+//{
+//    if (HasAuthority() && !bDead) // 서버에서만 처리
+//    {
+//        bDead = true;
+//    }
+//
+//    SetLifeSpan(2.f);
+//}
 
 void ASW_CharacterBase::Server_PlaySkill_Implementation(FName SkillName)
 {

@@ -105,7 +105,7 @@ void ASW_CharacterPlayer::InitAbilityActorInfo()
 			FWidgetControllerParams Params(SW_PlayerController, SW_PlayerState, AbilitySystemComponent, AttributeSet);
 			HpBarWidgetControllerRef->SetWidgetControllerParams(Params);
 
-			USW_HPBarWidget* HPBarWidgetRef = Cast<USW_HPBarWidget>(HealthBarWidgetComponent->GetWidget());
+			USW_HPBarWidget* HPBarWidgetRef = Cast<USW_HPBarWidget>(HpBarWidgetComponent->GetWidget());
 			if(HPBarWidgetRef)
 			{
 				HPBarWidgetRef->SetWidgetController(HpBarWidgetControllerRef);
