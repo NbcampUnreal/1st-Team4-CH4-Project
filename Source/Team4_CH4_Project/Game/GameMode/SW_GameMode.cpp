@@ -43,21 +43,13 @@ TArray<APlayerController*> ASW_GameMode::GetPlayerControllers()
 void ASW_GameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
-	PlayerControllers.Add(NewPlayer);
-	UE_LOG(LogTemp, Warning, TEXT("PostLoginTest"));
-	if (ASW_GameState* SWGS = GetWorld()->GetGameState<ASW_GameState>())
-	{
-		SWGS->SetCurrentPlayerAmount(1);
-		UE_LOG(LogTemp, Warning, TEXT("Player Add"));
-		SWGS->ShowDebug();
-	}
 	
 }
 
 void ASW_GameMode::Logout(AController* Exiting)
 {
 	Super::Logout(Exiting);
-	if (PlayerControllers.IsValidIndex(0))
+	if (IsValid(Exiting))
 	{
 		for (APlayerController* PC : PlayerControllers)
 		{

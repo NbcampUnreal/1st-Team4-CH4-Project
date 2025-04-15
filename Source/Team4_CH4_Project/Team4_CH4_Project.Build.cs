@@ -21,6 +21,12 @@ public class Team4_CH4_Project : ModuleRules
             "GameplayTags"
         });
 
+        if (Target.bBuildEditor)
+        {
+            PrivateDependencyModuleNames.Add("UnrealEd");
+            PrivateDependencyModuleNames.Add("Engine");
+        }
+        
         PublicIncludePaths.AddRange(new string[] {
             "Team4_CH4_Project/Character",
             "Team4_CH4_Project/Animation",
