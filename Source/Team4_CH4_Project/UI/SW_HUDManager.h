@@ -32,12 +32,6 @@ class TEAM4_CH4_PROJECT_API USW_HUDManager : public UGameInstanceSubsystem
 public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 
-	/*** HUD ***/
-	// HUD Widget class pointer (soft) and asset path
-	UPROPERTY()
-	TSoftClassPtr<UUserWidget> HUDWidgetClassPtr;
-	FSoftObjectPath HUDWidgetClassPath;
-
 	// HUD control methods
 	UFUNCTION(BlueprintCallable)
 	void InitializeHUD();
@@ -50,19 +44,31 @@ public:
 	UFUNCTION(BlueprintCallable)
 	UUserWidget* GetHUDWidget();
 
-	/*** Data Table ***/
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CharacterData")
-	UDataTable* CharacterDataTable;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CharacterData")
-	UDataTable* SkillDataTable;
-
 	UFUNCTION(BlueprintCallable)
 	FCharacterDataRow GetCharacterData(ECharacterType CharacterType);
 	UFUNCTION(BlueprintCallable)
 	FSkillDataRow GetSkillData(ECharacterType CharacterType);
 
-	/*** ViewModel ***/
-	// ViewModel control methods
+	UFUNCTION(BlueprintCallable)
+	UMVVMViewModelBase* GetViewModel(EViewModelType ViewModelType);
+	
+protected:
+	UPROPERTY()
+	TSoftClassPtr<UUserWidget> HUDWidgetClassPtr;
+	UPROPERTY()
+	FSoftObjectPath HUDWidgetClassPath;
+	UPROPERTY()
+	UUserWidget* HUDWidget;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess))
+	UDataTable* CharacterDataTable;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess))
+	UDataTable* SkillDataTable;
+
+	UPROPERTY()
+	TMap<EViewModelType, UMVVMViewModelBase*> ViewModelMap;
+
+	// ViewModel instance control methods
 	UFUNCTION(BlueprintCallable)
 	void InitializeAllViewModels();
 	UFUNCTION(BlueprintCallable)
@@ -71,12 +77,4 @@ public:
 	void RemoveAllViewModels();
 	UFUNCTION(BlueprintCallable)
 	void RemoveViewModel(EViewModelType ViewModelType);
-	UFUNCTION(BlueprintCallable)
-	UMVVMViewModelBase* GetViewModel(EViewModelType ViewModelType);
-	
-protected:
-	UPROPERTY()
-	UUserWidget* HUDWidget;
-	UPROPERTY()
-	TMap<EViewModelType, UMVVMViewModelBase*> ViewModelMap;
 };
