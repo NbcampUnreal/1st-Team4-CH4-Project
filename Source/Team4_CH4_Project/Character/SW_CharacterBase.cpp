@@ -8,6 +8,9 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Engine/DamageEvents.h"
+#include "Game/GameState/SW_GameState.h"
+#include "GameFramework/GameMode.h"
+#include "GameFramework/GameState.h"
 
 ASW_CharacterBase::ASW_CharacterBase()
 {
@@ -438,7 +441,7 @@ float ASW_CharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Dama
         {
             PlayAnimMontage(DeathMontage);
         }
-
+        CharacterDeath();
         SetLifeSpan(2.f);
     }
     else if (HitReactionMontage && !bIsLocked)
@@ -469,6 +472,17 @@ void ASW_CharacterBase::SetPlayerbDead(bool IsDead)
 bool ASW_CharacterBase::GetPlayerbDead()
 {
     return bDead;
+}
+
+void ASW_CharacterBase::CharacterDeath()
+{
+    if (HasAuthority())
+    {
+        if (ASW_GameState* SWGS = Cast<ASW_GameState>(GetWorld()->GetGameState()))
+        {
+            SWGS->SetCurrentPlayerAmount(-1);
+        }
+    }
 }
 
 void ASW_CharacterBase::OnRep_Health()

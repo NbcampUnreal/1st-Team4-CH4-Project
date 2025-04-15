@@ -48,7 +48,7 @@ void ASW_GameState::OnRep_RoundOver()
 void ASW_GameState::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-
+	ShowDebug();
 	if (HasAuthority())
 	{
 		if (RoundTimeLeft > -0.1f)

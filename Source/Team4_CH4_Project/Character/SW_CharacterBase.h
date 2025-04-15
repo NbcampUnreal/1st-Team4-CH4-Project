@@ -148,6 +148,11 @@ public:
 
     UFUNCTION()
     bool GetPlayerbDead();
+
+    //캐릭터 사망 후 함수
+
+    UFUNCTION()
+    void CharacterDeath();
     
     
 protected:

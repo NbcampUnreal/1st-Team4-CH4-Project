@@ -44,23 +44,19 @@ void ASW_GameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
 	PlayerControllers.Add(NewPlayer);
-	
+	if (AGameStateBase* GS = GetWorld()->GetGameState())
+	{
+		if (ASW_GameState* SWGS = Cast<ASW_GameState>(GS))
+		{
+			SWGS->SetCurrentPlayerAmount(1);
+		}
+		
+	}
 }
 
 void ASW_GameMode::Logout(AController* Exiting)
 {
 	Super::Logout(Exiting);
-	if (IsValid(Exiting))
-	{
-		for (APlayerController* PC : PlayerControllers)
-		{
-			if (PC==Exiting)
-			{
-				PlayerControllers.Remove(PC);
-			}
-			else break;
-		}
-	}
 }
 
 void ASW_GameMode::Multicast_EndGame_Implementation()
