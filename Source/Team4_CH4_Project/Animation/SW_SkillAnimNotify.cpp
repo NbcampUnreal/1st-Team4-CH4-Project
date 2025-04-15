@@ -4,6 +4,7 @@
 #include "SW_Dubu.h"
 #include "SW_Brall.h"
 #include "SW_Myth.h"
+#include "SW_Void.h"
 #include "SW_ThrowActor.h"
 
 void USkillAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
@@ -129,7 +130,7 @@ void USkillAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBas
                 }
             }
 
-            // 두부 궁극기 스킬
+            // 두부 궁극기 스킬 노티파이
             else if (NotifyEventName == "ThrowActor")
             {
                 if (ASW_Dubu* Dubu = Cast<ASW_Dubu>(Character))
@@ -138,6 +139,7 @@ void USkillAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBas
                 }
             }
 
+            // myth캐릭터 발사체 노티파이
             else if (NotifyEventName == "FireArrow")
             {
                 if (ASW_Myth* Myth = Cast<ASW_Myth>(Character))
@@ -153,6 +155,39 @@ void USkillAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBas
                     Myth->SpawnComboArrow();
                 }
             }
+
+            // void 기본콤보어택 발사체 노티파이
+            else if (NotifyEventName == "FireComboMagic")
+            {
+                if (ASW_Void* Void = Cast<ASW_Void>(Character))
+                {
+                    // SkillName에 따라 명시적으로 인덱스 설정
+                    if (SkillName == "Combo1") Void->CurrentComboIndex = 0;
+                    else if (SkillName == "Combo2") Void->CurrentComboIndex = 1;
+                    else if (SkillName == "Combo3") Void->CurrentComboIndex = 2;
+
+                    Void->SpawnComboMagic();
+                }
+}
+            // void 노말스킬 발사용 노티파이
+            else if (NotifyEventName == "FireNormalMagic")
+            {
+                if (ASW_Void* Void = Cast<ASW_Void>(Character))
+                {
+                    Void->SpawnNormalMagic();
+                }
+}
+
+            // void 대쉬스킬용 노티파이
+            else if (NotifyEventName == "DoDashTeleport")
+            {
+                if (ASW_Void* Void = Cast<ASW_Void>(Character))
+                {
+                    Void->ExecuteDashTeleport();
+                }
+}
+
+
         }
     }
 }

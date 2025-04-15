@@ -1,9 +1,9 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "SW_ThrowActor.h"
+#include "NiagaraSystem.h"
+#include "NiagaraFunctionLibrary.h"
 #include "SW_Magic.generated.h"
 
 UCLASS()
@@ -16,50 +16,52 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
+	virtual void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
+		bool bFromSweep, const FHitResult& SweepResult) override;
 
 public:
-	virtual void Tick(float DeltaTime) override;
 
-	// 마법 투사체의 충돌 처리: 다른 캐릭터에 닿아도 사라지지 않도록 부모 기능을 재정의함.
-	virtual void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-								UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
-								bool bFromSweep, const FHitResult& SweepResult) override;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Magic")
+	int32 CurrentComboIndex = -1;
 
-	/* =====================================================
-	   마법 투사체 특화 변수들
-	===================================================== */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Magic|Mesh")
+	UStaticMesh* NormalStaticMesh;
 
-	// 텔레포트(위치 교환) 활성화 여부.
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Magic")
-	bool bTeleported;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Magic|Material")
+	UMaterialInterface* Combo1_M;
 
-	// 궁극 효과(위로 떠올랐다가 내려꽂히며 폭발) 실행 여부.
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Magic")
-	bool bUltimateTriggered;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Magic|Material")
+	UMaterialInterface* Combo2_M;
 
-	// 텔레포트 후, 투사체가 해당 위치에 머무르는 지속 시간(초).
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Magic")
-	float TeleportLifeDuration;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Magic|Material")
+	UMaterialInterface* Combo3_M;
 
-	/* =====================================================
-	   함수들
-	===================================================== */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Magic|Material")
+	UMaterialInterface* NormalSkillMaterial;
 
-	// 마법사가 투사체와 위치를 바꾸는 순간 호출되는 함수.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Magic|Effect")
+	UNiagaraSystem* ComboEffectNiagara;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Magic|Effect")
+	UNiagaraSystem* NormalSkillNiagara;
+
+
+
+	// 나이아가라 이펙트 생성 함수
+	void SpawnNiagaraEffect(UNiagaraSystem* NiagaraSystem);
+
+
+	// 콤보어택 발사 메시크기설정용
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Magic|Scale")
+	FVector ComboScale = FVector(2.0f); 
+
+	// 노멀스킬 발사 메시크기설정용
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Magic|Scale")
+	FVector NormalSkillScale = FVector(2.0f);
+
+	// 머티/FX 적용용 함수
 	UFUNCTION(BlueprintCallable, Category = "Magic")
-	void OnTeleportActivated();
-
-	// 궁극기 시 투사체에 궁극 효과(위로 떠올랐다 내려꽂히며 폭발)를 실행하는 함수.
-	UFUNCTION(BlueprintCallable, Category = "Magic")
-	void TriggerUltimate();
-
-private:
-	// 텔레포트 활성 후 소멸을 위한 타이머 핸들.
-	FTimerHandle TeleportLifeTimerHandle;
-
-	// 궁극 효과 낙하 및 폭발 처리 함수.
-	void OnUltimateImpact();
-
-	// 타이머에 의해 호출되어 스스로 파괴하는 헬퍼 함수.
-	void DestroySelf();
+	void ApplyVisualSettings(); 
 };

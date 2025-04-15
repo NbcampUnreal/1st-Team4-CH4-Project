@@ -1,5 +1,6 @@
 #include "SW_Void.h"
-#include "SW_Magic.h"  // SW_Magic: 마법 투사체 클래스 (SW_ThrowActor 기반)
+#include "SW_Magic.h"
+#include "SW_VoidSpawnActor.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
@@ -11,9 +12,6 @@ ASW_Void::ASW_Void()
     static ConstructorHelpers::FObjectFinder<UAnimMontage> Combo1(TEXT("/Game/Characters/Void/Animation/ComboAttack/AM_Void_Combo1.AM_Void_Combo1"));
     static ConstructorHelpers::FObjectFinder<UAnimMontage> Combo2(TEXT("/Game/Characters/Void/Animation/ComboAttack/AM_Void_Combo2.AM_Void_Combo2"));
     static ConstructorHelpers::FObjectFinder<UAnimMontage> Combo3(TEXT("/Game/Characters/Void/Animation/ComboAttack/AM_Void_Combo3.AM_Void_Combo3"));
-    if (Combo1.Succeeded()) ComboMontages.Add(Combo1.Object);
-    if (Combo2.Succeeded()) ComboMontages.Add(Combo2.Object);
-    if (Combo3.Succeeded()) ComboMontages.Add(Combo3.Object);
 
     if (Combo1.Succeeded())
     {
@@ -31,11 +29,22 @@ ASW_Void::ASW_Void()
         SkillMontages.Add(FName("Combo3"), Combo3.Object);
     }
 
-
     // 스탯 초기화
-    MaxHealth = 80;
-    Health = MaxHealth;
+    MaxHealth = 450;
+    Health = 50l;
+    /*Health = MaxHealth;*/
     AttackDamage = 30.f;
+
+    // 콤보
+    FSkillData ComboSkill;
+    ComboSkill.DamageMultiplier = 1.0f;
+    ComboSkill.AttackType = ESkillAttackType::RangedProjectile;
+    ComboSkill.Offset = FVector(100.f, 0.f, 0.f);
+    ComboSkill.ProjectileClass = SpellProjectileClass;
+
+    SkillDataMap.Add("Combo1", ComboSkill);
+    SkillDataMap.Add("Combo2", ComboSkill);
+    SkillDataMap.Add("Combo3", ComboSkill);
 
     // 대쉬 스킬 데이터 초기화
     FSkillData DashSkillData;
@@ -44,6 +53,14 @@ ASW_Void::ASW_Void()
     DashSkillData.Range = FVector(300.f); // 대시 범위: 반경 300
     DashSkillData.Offset = FVector(250.f, 0.f, 0.f); // 캐릭터 앞쪽
     SkillDataMap.Add(FName("DashSkill"), DashSkillData);
+
+    // 궁극기 스킬 데이터 초기화
+    FSkillData SpecialSkillData;
+    SpecialSkillData.DamageMultiplier = 2.0f;
+    SpecialSkillData.AttackType = ESkillAttackType::MeleeSphere;
+    SpecialSkillData.Range = FVector(1000.f);
+    SpecialSkillData.Offset = FVector(1000.f, 0.f, 0.f);
+    SkillDataMap.Add(FName("SpecialSkill"), SpecialSkillData);
 }
 
 void ASW_Void::BeginPlay()
@@ -53,91 +70,152 @@ void ASW_Void::BeginPlay()
 
 void ASW_Void::ComboAttack()
 {
-    if (HasAuthority() && SpellProjectileClass)
-    {
-        FVector SpawnLocation = GetMesh()->GetSocketLocation("SpellSocket");
-        FRotator SpawnRotation = GetControlRotation();
-
-        // 3번의 투사체 발사
-        for (int32 i = 0; i < 3; i++)
-        {
-            FActorSpawnParameters SpawnParams;
-            SpawnParams.Owner = this;
-            SpawnParams.Instigator = GetInstigator();
-            AActor* Projectile = GetWorld()->SpawnActor<AActor>(SpellProjectileClass, SpawnLocation, SpawnRotation, SpawnParams);
-            if (Projectile)
-            {
-                // 3번째 투사체는 2배 크기로 생성
-                if (i == 2)
-                {
-                    Projectile->SetActorScale3D(FVector(2.f));
-                }
-            }
-        }
-    }
-    // ApplyCombo Notify사용으로 차후 수정 필요
-    //PlaySkillAnimation(FName("BasicAttack"));
+    Super::ComboAttack();
 }
 
 void ASW_Void::NormalSkill()
 {
-    if (HasAuthority() && SpellProjectileClass)
+    if (HasAuthority())
     {
-        // 화살 생성 위치를 캐릭터의 소켓 위치로 설정
-        FVector SpawnLocation = GetMesh()->GetSocketLocation("SpellSocket");
-
-        // 컨트롤러의 방향을 기반으로 회전값 설정 (캐릭터가 보는 방향)
-        FRotator SpawnRotation = Controller ? Controller->GetControlRotation() : GetActorRotation();
-
-        FActorSpawnParameters SpawnParams;
-        SpawnParams.Owner = this;
-        SpawnParams.Instigator = GetInstigator();
-
-        // 투사체 생성
-        AActor* Projectile = GetWorld()->SpawnActor<AActor>(SpellProjectileClass, SpawnLocation, SpawnRotation, SpawnParams);
-        if (Projectile)
-        {
-            // 크기를 조정하거나 기타 설정 추가 가능
-            Projectile->SetActorScale3D(FVector(3.f));
-        }
+        CurrentComboIndex = -1;
     }
 
-    // 스킬 애니메이션 재생
     PlaySkillAnimation(FName("NormalSkill"));
+}
+
+void ASW_Void::SpawnNormalMagic()
+{
+    if (!HasAuthority() || !SpellProjectileClass) return;
+
+    FVector Direction = GetActorForwardVector();
+    FVector SpawnLocation = GetActorLocation() + Direction * 100.f;
+    FRotator SpawnRotation = Direction.Rotation();
+
+    FActorSpawnParameters Params;
+    Params.Owner = this;
+    Params.Instigator = this;
+
+    AActor* Projectile = GetWorld()->SpawnActor<AActor>(SpellProjectileClass, SpawnLocation, SpawnRotation, Params);
+    if (ASW_Magic* Magic = Cast<ASW_Magic>(Projectile))
+    {
+        Magic->CurrentComboIndex = -1;
+        Magic->NormalStaticMesh = NormalMesh;
+        Magic->NormalSkillMaterial = NormalMaterial;
+        Magic->NormalSkillNiagara = NormalEffect;
+        Magic->Damage = AttackDamage * 1.5f;
+
+        Magic->ApplyVisualSettings();
+    }
 }
 
 void ASW_Void::JumpAttack()
 {
-    if (HasAuthority())
-    {
-        // 이동 멈춤 및 방어막 획득 (방어막 로직은 별도 구현)
-        GetCharacterMovement()->StopMovementImmediately();
-        UE_LOG(LogTemp, Log, TEXT("Void DownAttack: Shield activated."));
-    }
+    if (!HasAuthority() || bIsLocked) return;
+
+    bIsJumpAttacking = true;
+
     PlaySkillAnimation(FName("JumpAttack"));
+
+    // 이동 속도 조절
+    FVector Forward = GetActorForwardVector().GetSafeNormal();
+    float DashSpeed = 1300.f;
+
+    UCharacterMovementComponent* MoveComp = GetCharacterMovement();
+    MoveComp->BrakingFrictionFactor = 0.f;
+    MoveComp->BrakingDecelerationWalking = 0.f;
+
+    LaunchCharacter(Forward * DashSpeed, true, true);
+
+    // 체력 회복 및 UI 갱신
+    Health = FMath::Clamp(Health + 50.f, 0.f, MaxHealth);
+    UpdateHealthBar();
+
+    // 이동 후 마찰 원복
+    FTimerHandle ResetHandle;
+    GetWorldTimerManager().SetTimer(ResetHandle, FTimerDelegate::CreateLambda([this, MoveComp]()
+        {
+            MoveComp->BrakingFrictionFactor = 2.f;
+            MoveComp->BrakingDecelerationWalking = 2048.f;
+        }), 0.5f, false);
 }
 
 void ASW_Void::DashSkill()
 {
-    // 전방 600 단위 이동(텔레포트)
-    FVector TeleportLocation = GetActorLocation() + GetActorForwardVector() * 600.f;
-    TeleportLocation.Z = GetActorLocation().Z;
-    TeleportTo(TeleportLocation, GetActorRotation());
     PlaySkillAnimation(FName("DashSkill"));
 }
 
-
-void ASW_Void::UltimateSkill()
+void ASW_Void::ExecuteDashTeleport()
 {
-    if (HasAuthority() && SpellProjectileClass)
+    FVector TeleportLocation = GetActorLocation() + GetActorForwardVector() * 600.f;
+    TeleportLocation.Z = GetActorLocation().Z;
+
+    TeleportTo(TeleportLocation, GetActorRotation());
+}
+
+void ASW_Void::SpawnComboMagic()
+{
+    if (!HasAuthority() || !SpellProjectileClass) return;
+
+    FString ComboKey = FString::Printf(TEXT("Combo%d"), CurrentComboIndex + 1);
+    FSkillData* SkillData = SkillDataMap.Find(FName(*ComboKey));
+    if (!SkillData) return;
+
+    FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * SkillData->Offset.X;
+    FRotator SpawnRotation = GetActorRotation();
+
+    FActorSpawnParameters Params;
+    Params.Owner = this;
+    Params.Instigator = this;
+
+    AActor* Projectile = GetWorld()->SpawnActor<AActor>(SpellProjectileClass, SpawnLocation, SpawnRotation, Params);
+    if (ASW_Magic* Magic = Cast<ASW_Magic>(Projectile))
     {
-        FVector SpawnLocation = GetMesh()->GetSocketLocation("SpellSocket");
-        FRotator SpawnRotation = GetControlRotation();
-        FActorSpawnParameters SpawnParams;
-        SpawnParams.Owner = this;
-        SpawnParams.Instigator = GetInstigator();
-        // 예시: 단일 강력한 투사체 발사 (추가 효과는 필요에 따라 구현)
-        GetWorld()->SpawnActor<AActor>(SpellProjectileClass, SpawnLocation, SpawnRotation, SpawnParams);
+        Magic->CurrentComboIndex = CurrentComboIndex;
+        Magic->Combo1_M = Combo1Material;
+        Magic->Combo2_M = Combo2Material;
+        Magic->Combo3_M = Combo3Material;
+        Magic->ComboEffectNiagara = ComboEffect;
+
+        Magic->ComboScale = FVector(1.5f);
+
+        Magic->Damage = AttackDamage + CurrentComboIndex * 10.f;
+
+        Magic->ApplyVisualSettings();
     }
+}
+
+void ASW_Void::SpecialSkill()
+{
+    if (!HasAuthority() || !VoidUltimateActorClass) return;
+
     PlaySkillAnimation(FName("SpecialSkill"));
+
+    // 스폰 위치와 회전 설정
+    FVector ForwardVector = GetActorForwardVector();
+    FVector InitialSpawnLocation = GetActorLocation() + ForwardVector * 1000.f;
+    FRotator SpawnRotation = ForwardVector.Rotation();
+
+    // 1.5초 후 스폰
+    FTimerHandle SpawnTimerHandle;
+    GetWorldTimerManager().SetTimer(SpawnTimerHandle, FTimerDelegate::CreateLambda(
+        [this, InitialSpawnLocation, SpawnRotation]()
+        {
+            FActorSpawnParameters Params;
+            Params.Owner = this;
+            Params.Instigator = this;
+            Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+            ASW_VoidSpawnActor* Spawned = GetWorld()->SpawnActor<ASW_VoidSpawnActor>(
+                VoidUltimateActorClass, InitialSpawnLocation, SpawnRotation, Params);
+
+            if (Spawned)
+            {
+                Spawned->OwnerCharacter = this;
+                Spawned->Damage = AttackDamage * 10;
+                Spawned->DamageMultiplier = 2.f;
+                Spawned->Range = FVector(1000.f);
+                Spawned->Offset = FVector::ZeroVector;
+            }
+
+        }), 1.35f, false);
 }

@@ -1,4 +1,3 @@
-// SW_Void.h
 #pragma once
 
 #include "CoreMinimal.h"
@@ -13,7 +12,11 @@ class TEAM4_CH4_PROJECT_API ASW_Void : public ASW_CharacterBase
 public:
 	ASW_Void();
 
-	// 기본 공격: 투사체 3콤보 (3번째 투사체는 2배 크기로 생성)
+protected:
+	// BeginPlay()를 오버라이드하는 경우 반복적으로 호출할 수 있도록 헤더에 선언합니다.
+	virtual void BeginPlay() override;
+
+	// 기본 공격: 투사체 3콤보 (3번째 투사체는 1.5배 크기로 생성)
 	virtual void ComboAttack() override;
 
 	// 일반 스킬: 기본 공격과 유사하게 투사체 발사
@@ -21,18 +24,55 @@ public:
 
 	virtual void JumpAttack() override;
 
-	// 이동 스킬: 투사체와 위치 교환 혹은 전방 텔레포트
 	virtual void DashSkill() override;
 
-	// 궁극기: 텔레포트 및 추가 효과 연계 궁극기
-	UFUNCTION(BlueprintCallable, Category = "Void")
-	void UltimateSkill();
+	virtual void SpecialSkill() override;
 
-	// 마법사의 투사체 클래스 (SW_Magic 기반)
+public:
+
+	// 공격스킬마다 다른 메시/머티리얼/나이아가라 생성용 ========================
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Void|Visual")
+	UMaterialInterface* Combo1Material;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Void|Visual")
+	UMaterialInterface* Combo2Material;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Void|Visual")
+	UMaterialInterface* Combo3Material;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Void|Visual")
+	UNiagaraSystem* ComboEffect;
+
+	// 노멀 스킬용 메시 / 머티리얼 / 이펙트
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Void|Visual")
+	UStaticMesh* NormalMesh;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Void|Visual")
+	UMaterialInterface* NormalMaterial;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Void|Visual")
+	UNiagaraSystem* NormalEffect;
+	// =====================================================================
+
+
+	// Magic발사용 함수
+	void SpawnComboMagic(); // 콤보에서 호출할 발사 함수
+
+	// Normal스킬용 magic발사 함수
+	UFUNCTION(BlueprintCallable, Category = "Void")
+	void SpawnNormalMagic();
+
+
+	// 노티파이에서 호출할 실제 텔레포트 함수
+	UFUNCTION(BlueprintCallable, Category = "Void")
+	void ExecuteDashTeleport();
+
+
+	// 발사할 투사체 액터를 담을 변수
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Void")
 	TSubclassOf<AActor> SpellProjectileClass;
 
-protected:
-	// BeginPlay()를 오버라이드하는 경우 반복적으로 호출할 수 있도록 헤더에 선언합니다.
-	virtual void BeginPlay() override;
+	// 궁극기에서 생성할 액터 담을 변수
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Void|Ultimate")
+	TSubclassOf<class ASW_VoidSpawnActor> VoidUltimateActorClass;
 };
