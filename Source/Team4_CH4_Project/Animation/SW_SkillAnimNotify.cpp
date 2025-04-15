@@ -139,14 +139,15 @@ void USkillAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBas
                 }
             }
 
-            // myth캐릭터 발사체 노티파이
+            // myth 노멀스킬 노티파이
             else if (NotifyEventName == "FireArrow")
             {
                 if (ASW_Myth* Myth = Cast<ASW_Myth>(Character))
                 {
-                    Myth->SpawnArrow();
+                    bool bIsNormalSkill = SkillName == "NormalSkill";
+                    Myth->SpawnArrow(true, bIsNormalSkill);
                 }
-            }
+                }
 
             else if (NotifyEventName == "FireComboArrow")
             {
@@ -161,11 +162,6 @@ void USkillAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBas
             {
                 if (ASW_Void* Void = Cast<ASW_Void>(Character))
                 {
-                    // SkillName에 따라 명시적으로 인덱스 설정
-                    if (SkillName == "Combo1") Void->CurrentComboIndex = 0;
-                    else if (SkillName == "Combo2") Void->CurrentComboIndex = 1;
-                    else if (SkillName == "Combo3") Void->CurrentComboIndex = 2;
-
                     Void->SpawnComboMagic();
                 }
 }
