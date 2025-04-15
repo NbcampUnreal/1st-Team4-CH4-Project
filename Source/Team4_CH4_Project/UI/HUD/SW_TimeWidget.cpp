@@ -2,16 +2,46 @@
 
 
 #include "SW_TimeWidget.h"
-#include "MVVMViewModelBase.h"
+#include "Components/TextBlock.h"
 
-void USW_TimeWidget::SetViewModel(UMVVMViewModelBase* InViewModel)
+void USW_TimeWidget::StartTimer(const int32& Seconds)
 {
-	if (IsValid(InViewModel))
+	if (GetWorld() && !GetWorld()->bIsTearingDown)
 	{
-		ViewModel = InViewModel;
+		GetWorld()->GetTimerManager().SetTimer(
+			StopHandle,
+			this,
+			&USW_TimeWidget::StopTimer,
+			float(Seconds),
+			false
+		);
+
+		GetWorld()->GetTimerManager().SetTimer(
+			UpdateHandle,
+			this,
+			&USW_TimeWidget::UpdateTimer,
+			0.1f,
+			true
+		);
 	}
-	else
+}
+
+void USW_TimeWidget::UpdateTimer()
+{
+	if (TimeText && GetWorld())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("TimeWidget::SetViewModel : InViewModel is invalid"))
+		float RemainingTime = GetWorld()->GetTimerManager().GetTimerRemaining(StopHandle);
+		int32 Minutes = RemainingTime / 60;
+		int32 Seconds = RemainingTime - Minutes * 60;
+		FText RemainingTimeText = FText::FromString(FString::Printf(TEXT("%02d:%02d"), Minutes, Seconds));
+		TimeText->SetText(RemainingTimeText);
+	}
+}
+
+void USW_TimeWidget::StopTimer()
+{
+	if (GetWorld() && !GetWorld()->bIsTearingDown)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(UpdateHandle);
 	}
 }

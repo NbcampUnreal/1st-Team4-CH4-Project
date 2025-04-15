@@ -46,7 +46,7 @@ void USW_ResultsScreen::SetTimeText(const FText& InTimeText)
 // TODO: change parameter to struct
 void USW_ResultsScreen::AddPlayerInfo(const FSW_ResultData& ResultData)
 {
-	if (PlayerInfoBox && PlayerInfoWidgetClass)
+	if (PlayerInfoBox && PlayerInfoWidgetClass && ResultData.Rank > 0)
 	{
 		USW_ResultsInfoWidget* PlayerInfoWidget = CreateWidget<USW_ResultsInfoWidget>(this, PlayerInfoWidgetClass);
 		if (PlayerInfoWidget)

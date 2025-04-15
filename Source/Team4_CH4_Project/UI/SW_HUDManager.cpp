@@ -3,6 +3,7 @@
 
 #include "SW_HUDManager.h"
 #include "Blueprint/UserWidget.h"
+#include "HUD/SW_MainHUDWidget.h"
 #include "ViewModels/SW_StatusBarViewModel.h"
 #include "ViewModels/SW_TimeViewModel.h"
 #include "ViewModels/SW_PlayerInfoViewModel.h"
@@ -10,6 +11,7 @@
 #include "ViewModels/SW_DebuffViewModel.h"
 #include "ViewModels/SW_SquadViewModel.h"
 #include "ViewModels/SW_SkillViewModel.h"
+#include "ViewModels/SW_ResultsViewModel.h"
 #include "CharacterData/SW_CharacterDataRow.h"
 
 void USW_HUDManager::Initialize(FSubsystemCollectionBase& Collection)
@@ -47,10 +49,11 @@ void USW_HUDManager::InitializeHUD()
 
 void USW_HUDManager::DisplayHUD()
 {
-	if (IsValid(HUDWidget))
+	if (USW_MainHUDWidget* MainHUDWidget = Cast<USW_MainHUDWidget>(HUDWidget))
 	{
 		HUDWidget->AddToViewport();
 		HUDWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		MainHUDWidget->StartUpdateTimer();
 	}
 }
 
@@ -140,6 +143,8 @@ void USW_HUDManager::InitializeViewModel(EViewModelType ViewModelType)
 		case EViewModelType::SkillViewModel:
 			ViewModel = NewObject<USW_SkillViewModel>(this);
 			break;
+		case EViewModelType::ResultsViewModel:
+			ViewModel = NewObject<USW_ResultsViewModel>(this);
 		//...
 		}
 		ViewModelMap.Add(ViewModelType, ViewModel);
