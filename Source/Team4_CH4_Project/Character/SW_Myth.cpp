@@ -61,6 +61,15 @@ ASW_Myth::ASW_Myth()
     DashSkillData.Offset = FVector(250.f, 0.f, 0.f); // 캐릭터 앞쪽
     SkillDataMap.Add(FName("DashSkill"), DashSkillData);
 
+    // 스페셜 스킬 콜리전 설정
+    FSkillData SpecialSkillData;
+    SpecialSkillData.DamageMultiplier = 8.f; // 데미지 계수 8배
+    SpecialSkillData.AttackType = ESkillAttackType::MeleeBox;
+    SpecialSkillData.Range = FVector(300.f, 300.f, 200.f);
+    SpecialSkillData.Offset = FVector(500.f, 0.f, 0.f); // 정면 500 위치
+    SkillDataMap.Add(FName("SpecialSkill"), SpecialSkillData);
+
+
     bIsInvincible = false;
 }
 
@@ -72,17 +81,16 @@ void ASW_Myth::BeginPlay()
 AActor* ASW_Myth::SpawnArrow()
 {
     FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * 100.f;
-
     FVector TargetLocation;
 
     if (bIsJumpAttacking)
     {
-        // 점프어택일 때는 MythSpawnActor가 생성될 위치로 화살발사
-        TargetLocation = GetActorLocation() + GetActorForwardVector() * 250.f + FVector(0, 0, -60.f);
+        // 점프 어택일 때는 MythSpawnActor 생성 위치로 화살 발사 (데미지 0)
+        TargetLocation = GetActorLocation() + GetActorForwardVector() * 250.f + FVector(0, 0, -100.f);
     }
     else
     {
-        TargetLocation = SpawnLocation + GetActorForwardVector() * 1000.f; // 그냥 전방으로
+        TargetLocation = SpawnLocation + GetActorForwardVector() * 1000.f; // 바라보는 뒤쪽 방향으로 1000만큼 이동
     }
 
     FVector Direction = (TargetLocation - SpawnLocation).GetSafeNormal();
@@ -121,8 +129,6 @@ AActor* ASW_Myth::SpawnArrow()
     return Projectile;
 }
 
-
-
 void ASW_Myth::SpawnComboArrow()
 {
     AActor* Projectile = SpawnArrow();
@@ -130,24 +136,27 @@ void ASW_Myth::SpawnComboArrow()
     {
         if (ASW_Arrow* SpawnedArrow = Cast<ASW_Arrow>(Projectile))
         {
-            float baseDamage = 20.f;
-            float comboAddedDamage = CurrentComboIndex * 20.f;
-            SpawnedArrow->Damage = baseDamage + comboAddedDamage;
+            // 점프 어택 또는 궁극기 시 데미지 0
+            if (bIsJumpAttacking)
+            {
+                SpawnedArrow->Damage = 0.f;
+            }
+            else
+            {
+                float baseDamage = 20.f;
+                float comboAddedDamage = CurrentComboIndex * 20.f;
+                SpawnedArrow->Damage = baseDamage + comboAddedDamage;
+            }
 
+            // 머티리얼 설정 (기존 코드 유지)
             UStaticMeshComponent* MeshComp = SpawnedArrow->FindComponentByClass<UStaticMeshComponent>();
             if (MeshComp)
             {
                 switch (CurrentComboIndex)
                 {
-                case 0:
-                    MeshComp->SetMaterial(0, FirstMaterial); // 첫 번째 머티리얼
-                    break;
-                case 1:
-                    MeshComp->SetMaterial(0, SecondMaterial); // 두 번째 머티리얼
-                    break;
-                case 2:
-                    MeshComp->SetMaterial(0, ThirdMaterial); // 세 번째 머티리얼
-                    break;
+                case 0: MeshComp->SetMaterial(0, FirstMaterial); break;
+                case 1: MeshComp->SetMaterial(0, SecondMaterial); break;
+                case 2: MeshComp->SetMaterial(0, ThirdMaterial); break;
                 }
             }
         }
@@ -167,21 +176,26 @@ void ASW_Myth::NormalSkill()
         return;
     }
 
-    // 조준 방향 기준으로 회전 설정
-    FRotator BaseRotation = GetControlRotation();
+    // 캐릭터의 현재 전방 방향 벡터 (로컬 기준)
+    FVector CharacterForward = GetActorForwardVector();
+    // 캐릭터의 현재 위치
+    FVector CharacterLocation = GetActorLocation();
 
-    // 부채꼴 각도를 설정 (예: -10도, 0도, +10도)
+    // 부채꼴 각도 설정 (예: -10도, 0도, +10도)
     TArray<float> ArrowAngles = { -10.f, 0.f, 10.f };
 
     // 각 각도에 따라 화살 생성
     for (float Angle : ArrowAngles)
     {
-        // 현재 화살 회전 각도 계산 (BaseRotation에 Yaw 값을 더하거나 뺌)
-        FRotator ArrowRotation = BaseRotation;
-        ArrowRotation.Yaw += Angle;
+        // 1. 캐릭터 전방 방향을 기준으로 회전 적용
+        FRotator RotationOffset(0.f, Angle, 0.f); // Yaw만 회전
+        FVector Direction = RotationOffset.RotateVector(CharacterForward);
 
-        // 화살 스폰 위치: 캐릭터 전방으로 100 단위 거리
-        FVector SpawnLocation = GetActorLocation() + ArrowRotation.Vector() * 100.f;
+        // 2. 화살 스폰 위치: 캐릭터 위치 + 전방 방향 * 100 단위 거리
+        FVector SpawnLocation = CharacterLocation + Direction * 100.f;
+
+        // 3. 화살 발사 방향 설정 (캐릭터가 바라보는 방향 + 각도 적용)
+        FRotator ArrowRotation = Direction.Rotation();
 
         // 화살 스폰
         FActorSpawnParameters Params;
@@ -191,19 +205,18 @@ void ASW_Myth::NormalSkill()
 
         if (Projectile)
         {
-            // StaticMeshComponent를 찾아 머티리얼 적용
+            // 머티리얼 적용 (기존 로직 유지)
             if (UStaticMeshComponent* MeshComp = Projectile->FindComponentByClass<UStaticMeshComponent>())
             {
-                if (NormalSkillMaterial) // NormalSkillMaterial이 설정되어 있다면 적용
+                if (NormalSkillMaterial)
                 {
                     MeshComp->SetMaterial(0, NormalSkillMaterial);
                 }
             }
 
-            // 필요 시 크기 조정
             Projectile->SetActorScale3D(FVector(1.f));
 
-            // 1초 후에 화살 제거 (Destroy)
+            // 1초 후 화살 제거
             FTimerHandle TimerHandle;
             GetWorld()->GetTimerManager().SetTimer(
                 TimerHandle,
@@ -214,13 +227,13 @@ void ASW_Myth::NormalSkill()
                         Projectile->Destroy();
                     }
                 },
-                1.0f,      // 1초 후 실행
-                false      // 반복 실행 아님
+                1.0f,
+                false
             );
         }
     }
 
-    // 기본 스킬 애니메이션 재생
+    // 애니메이션 재생
     PlaySkillAnimation(FName("NormalSkill"));
 }
 
@@ -236,6 +249,7 @@ void ASW_Myth::JumpAttack()
 
     bIsJumpAttacking = true;
 
+    // 0.5초 후 점프 어택 플래그 해제
     GetWorld()->GetTimerManager().SetTimer(JumpAttackFlagTimerHandle, [this]()
         {
             bIsJumpAttacking = false;
@@ -243,57 +257,70 @@ void ASW_Myth::JumpAttack()
 
     LaunchCharacter(-GetActorForwardVector() * 1000.f, true, true);
 
-    if (MythSpawnActorClass)
-    {
-        FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * 400.f + FVector(0, 0, -70.f);
-        FRotator SpawnRotation = GetActorRotation(); // 회전값을 캐릭터 방향과 일치시킴
-
-        FActorSpawnParameters Params;
-        Params.Owner = this;
-        Params.Instigator = this;
-
-        AActor* Spawned = GetWorld()->SpawnActor<AActor>(MythSpawnActorClass, SpawnLocation, SpawnRotation, Params);
-        if (ASW_MythSpawnActor* DamageZone = Cast<ASW_MythSpawnActor>(Spawned))
+    // 0.4초 뒤에 MythSpawnActor 생성
+    FTimerHandle SpawnDelayTimer;
+    GetWorld()->GetTimerManager().SetTimer(
+        SpawnDelayTimer,
+        [this]()
         {
-            DamageZone->OwnerCharacter = this;
-            DamageZone->Damage = AttackDamage;
-            DamageZone->DamageMultiplier = 2.f;        // 2배 데미지
-            DamageZone->Range = FVector(300.f);        // 스킬 충돌 반경
-            DamageZone->Offset = FVector(0.f, 0.f, 0.f); // 필요시 위치 오프셋
-        }
-    }
+            if (MythSpawnActorClass)
+            {
+                FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * 400.f + FVector(0, 0, -70.f);
+                FRotator SpawnRotation = GetActorRotation();
+
+                FActorSpawnParameters Params;
+                Params.Owner = this;
+                Params.Instigator = this;
+
+                AActor* Spawned = GetWorld()->SpawnActor<AActor>(MythSpawnActorClass, SpawnLocation, SpawnRotation, Params);
+                if (ASW_MythSpawnActor* DamageZone = Cast<ASW_MythSpawnActor>(Spawned))
+                {
+                    DamageZone->OwnerCharacter = this;
+                    DamageZone->Damage = AttackDamage;
+                    DamageZone->DamageMultiplier = 2.f; // 데미지 기본어택데미지 곱하기 2
+                    DamageZone->Range = FVector(300.f);
+                    DamageZone->Offset = FVector(0.f, 0.f, 0.f);
+                }
+            }
+        },
+        0.2f, // 0.2초 뒤에 액터 생성 (화살이 지면에 닿는 시간용)
+        false  
+    );
 
     PlaySkillAnimation(FName("JumpAttack"));
 }
 
-void ASW_Myth::UltimateSkill()
+void ASW_Myth::SpecialSkill()
 {
-    if (HasAuthority())
-    {
-        bIsInvincible = true;
-        // 3초 후 무적 해제
-        FTimerHandle InvincibleTimer;
-        GetWorldTimerManager().SetTimer(InvincibleTimer, [this]()
-            {
-                bIsInvincible = false;
-            }, 3.f, false);
+    if (!HasAuthority()) return;
 
-        // 궁극: 좁은 범위로 화살 3발 발사
-        if (ArrowProjectileClass)
+    bIsInvincible = true;
+
+    // 3초 후 무적 해제
+    FTimerHandle InvincibleTimerHandle;
+    GetWorld()->GetTimerManager().SetTimer(
+        InvincibleTimerHandle,
+        [this]()
         {
-            FVector SpawnLocation = GetMesh()->GetSocketLocation("ArrowSocket");
-            FRotator BaseRotation = GetControlRotation();
-            for (int32 Offset = -1; Offset <= 1; Offset++)
-            {
-                FRotator SpawnRotation = BaseRotation;
-                SpawnRotation.Yaw += Offset * 5.f;
-                FActorSpawnParameters SpawnParams;
-                SpawnParams.Owner = this;
-                SpawnParams.Instigator = GetInstigator();
-                GetWorld()->SpawnActor<AActor>(ArrowProjectileClass, SpawnLocation, SpawnRotation, SpawnParams);
-            }
-        }
-    }
+            bIsInvincible = false;
+        },
+        3.0f,
+        false
+    );
+
+    // 애니메이션 실행
     PlaySkillAnimation(FName("SpecialSkill"));
+
+    // 2초 후 데미지 판정
+    FTimerHandle DamageTimer;
+    GetWorld()->GetTimerManager().SetTimer(
+        DamageTimer,
+        [this]()
+        {
+            Server_ApplySkillDamage(FName("SpecialSkill"));
+        },
+        1.7f,
+        false
+    );
 }
 
