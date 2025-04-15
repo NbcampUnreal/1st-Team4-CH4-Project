@@ -12,25 +12,19 @@ public class Team4_CH4_Project : ModuleRules
             "Engine", 
             "InputCore", 
             "UMG",
+            "GameplayTags",
             "Slate",
             "SlateCore",
             "EnhancedInput", 
             "AnimGraphRuntime",
-            "GameplayAbilities",
-            "GameplayTasks",
-            "GameplayTags"
+            "Niagara",
+            "AudioMixer"
         });
-
-        if (Target.bBuildEditor)
-        {
-            PrivateDependencyModuleNames.Add("UnrealEd");
-            PrivateDependencyModuleNames.Add("Engine");
-        }
         
         PublicIncludePaths.AddRange(new string[] {
             "Team4_CH4_Project/Character",
             "Team4_CH4_Project/Animation",
-            "Team4_CH4_Project"
+            "Team4_CH4_Project" 
         });
 
     }

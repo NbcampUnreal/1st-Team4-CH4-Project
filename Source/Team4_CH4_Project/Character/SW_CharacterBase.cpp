@@ -8,7 +8,6 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Engine/DamageEvents.h"
-#include "Game/GameState/SW_GameState.h"
 
 ASW_CharacterBase::ASW_CharacterBase()
 {
@@ -70,9 +69,7 @@ ASW_CharacterBase::ASW_CharacterBase()
 
     bIsLocked = false;
     CurrentComboIndex = 0;
-    bCanNextCombo = true;
-    bPendingNextCombo = false;
-
+ 
     // MaxHealth 초기화 (자식 클래스에서 설정 가능하도록 기본값)
     MaxHealth = 100;
     Health = MaxHealth;
@@ -136,37 +133,14 @@ void ASW_CharacterBase::Player_Jump(const FInputActionValue& _InputValue)
 
 void ASW_CharacterBase::ComboAttack()
 {
-    if (!GetMesh() || !ComboMontages.IsValidIndex(CurrentComboIndex)) return;
+    if (!ComboMontages.IsValidIndex(CurrentComboIndex)) return;
 
-    if (bIsAttacking)
-    {
-        // 콤보 입력 가능 타이밍일 때만 예약
-        if (bCanNextCombo)
-        {
-            bPendingNextCombo = true;
-        }
-        return;
-    }
+    FString ComboKey = FString::Printf(TEXT("Combo%d"), CurrentComboIndex + 1);
+    FSkillData* SkillData = SkillDataMap.Find(*ComboKey);
+    if (!SkillData) return;
 
-    // 콤보 시작
-    UAnimMontage* MontageToPlay = ComboMontages[CurrentComboIndex];
-    if (MontageToPlay)
-    {
-        PlayAnimMontage(MontageToPlay);
-        bIsAttacking = true;
-        bCanNextCombo = false;
-        bPendingNextCombo = false;
-
-        float MontageLength = MontageToPlay->GetPlayLength();
-        FTimerHandle ComboCheckTimer;
-        GetWorldTimerManager().SetTimer(
-            ComboCheckTimer,
-            this,
-            &ASW_CharacterBase::CheckPendingCombo,
-            MontageLength * 0.8f,
-            false
-        );
-    }
+    PlayAnimMontage(ComboMontages[CurrentComboIndex]);
+    SetLockedState(true);
 }
 
 void ASW_CharacterBase::JumpAttack()
@@ -360,22 +334,21 @@ void ASW_CharacterBase::PlaySkillAnimation(FName SkillName)
     if (MontagePtr && *MontagePtr)
     {
         PlayAnimMontage(*MontagePtr);
+        return;
     }
-    else
+
+    if (USW_PlayerAnimInstance* Anim = Cast<USW_PlayerAnimInstance>(GetMesh()->GetAnimInstance()))
     {
-        if (USW_PlayerAnimInstance* Anim = Cast<USW_PlayerAnimInstance>(GetMesh()->GetAnimInstance()))
+        if (Anim->Implements<USW_PlayerAnimLayerInterface>())
         {
-            if (Anim->Implements<USW_PlayerAnimLayerInterface>())
-            {
-                if (SkillName == FName("JumpAttack"))
-                    ISW_PlayerAnimLayerInterface::Execute_PlayJumpAttack(Anim);
-                else if (SkillName == FName("DashSkill"))
-                    ISW_PlayerAnimLayerInterface::Execute_PlayDashSkill(Anim);
-                else if (SkillName == FName("NormalSkill"))
-                    ISW_PlayerAnimLayerInterface::Execute_PlayNormalSkill(Anim);
-                else if (SkillName == FName("SpecialSkill"))
-                    ISW_PlayerAnimLayerInterface::Execute_PlaySpecialSkill(Anim);
-            }
+            if (SkillName == FName("JumpAttack"))
+                ISW_PlayerAnimLayerInterface::Execute_PlayJumpAttack(Anim);
+            else if (SkillName == FName("DashSkill"))
+                ISW_PlayerAnimLayerInterface::Execute_PlayDashSkill(Anim);
+            else if (SkillName == FName("NormalSkill"))
+                ISW_PlayerAnimLayerInterface::Execute_PlayNormalSkill(Anim);
+            else if (SkillName == FName("SpecialSkill"))
+                ISW_PlayerAnimLayerInterface::Execute_PlaySpecialSkill(Anim);
         }
     }
 }
@@ -398,31 +371,22 @@ void ASW_CharacterBase::SetMovementLocked(bool bLocked)
     }
 }
 
-void ASW_CharacterBase::CheckPendingCombo()
+void ASW_CharacterBase::AdvanceCombo()
 {
-    if (bPendingNextCombo)
+    CurrentComboIndex++;
+    if (!ComboMontages.IsValidIndex(CurrentComboIndex))
     {
-        bPendingNextCombo = false;
-        CurrentComboIndex = (CurrentComboIndex + 1) % ComboMontages.Num();
-        bIsAttacking = false; // 다음 콤보 재생 허용
-        ComboAttack();        // 다음 콤보 실행
+        ResetCombo();
+        return;
     }
-    else
-    {
-        // 콤보 종료 처리
-        bIsAttacking = false;
-        bCanNextCombo = false;
-        bPendingNextCombo = false;
-        CurrentComboIndex = 0;
-    }
+
+    PlayAnimMontage(ComboMontages[CurrentComboIndex]);
+    SetLockedState(true);
 }
 
 void ASW_CharacterBase::ResetCombo()
 {
     CurrentComboIndex = 0;
-    bCanNextCombo = true;
-    bPendingNextCombo = false;
-    SetLockedState(false);
 }
 
 void ASW_CharacterBase::UpdateHealthBar()
@@ -442,13 +406,40 @@ float ASW_CharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Dama
     if (DamageToApply <= 0) return 0.f;
 
     Health -= DamageToApply;
-    //UpdateHealthBar();
+    UpdateHealthBar();
+
+    // 공격당하면 카메라가 바라보고있는곳으로 이펙트 생성(캐릭터 중앙에)
+    if (HitEffect)
+    {
+        FVector SpawnLocation = GetActorLocation() + FVector(0.f, 0.f, 80.f);
+
+        if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
+        {
+            if (APlayerCameraManager* CamMgr = PC->PlayerCameraManager)
+            {
+                FRotator CameraRot = CamMgr->GetCameraRotation();
+                FRotator SpawnRotation = FRotator(0.f, CameraRot.Yaw, 0.f);
+
+                UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+                    GetWorld(),
+                    HitEffect,
+                    SpawnLocation,
+                    SpawnRotation
+                );
+            }
+        }
+    }
 
     if (Health <= 0)
     {
         Health = 0;
-        Character_Die();
+        SetLockedState(true);
+        if (DeathMontage)
+        {
+            PlayAnimMontage(DeathMontage);
+        }
 
+        SetLifeSpan(2.f);
     }
     else if (HitReactionMontage && !bIsLocked)
     {
@@ -457,7 +448,6 @@ float ASW_CharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 
     return DamageToApply;
 }
-
 
 // 리플리케이션되는 함수들================================================================================
 
@@ -469,39 +459,22 @@ void ASW_CharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
     DOREPLIFETIME(ASW_CharacterBase, bIsLocked);
     DOREPLIFETIME(ASW_CharacterBase, bIsAttacking);
     DOREPLIFETIME(ASW_CharacterBase, bIsMovementLocked);
-    DOREPLIFETIME(ASW_CharacterBase, bDead);
+}
+
+void ASW_CharacterBase::SetPlayerbDead(bool IsDead)
+{
+    bDead = IsDead;
+}
+
+bool ASW_CharacterBase::GetPlayerbDead()
+{
+    return bDead;
 }
 
 void ASW_CharacterBase::OnRep_Health()
 {
     UpdateHealthBar();
 }
-
-void ASW_CharacterBase::OnRep_Death()
-{
-    SetLockedState(true);
-    if (DeathMontage)
-    {
-        PlayAnimMontage(DeathMontage);
-    }
-}
-
-void ASW_CharacterBase::Character_Die()
-{
-    if (HasAuthority() && !bDead) // 서버에서만 처리
-    {
-        bDead = true;
-        if (ASW_GameState* SWGS = GetWorld()->GetGameState<ASW_GameState>())
-        {
-            SWGS->SetCurrentPlayerAmount(-1);
-            UE_LOG(LogTemp, Warning, TEXT("Player Dead"));
-            SWGS->ShowDebug();
-        }
-    }
-
-    SetLifeSpan(2.f);
-}
-
 
 void ASW_CharacterBase::Server_PlaySkill_Implementation(FName SkillName)
 {
@@ -512,32 +485,12 @@ void ASW_CharacterBase::Server_PlaySkill_Implementation(FName SkillName)
         ComboAttack();
         Multicast_ComboAttack();
         return;
-
     }
 
     if (SkillName == "JumpAttack")
     {
         if (!GetCharacterMovement()->IsFalling()) return;
         JumpAttack();
-        PlaySkillAnimation(SkillName);
-        Multicast_PlaySkill(SkillName);
-
-        if (SkillName == "DashSkill") DashSkill();
-        else if (SkillName == "JumpAttack")
-        {
-            if (GetCharacterMovement()->IsFalling())
-            {
-                JumpAttack();
-            }
-        }
-        else if (SkillName == "NormalSkill")
-        {
-
-        }
-        else if (SkillName == "SpecialSkill")
-        {
-
-        }
     }
     else if (SkillName == "DashSkill")
     {
@@ -558,7 +511,7 @@ void ASW_CharacterBase::Server_PlaySkill_Implementation(FName SkillName)
 
 void ASW_CharacterBase::Multicast_PlaySkill_Implementation(FName SkillName)
 {
-    if (!HasAuthority())
+    if (!HasAuthority()) 
     {
         PlaySkillAnimation(SkillName);
     }

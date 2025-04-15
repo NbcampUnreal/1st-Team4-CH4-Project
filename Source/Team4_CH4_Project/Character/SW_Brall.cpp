@@ -1,8 +1,10 @@
 #include "SW_Brall.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/BoxComponent.h"
+#include "SW_SkillEffectActor.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/DamageEvents.h"
+#include "Engine/EngineTypes.h"
 #include "InputActionValue.h"
 
 ASW_Brall::ASW_Brall()
@@ -17,7 +19,6 @@ ASW_Brall::ASW_Brall()
 
     // 기본 데미지
     AttackDamage = 40;
-
 
     // 대시 충돌 용 몸 전체 박스 콜리전 생성
     DashCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("DashCollider"));
@@ -46,22 +47,62 @@ ASW_Brall::ASW_Brall()
     if (Combo2.Succeeded()) ComboMontages.Add(Combo2.Object);
     if (Combo3.Succeeded()) ComboMontages.Add(Combo3.Object);
 
-    // 기본 스킬 설정
+    if (Combo1.Succeeded())
+    {
+        ComboMontages.Add(Combo1.Object);
+        SkillMontages.Add(FName("Combo1"), Combo1.Object);
+    }
+    if (Combo2.Succeeded())
+    {
+        ComboMontages.Add(Combo2.Object);
+        SkillMontages.Add(FName("Combo2"), Combo2.Object); 
+    }
+    if (Combo3.Succeeded())
+    {
+        ComboMontages.Add(Combo3.Object);
+        SkillMontages.Add(FName("Combo3"), Combo3.Object);
+    }
+
+    // =================================================================================
+    // 3단 콤보 평타용 콜리전 설정
+    FSkillData Combo1Data;
+    Combo1Data.DamageMultiplier = 1.0f;
+    Combo1Data.AttackType = ESkillAttackType::MeleeBox;
+    Combo1Data.Range = FVector(110.f, 150.f, 150.f);
+    Combo1Data.Offset = FVector(140.f, 0.f, 0.f);
+    SkillDataMap.Add("Combo1", Combo1Data);
+
+    FSkillData Combo2Data = Combo1Data;
+    SkillDataMap.Add("Combo2", Combo2Data);
+
+    FSkillData Combo3Data = Combo1Data;
+    SkillDataMap.Add("Combo3", Combo3Data);
+    // =================================================================================
+
+
+    // =================================================================================
+    // 기본 스킬 콜리전 설정
     FSkillData NormalSkillData;
     NormalSkillData.DamageMultiplier = 1.5f; // 데미지 계수
     NormalSkillData.AttackType = ESkillAttackType::BoxTrace;
     NormalSkillData.Range = FVector(600.f, 200.f, 300.f); // X: 길이, Y: 폭, Z: 높이
     NormalSkillData.Offset = FVector(300.f, 0.f, 0.f);
     SkillDataMap.Add(FName("NormalSkill"), NormalSkillData);
+    // =================================================================================
 
-    // 스페셜 스킬 설정
+
+    // =================================================================================
+    // 스페셜 스킬 콜리전 설정
     FSkillData SpecialSkillData;
     SpecialSkillData.DamageMultiplier = 1.5f; // 데미지 계수
     SpecialSkillData.AttackType = ESkillAttackType::MeleeBox; // Box
     SpecialSkillData.Range = FVector(300.f, 300.f, 200.f);  
     SpecialSkillData.Offset = FVector(200.f, 0.f, 0.f);        // 살짝 앞쪽으로
     SkillDataMap.Add(FName("SpecialSkill"), SpecialSkillData);
+    // =================================================================================
 
+
+    // =================================================================================
     // 점프 공격
     FSkillData JumpAttackData;
     JumpAttackData.DamageMultiplier = 1.5f; // 데미지 계수
@@ -69,6 +110,7 @@ ASW_Brall::ASW_Brall()
     JumpAttackData.Range = FVector(200.f, 200.f, 200.f); // 범위 설정
     JumpAttackData.Offset = FVector(200.f, 0.f, -50.f);    // 착지 지점 아래쪽
     SkillDataMap.Add(FName("JumpAttack"), JumpAttackData);
+    // =================================================================================
 }
 
 void ASW_Brall::BeginPlay()
@@ -77,80 +119,14 @@ void ASW_Brall::BeginPlay()
 
     TArray<UChildActorComponent*> ChildActorComps;
     GetComponents<UChildActorComponent>(ChildActorComps);
-
-    for (auto* Comp : ChildActorComps)
-    {
-        if (Comp && Comp->GetName().Contains("BrallSword"))
-        {
-            Sword = Comp;
-            break;
-        }
-    }
-
-    if (!Sword)
-    {
-        return;
-    }
-
-    if (!Sword->GetChildActor())
-    {
-        return;
-    }
-
-    SwordCollider = Sword->GetChildActor()->FindComponentByClass<UBoxComponent>();
-    if (!SwordCollider)
-    {
-        return;
-    }
-
-
-    SwordCollider->OnComponentBeginOverlap.AddDynamic(this, &ASW_Brall::OnSwordOverlap);
-    SwordCollider->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-    SwordCollider->SetHiddenInGame(false);
-    SwordCollider->SetVisibility(true);
 }
 
-// 평타 콤보용 ==============================================================================
-void ASW_Brall::OnSwordOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-    UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
-    bool bFromSweep, const FHitResult& SweepResult)
-{
-    if (!HasAuthority()) return;
 
-    if (OtherActor && OtherActor != this && !AlreadyHitActors.Contains(OtherActor))
-    {
-        int32 Damage = FMath::RoundToInt(AttackDamage * 1.f);
-        if (CurrentComboIndex == 2) // 1타
-        {
-            Damage = AttackDamage  * 1 + 10;
-        }
 
-        FDamageEvent DamageEvent;
-        OtherActor->TakeDamage(Damage, DamageEvent, GetController(), this);
-        AlreadyHitActors.Add(OtherActor);
-    }
-}
+// 기본 3단 콤보용 함수 ================================================================================
 
-void ASW_Brall::SwordAttackStart()
-{
-    if (!HasAuthority()) return;
+// ================================================================================
 
-    AlreadyHitActors.Empty();
-
-    if (SwordCollider)  // null 체크 추가
-    {
-        SwordCollider->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-    }
-}
-
-void ASW_Brall::SwordAttackEnd()
-{
-    if (SwordCollider)  // null 체크 추가
-    {
-        SwordCollider->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-    }
-}
-// ===========================================================================================
 
 
 
@@ -248,6 +224,31 @@ void ASW_Brall::JumpAttack()
             PlaySkillAnimation(FName("JumpAttack"));
 
         }), 0.3f, false);
+}
+void ASW_Brall::Landed(const FHitResult& Hit)
+{
+    Super::Landed(Hit);
+
+    if (!bIsJumpAttacking) return;
+    bIsJumpAttacking = false;
+
+    FVector ForwardOffset = GetActorForwardVector() * 250.f; // 앞으로 50cm 정도
+    FVector SpawnLocation = Hit.ImpactPoint + FVector(0, 0, 10.f) + ForwardOffset;
+    FRotator SpawnRotation = FRotator::ZeroRotator;
+
+    FActorSpawnParameters Params;
+    Params.Owner = this;
+
+    if (JumpLandEffectClass)
+    {
+        ASkillEffectActor* Effect = GetWorld()->SpawnActor<ASkillEffectActor>(
+            JumpLandEffectClass, SpawnLocation, SpawnRotation, Params);
+
+        if (Effect)
+        {
+            Effect->InitEffect(SpawnLocation, SpawnRotation);
+        }
+    }
 }
 // =============================================================================================
 

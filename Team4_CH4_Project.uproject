@@ -13,8 +13,7 @@
 				"CoreUObject",
 				"UMG",
 				"Engine",
-				"ModelViewViewModel",
-				"GameplayAbilities"
+				"ModelViewViewModel"
 			]
 		}
 	],
@@ -25,10 +24,6 @@
 			"TargetAllowList": [
 				"Editor"
 			]
-		},
-		{
-			"Name": "GameplayAbilities",
-			"Enabled": true
 		},
 		{
 			"Name": "SlateInsights",

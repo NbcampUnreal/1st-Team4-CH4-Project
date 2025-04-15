@@ -43,6 +43,7 @@ TArray<APlayerController*> ASW_GameMode::GetPlayerControllers()
 void ASW_GameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
+	PlayerControllers.Add(NewPlayer);
 	
 }
 
