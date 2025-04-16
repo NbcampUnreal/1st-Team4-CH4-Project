@@ -34,6 +34,11 @@ void USW_SettingsMenu::NativeConstruct()
 	{
 		ExitButton->OnClicked.AddDynamic(this, &USW_SettingsMenu::ExitSettings);
 	}
+
+	if (EnterAnim)
+	{
+		PlayAnimation(EnterAnim);
+	}
 }
 
 void USW_SettingsMenu::SetupSettings()

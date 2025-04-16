@@ -9,7 +9,7 @@
 class UTextBlock;
 class UButton;
 
-UCLASS()
+UCLASS(meta = (DisableNativeTick))
 class TEAM4_CH4_PROJECT_API USW_SettingsMenu : public UUserWidget
 {
 	GENERATED_BODY()
@@ -29,6 +29,8 @@ public:
 	UButton* ApplyButton;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	UButton* ExitButton;
+	UPROPERTY(Transient, meta = (BindWidgetAnim))
+	UWidgetAnimation* EnterAnim;
 
 	UPROPERTY(BlueprintReadWrite)
 	TArray<FIntPoint> Resolutions;
