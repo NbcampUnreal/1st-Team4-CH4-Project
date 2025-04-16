@@ -19,7 +19,7 @@ void ASW_VoidSpawnActor::BeginPlay()
 {
     Super::BeginPlay();
 
-    // 2초 후 폭발 판정
+    // 2초 후 폭발
     FTimerHandle ExplosionHandle;
     GetWorldTimerManager().SetTimer(ExplosionHandle, [this]()
         {

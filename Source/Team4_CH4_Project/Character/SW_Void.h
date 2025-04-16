@@ -30,25 +30,6 @@ protected:
 
 public:
 
-	// 공격스킬마다 다른 메시/머티리얼/나이아가라 생성용 ========================
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Void|Visual")
-	UMaterialInterface* ComboMaterial;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Void|Visual")
-	UNiagaraSystem* ComboEffect;
-
-	// 노멀 스킬용 메시 / 머티리얼 / 이펙트
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Void|Visual")
-	UStaticMesh* NormalMesh;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Void|Visual")
-	UMaterialInterface* NormalMaterial;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Void|Visual")
-	UNiagaraSystem* NormalEffect;
-	// =====================================================================
-
-
 	// Magic발사용 함수
 	void SpawnComboMagic(); // 콤보에서 호출할 발사 함수
 
@@ -62,9 +43,13 @@ public:
 	void ExecuteDashTeleport();
 
 
-	// 발사할 투사체 액터를 담을 변수
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Void")
-	TSubclassOf<AActor> SpellProjectileClass;
+	// Combo스킬 발사할 Magic 담을 변수
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Void|Projectile")
+	TSubclassOf<AActor> ComboProjectileClass;
+
+	// NormalSkill용 발사할 Magic 담을 변수
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Void|Projectile")
+	TSubclassOf<AActor> NormalProjectileClass;
 
 	// 궁극기에서 생성할 액터 담을 변수
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Void|Ultimate")

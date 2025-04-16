@@ -182,7 +182,7 @@ AActor* ASW_Myth::SpawnArrow(bool bFanShape, bool bIsNormalSkill)
 
         if (ASW_Arrow* SpawnedArrow = Cast<ASW_Arrow>(Projectile))
         {
-            // ✅ 데미지 설정
+            // 데미지 설정
             if (bIsJumpAttacking)
             {
                 SpawnedArrow->Damage = 0.f;
