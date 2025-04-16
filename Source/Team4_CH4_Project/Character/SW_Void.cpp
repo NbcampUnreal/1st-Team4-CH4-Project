@@ -94,11 +94,11 @@ void ASW_Void::SpawnComboMagic()
       
         if (CurrentComboIndex == 1)
         {
-            Magic->SetActorScale3D(FVector(1.5f)); // 1.5배 크기
+            Magic->SetActorScale3D(FVector(1.2f)); // 1.2배 크기
         }
         else if (CurrentComboIndex == 2)
         {
-            Magic->SetActorScale3D(FVector(2.f)); // 2배 크기
+            Magic->SetActorScale3D(FVector(1.5f)); // 1.5배 크기
         }
     }
 }
