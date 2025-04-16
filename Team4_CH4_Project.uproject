@@ -10,12 +10,10 @@
 			"LoadingPhase": "Default",
 			"AdditionalDependencies": [
 				"Engine",
-				"ControlRigEditor",
 				"CoreUObject",
 				"UMG",
 				"Engine",
-				"ModelViewViewModel",
-				"GameplayAbilities"
+				"ModelViewViewModel"
 			]
 		}
 	],
@@ -26,26 +24,6 @@
 			"TargetAllowList": [
 				"Editor"
 			]
-		},
-		{
-			"Name": "GameplayAbilities",
-			"Enabled": true
-		},
-		{
-			"Name": "PCG",
-			"Enabled": true
-		},
-		{
-			"Name": "PCGExternalDataInterop",
-			"Enabled": true
-		},
-		{
-			"Name": "PCGGeometryScriptInterop",
-			"Enabled": true
-		},
-		{
-			"Name": "PCGExtendedToolkit",
-			"Enabled": true
 		},
 		{
 			"Name": "SlateInsights",

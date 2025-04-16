@@ -12,10 +12,11 @@ ASW_ThrowActor::ASW_ThrowActor()
 
     PrimaryActorTick.bCanEverTick = true;
 
-    // Static Mesh 컴포넌트 설정 (블루프린트에서 메시 지정)
+    // Static Mesh 컴포넌트 설정
     MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
+    MeshComp->SetMobility(EComponentMobility::Movable);
     RootComponent = MeshComp;
-    MeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision); // 메시 자체는 충돌 X
+    MeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
     // 충돌용 박스 컴포넌트 설정
     CollisionComp = CreateDefaultSubobject<UBoxComponent>(TEXT("CollisionComp"));

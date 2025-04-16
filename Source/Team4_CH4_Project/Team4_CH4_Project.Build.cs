@@ -12,18 +12,19 @@ public class Team4_CH4_Project : ModuleRules
             "Engine", 
             "InputCore", 
             "UMG",
+            "GameplayTags",
             "Slate",
             "SlateCore",
             "EnhancedInput", 
             "AnimGraphRuntime",
-            "GameplayAbilities",
-            "GameplayTasks",
-            "GameplayTags"
+            "Niagara",
+            "AudioMixer"
         });
-
+        
         PublicIncludePaths.AddRange(new string[] {
             "Team4_CH4_Project/Character",
-            "Team4_CH4_Project/Animation"
+            "Team4_CH4_Project/Animation",
+            "Team4_CH4_Project" 
         });
 
     }

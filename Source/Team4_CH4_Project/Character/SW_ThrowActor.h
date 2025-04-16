@@ -21,11 +21,14 @@ protected:
 public:
     virtual void Tick(float DeltaTime) override;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
     UStaticMeshComponent* MeshComp;
+protected:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
     UBoxComponent* CollisionComp;
+
+public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Throw")
     float MoveSpeed = 2000.f;
@@ -41,7 +44,7 @@ public:
     TSet<AActor*> AlreadyHitActors;
 
     UFUNCTION()
-    void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+    virtual void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
         UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
         bool bFromSweep, const FHitResult& SweepResult);
 

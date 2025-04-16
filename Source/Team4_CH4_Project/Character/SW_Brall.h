@@ -1,6 +1,8 @@
 #pragma once
+
 #include "CoreMinimal.h"
 #include "SW_CharacterBase.h"
+#include "SW_SkillEffectActor.h"
 #include "SW_Brall.generated.h"
 
 class UBoxComponent;
@@ -17,6 +19,9 @@ public:
     virtual void BeginPlay() override;
     virtual void DashSkill() override;
     virtual void JumpAttack() override;
+    // 점프어택 착지시 나이아가라 이펙트용
+    virtual void Landed(const FHitResult& Hit) override;
+
 
 public:
     FTimerHandle DashTimerHandle;
@@ -28,22 +33,13 @@ protected:
     UPROPERTY(VisibleAnywhere, Category = "Combat")
     UChildActorComponent* Sword;
 
-    // 칼 콜리전
-    UPROPERTY(VisibleAnywhere, Category = "Combat")
-    UBoxComponent* SwordCollider;
-
     // 대쉬용 캐릭터 몸 콜리전
     UPROPERTY(VisibleAnywhere, Category = "Combat")
     UBoxComponent* DashCollider; // ✅ 대시 데미지용 박스 콜리전 추가
 
-    UPROPERTY()
-    TSet<AActor*> AlreadyHitActors;
-
-    // 평타 콤보용 소드 콜리전 데미지 함수
-    UFUNCTION()
-    void OnSwordOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-        UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
-        bool bFromSweep, const FHitResult& SweepResult);
+    // 점프어택 이펙트 블루프린트 클래스 지정용
+    UPROPERTY(EditAnywhere, Category = "Effect")
+    TSubclassOf<ASkillEffectActor> JumpLandEffectClass;
 
     // 대쉬 스킬용 몸 전체 콜리전 데미지 함수
     UFUNCTION()
@@ -55,8 +51,4 @@ public:
 
     // 대쉬스킬
     void ExecuteDesh();
-
-    // 평타 노티파이용
-    void SwordAttackStart();
-    void SwordAttackEnd();
 };

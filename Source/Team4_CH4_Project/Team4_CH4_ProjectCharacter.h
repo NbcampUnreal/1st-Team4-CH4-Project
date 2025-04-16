@@ -14,9 +14,6 @@ class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
 
-class USW_AbilitySystemComponent;
-class USW_AttributeSet;
-
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDownTimeTickDelegate, int32, Seconds);
@@ -70,17 +67,8 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 private:
 
-	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	TObjectPtr<USW_AbilitySystemComponent> SWAbilitySystemComp;
-
-	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	TObjectPtr<USW_AttributeSet> SWAttributes;
-
 	UPROPERTY(EditAnywhere, Category = "Custom Values|Character Info") // �ð迡 ��ġ�� �ν��Ͻ� ������ ����. ��Ȯ���� � ���������� �÷��̾ ���迡 �ٷ� ��ġ�ϰ� �ʹٸ� EditAnywhere �� ����ؾ��Ѵ�.
 	FGameplayTag CharacterTag;
-
-	void InitAbilityActorInfo();
-	void InitClassDefaults();
 
 
 public:

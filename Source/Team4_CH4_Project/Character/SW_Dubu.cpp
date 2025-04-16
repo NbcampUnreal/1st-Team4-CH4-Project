@@ -4,6 +4,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "EnhancedInputComponent.h"
 #include "Engine/DamageEvents.h"
+#include "Engine/EngineTypes.h"
 #include "InputActionValue.h"
 #include "SW_ThrowActor.h"
 
@@ -24,7 +25,7 @@ ASW_Dubu::ASW_Dubu()
 	// 대시 충돌용 박스 콜리전
 	DashCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("DashCollider"));
 	DashCollider->SetupAttachment(RootComponent);
-	DashCollider->SetBoxExtent(FVector(120.f, 120.f, 100.f));
+	DashCollider->SetBoxExtent(FVector(120.f, 120.f, 120.f));
 	DashCollider->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	DashCollider->SetCollisionResponseToAllChannels(ECR_Ignore);
 	DashCollider->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
@@ -32,31 +33,8 @@ ASW_Dubu::ASW_Dubu()
 	DashCollider->SetHiddenInGame(false); // 디버그용
 	DashCollider->SetVisibility(true);    // 디버그용
 
-	// 손 콜리전 세팅
-	RightHandCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("RightHandCollider"));
-	RightHandCollider->SetupAttachment(GetMesh(), TEXT("R_hand_Jnt"));
-	RightHandCollider->SetBoxExtent(FVector(0.5f, 0.3f, 0.3f)); // 콜리전 크기조절
-	RightHandCollider->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
-	RightHandCollider->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	RightHandCollider->SetCollisionResponseToAllChannels(ECR_Ignore);
-	RightHandCollider->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
-	RightHandCollider->OnComponentBeginOverlap.AddDynamic(this, &ASW_Dubu::OnRightHandOverlap);
-	RightHandCollider->SetHiddenInGame(false); // 디버그용
-	RightHandCollider->SetVisibility(true);   // 디버그용
-
-	LeftHandCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("LeftHandCollider"));
-	LeftHandCollider->SetupAttachment(GetMesh(), TEXT("L_hand_Jnt"));
-	LeftHandCollider->SetBoxExtent(FVector(0.5f, 0.3f, 0.3f)); //콜리전 크기조절
-	LeftHandCollider->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
-	LeftHandCollider->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	LeftHandCollider->SetCollisionResponseToAllChannels(ECR_Ignore);
-	LeftHandCollider->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
-	LeftHandCollider->OnComponentBeginOverlap.AddDynamic(this, &ASW_Dubu::OnLeftHandOverlap);
-	LeftHandCollider->SetHiddenInGame(false); //디버그용
-	LeftHandCollider->SetVisibility(true); // 디버그용
-
 	// 궁극기용 액터 주소
-	static ConstructorHelpers::FClassFinder<AActor> ThrowActorBP(TEXT("/Game/Characters/Dubu/BP_ThrowGround/BP_ThrowActor.BP_ThrowActor"));
+	static ConstructorHelpers::FClassFinder<AActor> ThrowActorBP(TEXT("/Game/Characters/Dubu/BP_ThrowGround/BP_ThrowActor"));
 	if (ThrowActorBP.Succeeded()) ThrowActorClass = ThrowActorBP.Class;
 
 	// 2단 점프용 애니메이션 몽타주 주소
@@ -74,6 +52,41 @@ ASW_Dubu::ASW_Dubu()
 	if (Combo2.Succeeded()) ComboMontages.Add(Combo2.Object);
 	if (Combo3.Succeeded()) ComboMontages.Add(Combo3.Object);
 
+	if (Combo1.Succeeded())
+	{
+		ComboMontages.Add(Combo1.Object);
+		SkillMontages.Add(FName("Combo1"), Combo1.Object);
+	}
+	if (Combo2.Succeeded())
+	{
+		ComboMontages.Add(Combo2.Object);
+		SkillMontages.Add(FName("Combo2"), Combo2.Object);
+	}
+	if (Combo3.Succeeded())
+	{
+		ComboMontages.Add(Combo3.Object);
+		SkillMontages.Add(FName("Combo3"), Combo3.Object);
+	}
+
+
+	// =================================================================================
+	// 3단 콤보 평타용 콜리전 설정
+	FSkillData Combo1Data;
+	Combo1Data.DamageMultiplier = 1.0f;
+	Combo1Data.AttackType = ESkillAttackType::MeleeBox;
+	Combo1Data.Range = FVector(130.f, 130.f, 150.f);
+	Combo1Data.Offset = FVector(170.f, 0.f, 0.f);
+	SkillDataMap.Add("Combo1", Combo1Data);
+
+	FSkillData Combo2Data = Combo1Data;
+	SkillDataMap.Add("Combo2", Combo2Data);
+
+	FSkillData Combo3Data = Combo1Data;
+	SkillDataMap.Add("Combo3", Combo3Data);
+	// =================================================================================
+
+
+	// =================================================================================
 	// 기본 스킬
 	FSkillData NormalSkillData;
 	NormalSkillData.DamageMultiplier = 1.5f; // 데미지 계수
@@ -81,7 +94,10 @@ ASW_Dubu::ASW_Dubu()
 	NormalSkillData.Range = FVector(300.f, 300.f, 300.f); // X: 길이, Y: 폭, Z: 높이
 	NormalSkillData.Offset = FVector(100.f, 0.f, 0.f); // 캐릭터 스킬 방향
 	SkillDataMap.Add(FName("NormalSkill"), NormalSkillData);
+	// =================================================================================
 
+
+	// =================================================================================
 	// 점프 공격
 	FSkillData JumpAttackData;
 	JumpAttackData.DamageMultiplier = 2.f; // 데미지 계수
@@ -89,6 +105,8 @@ ASW_Dubu::ASW_Dubu()
 	JumpAttackData.Range = FVector(200.f, 200.f, 200.f);  // X: 길이, Y: 폭, Z: 높이
 	JumpAttackData.Offset = FVector(0.f); // 캐릭터 스킬 방향
 	SkillDataMap.Add(FName("JumpAttack"), JumpAttackData);
+	// =================================================================================
+
 }
 
 void ASW_Dubu::BeginPlay()
@@ -96,83 +114,11 @@ void ASW_Dubu::BeginPlay()
 	Super::BeginPlay();
 }
 
-// 평타 콤보용 ==================================================================================
-// 왼손
-void ASW_Dubu::OnRightHandOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
-	bool bFromSweep, const FHitResult& SweepResult)
-{
-	if (OtherActor && OtherActor != this && !AlreadyHitActors.Contains(OtherActor))
-	{
-		if (!HasAuthority()) return; 
 
-		int32 Damage = FMath::RoundToInt(AttackDamage * 1.f);
 
-		if (CurrentComboIndex == 0) // 1타
-			Damage = Damage * 1;
-		else if (CurrentComboIndex == 2) // 3타 양손 
-			Damage = Damage * 1 + 20;
-		else
-			return;
+// 기본 3단 콤보용 함수 ====================================================================
 
-		FDamageEvent DamageEvent;
-		OtherActor->TakeDamage(Damage, DamageEvent, GetController(), this);
-
-		AlreadyHitActors.Add(OtherActor); //  중복 방지
-	}
-}
-
-// 오른손
-void ASW_Dubu::OnLeftHandOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
-	bool bFromSweep, const FHitResult& SweepResult)
-{
-	if (OtherActor && OtherActor != this && !AlreadyHitActors.Contains(OtherActor))
-	{
-		if (!HasAuthority()) return; 
-
-		int32 Damage = AttackDamage;
-
-		if (CurrentComboIndex == 1) // 1타
-			Damage = Damage * 1;
-		else if (CurrentComboIndex == 2) // 3타 양손
-			Damage = Damage * 1 + 20;
-		else
-			return;
-
-		FDamageEvent DamageEvent;
-		OtherActor->TakeDamage(Damage, DamageEvent, GetController(), this);
-
-		AlreadyHitActors.Add(OtherActor); //  중복 방지
-	}
-}
-
-void ASW_Dubu::RightHandStart()
-{
-	if (!HasAuthority()) return; 
-
-	AlreadyHitActors.Empty(); //  매 콤보마다 초기화
-	RightHandCollider->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-}
-
-void ASW_Dubu::RightHandEnd()
-{
-	RightHandCollider->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-}
-
-void ASW_Dubu::LeftHandStart()
-{
-	if (!HasAuthority()) return;
-
-	AlreadyHitActors.Empty(); //  여기서도 초기화
-	LeftHandCollider->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-}
-
-void ASW_Dubu::LeftHandEnd()
-{
-	LeftHandCollider->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-}
-// ===========================================================================================
+// ========================================================================================
 
 
 
@@ -262,8 +208,33 @@ void ASW_Dubu::JumpAttack()
 
 		}), 0.3f, false);
 }
-// ===========================================================================================
 
+void ASW_Dubu::Landed(const FHitResult& Hit)
+{
+	Super::Landed(Hit);
+
+	if (!bIsJumpAttacking) return;
+	bIsJumpAttacking = false;
+
+	FVector ForwardOffset = GetActorForwardVector() * 50.f; // 앞으로 50cm 정도
+	FVector SpawnLocation = Hit.ImpactPoint + FVector(0, 0, 10.f) + ForwardOffset;
+	FRotator SpawnRotation = FRotator::ZeroRotator;
+
+	FActorSpawnParameters Params;
+	Params.Owner = this;
+
+	if (JumpLandEffectClass)
+	{
+		ASkillEffectActor* Effect = GetWorld()->SpawnActor<ASkillEffectActor>(
+			JumpLandEffectClass, SpawnLocation, SpawnRotation, Params);
+
+		if (Effect)
+		{
+			Effect->InitEffect(SpawnLocation, SpawnRotation);
+		}
+	}
+}
+// ===========================================================================================
 
 
 // 궁극기 스킬용 ==============================================================================
