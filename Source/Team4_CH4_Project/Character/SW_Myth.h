@@ -31,7 +31,7 @@ public:
 
 	virtual void SpecialSkill() override;
 
-	void SpawnComboArrow();
+	void SpawnComboArrow(bool bIsSpecialSkill = false);
 
 	// 궁수 전용 투사체 클래스 (화살)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Myth")
@@ -45,9 +45,6 @@ public:
 
 	bool bIsJumpAttacking;
 
-	// 궁극 사용 시 무적 상태 플래그
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Myth")
-	bool bIsInvincible;
 
 	// 화살 머테리얼들
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Arrow Materials")

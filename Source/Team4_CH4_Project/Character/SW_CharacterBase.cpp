@@ -393,6 +393,10 @@ void ASW_CharacterBase::UpdateHealthBar()
 
 float ASW_CharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
+    // 무적 상태면 데미지 X
+    if (bIsInvincible)
+        return 0.f;
+
     int32 DamageToApply = FMath::Clamp(FMath::RoundToInt(DamageAmount), 0, Health);
     if (DamageToApply <= 0) return 0.f;
 

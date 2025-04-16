@@ -3,6 +3,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "DrawDebugHelpers.h"
 #include "GameFramework/Character.h"
+#include "NiagaraFunctionLibrary.h"
 #include "Engine/DamageEvents.h"
 
 ASW_VoidSpawnActor::ASW_VoidSpawnActor()
@@ -35,6 +36,20 @@ void ASW_VoidSpawnActor::ApplyDamage()
     FVector Origin = GetActorLocation() + GetActorRotation().RotateVector(Offset);
     float Radius = Range.X;
 
+    if (ExplosionNiagaraSystem)
+    {
+        UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+            GetWorld(),
+            ExplosionNiagaraSystem,
+            Origin,
+            GetActorRotation(),
+            FVector(1.f),
+            true,  // bAutoDestroy
+            true   // bAutoActivate
+        );
+    }
+
+    // 데미지 처리
     TArray<AActor*> HitActors;
     TArray<AActor*> Ignore;
     Ignore.Add(this);

@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "NiagaraSystem.h"
 #include "SW_ThrowActor.generated.h"
 
 class UStaticMeshComponent;
@@ -23,6 +24,10 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
     UStaticMeshComponent* MeshComp;
+
+    // 두부 궁극기용 나이아가라 이펙트 변수
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
+    UNiagaraSystem* HitNiagaraEffect;
 protected:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")

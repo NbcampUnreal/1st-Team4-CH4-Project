@@ -122,6 +122,14 @@ public:
     // ====================================================================
 
 
+
+    // ========== 스페셜 스킬을 쓰는 동안은 무적이 되는 함수 ===================
+    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "State")
+    bool bIsInvincible = false;
+    // ====================================================================
+
+
+
     
     // ============ 점프중에 공격가능한지 확인하는 변수 ======================
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")

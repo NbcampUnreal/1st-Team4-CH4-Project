@@ -100,6 +100,16 @@ void USkillAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBas
                 }
             }
 
+            // SetInvincible 부터 UnsetInvincible까지는 캐릭터가 무적이됨
+            else if (NotifyEventName == "SetInvincible")
+            {
+                Character->bIsInvincible = true;
+            }
+            else if (NotifyEventName == "UnsetInvincible")
+            {
+                Character->bIsInvincible = false;
+            }
+
             // 두부 궁극기 스킬 노티파이
             else if (NotifyEventName == "ThrowActor")
             {
@@ -123,9 +133,11 @@ void USkillAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBas
             {
                 if (ASW_Myth* Myth = Cast<ASW_Myth>(Character))
                 {
-                    Myth->SpawnComboArrow();
+                    bool bIsSpecialSkill = SkillName == "SpecialSkill";
+                    Myth->SpawnComboArrow(bIsSpecialSkill); // bool 추가
                 }
-            }
+                }
+
 
             // 원거리 Myth 캐릭터 대쉬 스킬시 뒤로 1400만큼 이동
             else if (NotifyEventName == "DoBackwardMove")
