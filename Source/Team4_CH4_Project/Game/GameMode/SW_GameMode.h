@@ -19,6 +19,7 @@ public:
 	
 	void HandleGameEnd();
 	
+	UFUNCTION(BlueprintCallable)
 	void DelayedTravelToLobby();
 
 	UFUNCTION(BlueprintImplementableEvent)
