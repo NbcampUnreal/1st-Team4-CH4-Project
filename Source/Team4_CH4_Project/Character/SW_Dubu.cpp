@@ -13,6 +13,7 @@ ASW_Dubu::ASW_Dubu()
 	// 리플리케이션 용
 	bReplicates = true;
 	SetReplicateMovement(true);
+	CharacterType = ECharacterType::Dubu;
 
 	// 체력
 	MaxHealth = 700;

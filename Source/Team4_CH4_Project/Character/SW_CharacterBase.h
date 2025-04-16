@@ -7,6 +7,7 @@
 #include "GameFramework/DamageType.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraSystem.h"
+#include "../UI/CharacterData/SW_CharacterType.h"
 #include "SW_CharacterBase.generated.h"
 
 class USpringArmComponent;
@@ -108,6 +109,12 @@ public:
     UAnimMontage* DeathMontage;
     //===================================================
     
+
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character")
+    ECharacterType CharacterType;
+
+
 
 
     // ===================== 콤보 시스템용 ==============================
