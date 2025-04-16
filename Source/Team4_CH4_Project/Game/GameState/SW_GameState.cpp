@@ -40,21 +40,25 @@ void ASW_GameState::OnRep_DoEndGame()
 	bGameEnd = true;
 }
 
-void ASW_GameState::OnRep_RoundOver()
+void ASW_GameState::AddPlayerStates(APlayerController* const NewPlayerPC)
 {
-	
+	if (NewPlayerPC)
+	{
+		if (ASW_PlayerState* NewPS = NewPlayerPC->GetPlayerState<ASW_PlayerState>())
+		{
+			PlayerStates.Add(NewPS);
+		}
+	}
 }
 
 void ASW_GameState::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	ShowDebug();
 	if (HasAuthority())
 	{
 		if (RoundTimeLeft > -0.1f)
 		{
 			RoundTimeLeft -= DeltaSeconds;
-			UE_LOG(LogTemp, Warning, TEXT("TimeLeft : %f"),RoundTimeLeft);
 		}
 		if (RoundTimeLeft < 0 && !bGameEnd)
 		{
@@ -80,6 +84,14 @@ void ASW_GameState::SetCurrentPlayerAmount(int AddAmount)
 	if (CurrentPlayerAmount >= 2) bPlayerIn = true;
 	if (bPlayerIn && CurrentPlayerAmount <= 1)
 	{
+		for (ASW_PlayerState* PS : PlayerStates)
+		{
+			if (PS->GetbIsWon())
+			{
+				AddRanking(PS->GetPlayerController());
+				UE_LOG(LogTemp, Warning, TEXT("2"));
+			}
+		}
 		OnRep_DoEndGame();
 	}
 	if (CurrentPlayerAmount <= 0)

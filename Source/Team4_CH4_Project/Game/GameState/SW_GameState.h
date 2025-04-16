@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SW_PlayerController.h"
 #include "GameFramework/GameState.h"
 #include "SW_GameState.generated.h"
 
@@ -30,13 +31,15 @@ public:
 	UFUNCTION()
 	void OnRep_DoEndGame();
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void AddRanking(APlayerController* DeadUserPC);
+
 	UFUNCTION()
-	void OnRep_RoundOver();
+	void AddPlayerStates(APlayerController* const NewPlayerPC);
 	
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category="RoundSettings")
 	float RoundDuration;
 
-	
 protected:
 	
 	UPROPERTY(Replicated, BlueprintReadWrite, Category="RoundSettings")
@@ -51,6 +54,6 @@ protected:
 	UPROPERTY(BlueprintReadWrite, Category="CurrentGame")
 	bool bGameEnd;
 
-	TArray<ASW_PlayerState*> PlayerStatesByKills;
+	TArray<ASW_PlayerState*> PlayerStates;
 private:
 };

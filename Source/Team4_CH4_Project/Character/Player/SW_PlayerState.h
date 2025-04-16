@@ -16,11 +16,20 @@ public:
 	void SetPlayerKill(int Count);
 
 	int GetPlayerKill() const;
+
+	UFUNCTION()
+	void SetbIsWon(bool IsWon);
+
+	UFUNCTION()
+	bool GetbIsWon() const;
 protected:
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	
 	UPROPERTY(Replicated)
 	int PlayerKill;
+
+	UPROPERTY(Replicated)
+	bool bIsWon;
 public:
 };

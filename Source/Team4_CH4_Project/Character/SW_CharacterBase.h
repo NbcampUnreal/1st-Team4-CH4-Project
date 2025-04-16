@@ -228,15 +228,15 @@ public:
     // 스킬애니메이션 모음집 함수
     UFUNCTION(BlueprintCallable)
     void PlaySkillAnimation(FName SkillName);
-
-
+    
     UFUNCTION(Server, Reliable)
     void Server_PlaySkill(FName SkillName);
 
     UFUNCTION(NetMulticast, Reliable)
     void Multicast_PlaySkill(FName SkillName);
 
-
+    UFUNCTION(Server, Reliable)
+    void Server_ExecuteDeath(AActor* Killer);
 
     UFUNCTION(Server, Reliable)
     void Server_ApplySkillDamage(FName SkillName);
