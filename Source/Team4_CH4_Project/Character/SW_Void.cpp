@@ -9,6 +9,19 @@
 
 ASW_Void::ASW_Void()
 {
+    // 리플리케이션 용
+    bReplicates = true;
+    SetReplicateMovement(true);
+    CharacterType = ECharacterType::Void;
+
+    // 스탯 초기 설정 
+    MaxHealth = 450;
+    Health = MaxHealth;
+
+    // 기본 데미지
+    AttackDamage = 30.f;
+
+
     // 애니메이션 몽타주 초기화 (콤보 공격용)
     static ConstructorHelpers::FObjectFinder<UAnimMontage> Combo1(TEXT("/Game/Characters/Void/Animation/ComboAttack/AM_Void_Combo1.AM_Void_Combo1"));
     static ConstructorHelpers::FObjectFinder<UAnimMontage> Combo2(TEXT("/Game/Characters/Void/Animation/ComboAttack/AM_Void_Combo2.AM_Void_Combo2"));
@@ -29,13 +42,6 @@ ASW_Void::ASW_Void()
         ComboMontages.Add(Combo3.Object);
         SkillMontages.Add(FName("Combo3"), Combo3.Object);
     }
-
-    // 스탯 초기화
-    MaxHealth = 450;
-    Health = MaxHealth;
-
-    // 기본 데미지
-    AttackDamage = 30.f;
 
     // 콤보
     FSkillData ComboSkill;

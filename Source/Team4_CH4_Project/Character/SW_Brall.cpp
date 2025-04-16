@@ -12,6 +12,7 @@ ASW_Brall::ASW_Brall()
     // 리플리케이션 용
     bReplicates = true;
     SetReplicateMovement(true);
+    CharacterType = ECharacterType::Brall;
 
     // 체력
     MaxHealth = 500;
