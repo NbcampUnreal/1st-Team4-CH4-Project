@@ -7,7 +7,7 @@
 
 void USW_PlayerInfoViewModel::SetCharacterType(const ECharacterType& NewType)
 {
-	if (NewType < ECharacterType::MAX)
+	if (NewType < ECharacterType::MAX && NewType > ECharacterType::START)
 	{
 		if (UE_MVVM_SET_PROPERTY_VALUE(CharacterType, NewType))
 		{
