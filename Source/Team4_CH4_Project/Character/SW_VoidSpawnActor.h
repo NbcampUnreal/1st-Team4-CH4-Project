@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "NiagaraSystem.h"
 #include "SW_VoidSpawnActor.generated.h"
 
 class UStaticMeshComponent;
@@ -38,6 +39,10 @@ public:
 
     UPROPERTY(VisibleAnywhere)
     UStaticMeshComponent* VisualMesh;
+
+    // 터진때 재생할 나이아가라 변수
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
+    UNiagaraSystem* ExplosionNiagaraSystem;
 
 private:
     void ApplyDamage();

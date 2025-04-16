@@ -122,6 +122,14 @@ public:
     // ====================================================================
 
 
+
+    // ========== 스페셜 스킬을 쓰는 동안은 무적이 되는 함수 ===================
+    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "State")
+    bool bIsInvincible = false;
+    // ====================================================================
+
+
+
     
     // ============ 점프중에 공격가능한지 확인하는 변수 ======================
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
@@ -184,7 +192,6 @@ protected:
     void OnRep_Health();
     // ==============================================================
 
-
     // =======================캐릭터 사망 =============================
     UFUNCTION()
     void CharacterDeath();
@@ -192,6 +199,7 @@ protected:
     UPROPERTY(Replicated)
     bool bIsDead;
     // ==============================================================
+
 public:
 
     void AdvanceCombo();
@@ -228,7 +236,8 @@ public:
     // 스킬애니메이션 모음집 함수
     UFUNCTION(BlueprintCallable)
     void PlaySkillAnimation(FName SkillName);
-    
+
+
     UFUNCTION(Server, Reliable)
     void Server_PlaySkill(FName SkillName);
 

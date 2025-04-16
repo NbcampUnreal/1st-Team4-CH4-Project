@@ -33,6 +33,8 @@ ASW_Void::ASW_Void()
     // 스탯 초기화
     MaxHealth = 450;
     Health = MaxHealth;
+
+    // 기본 데미지
     AttackDamage = 30.f;
 
     // 콤보
@@ -40,7 +42,7 @@ ASW_Void::ASW_Void()
     ComboSkill.DamageMultiplier = 1.0f;
     ComboSkill.AttackType = ESkillAttackType::RangedProjectile;
     ComboSkill.Offset = FVector(100.f, 0.f, 0.f);
-    ComboSkill.ProjectileClass = SpellProjectileClass;
+    ComboSkill.ProjectileClass = ComboProjectileClass;
 
     SkillDataMap.Add("Combo1", ComboSkill);
     SkillDataMap.Add("Combo2", ComboSkill);
@@ -76,7 +78,7 @@ void ASW_Void::ComboAttack()
 
 void ASW_Void::SpawnComboMagic()
 {
-    if (!HasAuthority() || !SpellProjectileClass) return;
+    if (!HasAuthority() || !ComboProjectileClass) return;
 
     FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * 100.f;
     FRotator SpawnRotation = GetActorRotation();
@@ -85,59 +87,21 @@ void ASW_Void::SpawnComboMagic()
     Params.Owner = this;
     Params.Instigator = this;
 
-    AActor* Projectile = GetWorld()->SpawnActor<AActor>(SpellProjectileClass, SpawnLocation, SpawnRotation, Params);
+    AActor* Projectile = GetWorld()->SpawnActor<AActor>(ComboProjectileClass, SpawnLocation, SpawnRotation, Params);
     if (ASW_Magic* Magic = Cast<ASW_Magic>(Projectile))
     {
         Magic->Damage = AttackDamage * (CurrentComboIndex + 1);
-
-        if (UStaticMeshComponent* MeshComp = Magic->FindComponentByClass<UStaticMeshComponent>())
+      
+        if (CurrentComboIndex == 1)
         {
-            if (ComboMaterial)
-            {
-                MeshComp->SetMaterial(0, ComboMaterial);
-            }
+            Magic->SetActorScale3D(FVector(1.2f)); // 1.2배 크기
         }
-
-        if (ComboEffect)
+        else if (CurrentComboIndex == 2)
         {
-            UNiagaraFunctionLibrary::SpawnSystemAttached(
-                ComboEffect,
-                Magic->GetRootComponent(),
-                NAME_None,
-                FVector::ZeroVector,
-                FRotator::ZeroRotator,
-                EAttachLocation::KeepRelativeOffset,
-                true);
-        }
-
-        // 메시 크기설정 1타 = 1.0, 2타 = 1.5, 3타 = 2.0
-        float ScaleMultiplier = 1.0f + (CurrentComboIndex * 0.5f);
-        Magic->SetActorScale3D(FVector(ScaleMultiplier));
-
-        if (ComboEffect)
-        {
-            UNiagaraComponent* NiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAttached(
-                ComboEffect,
-                Magic->GetRootComponent(),
-                NAME_None,
-                FVector::ZeroVector,
-                FRotator::ZeroRotator,
-                EAttachLocation::KeepRelativeOffset,
-                true);
-
-            if (NiagaraComp)
-            {
-                NiagaraComp->SetWorldScale3D(FVector(ScaleMultiplier));
-            }
+            Magic->SetActorScale3D(FVector(1.5f)); // 1.5배 크기
         }
     }
 }
-// ===================================================================================================
-
-
-
-
-
 // ============================================= 노멀스킬 =============================================
 void ASW_Void::NormalSkill()
 {
@@ -146,7 +110,7 @@ void ASW_Void::NormalSkill()
 
 void ASW_Void::SpawnNormalMagic()
 {
-    if (!HasAuthority() || !SpellProjectileClass) return;
+    if (!HasAuthority() || !NormalProjectileClass) return;
 
     FVector Direction = GetActorForwardVector();
     FVector SpawnLocation = GetActorLocation() + Direction * 100.f;
@@ -156,30 +120,10 @@ void ASW_Void::SpawnNormalMagic()
     Params.Owner = this;
     Params.Instigator = this;
 
-    AActor* Projectile = GetWorld()->SpawnActor<AActor>(SpellProjectileClass, SpawnLocation, SpawnRotation, Params);
+    AActor* Projectile = GetWorld()->SpawnActor<AActor>(NormalProjectileClass, SpawnLocation, SpawnRotation, Params);
     if (ASW_Magic* Magic = Cast<ASW_Magic>(Projectile))
     {
-        Magic->Damage = AttackDamage * 1.5f;
-
-        if (UStaticMeshComponent* MeshComp = Magic->FindComponentByClass<UStaticMeshComponent>())
-        {
-            if (NormalMaterial) MeshComp->SetMaterial(0, NormalMaterial);
-            if (NormalMesh) MeshComp->SetStaticMesh(NormalMesh);
-        }
-
-        if (NormalEffect)
-        {
-            UNiagaraFunctionLibrary::SpawnSystemAttached(
-                NormalEffect,
-                Magic->GetRootComponent(),
-                NAME_None,
-                FVector::ZeroVector,
-                FRotator::ZeroRotator,
-                EAttachLocation::KeepRelativeOffset,
-                true);
-        }
-
-        Magic->SetActorScale3D(FVector(1.5f));
+        Magic->Damage = AttackDamage * 3.f;
     }
 }
 // ===================================================================================================
@@ -274,7 +218,7 @@ void ASW_Void::SpecialSkill()
             {
                 Spawned->OwnerCharacter = this;
                 Spawned->Damage = AttackDamage * 10;
-                Spawned->DamageMultiplier = 2.f;
+                Spawned->DamageMultiplier = 1.f;
                 Spawned->Range = FVector(1000.f);
                 Spawned->Offset = FVector::ZeroVector;
             }

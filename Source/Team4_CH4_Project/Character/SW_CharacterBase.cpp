@@ -3,14 +3,14 @@
 #include "Net/UnrealNetwork.h"
 #include "SW_PlayerAnimInstance.h"
 #include "SW_PlayerAnimLayerInterface.h"
-#include "SW_PlayerController.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Engine/DamageEvents.h"
+#include "Game/GameMode/SW_GameMode.h"
 #include "Game/GameState/SW_GameState.h"
-#include "Player/SW_PlayerState.h"
+#include "Character/Player/SW_PlayerState.h"
 
 ASW_CharacterBase::ASW_CharacterBase()
 {
@@ -396,6 +396,10 @@ void ASW_CharacterBase::UpdateHealthBar()
 
 float ASW_CharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
+    // 무적 상태면 데미지 X
+    if (bIsInvincible)
+        return 0.f;
+
     int32 DamageToApply = FMath::Clamp(FMath::RoundToInt(DamageAmount), 0, Health);
     if (DamageToApply <= 0) return 0.f;
 
@@ -444,41 +448,6 @@ float ASW_CharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Dama
     return DamageToApply;
 }
 
-// 리플리케이션되는 함수들================================================================================
-
-void ASW_CharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-    DOREPLIFETIME(ASW_CharacterBase, Health);
-    DOREPLIFETIME(ASW_CharacterBase, bIsLocked);
-    DOREPLIFETIME(ASW_CharacterBase, bIsAttacking);
-    DOREPLIFETIME(ASW_CharacterBase, bIsMovementLocked);
-    DOREPLIFETIME(ASW_CharacterBase, bIsDead);
-}
-
-void ASW_CharacterBase::Server_ExecuteDeath_Implementation(AActor* Killer)
-{
-    if (Killer)
-    {
-        if (AController* KillerController = Killer->GetInstigatorController())
-        {
-            if (ASW_PlayerController* KillerPC = Cast<ASW_PlayerController>(KillerController))
-            {
-                if (ASW_PlayerState* KillerPS = KillerPC->GetPlayerState<ASW_PlayerState>())
-                {
-                    KillerPS->SetPlayerKill(1);
-                }
-            }
-        }
-    }
-}
-
-void ASW_CharacterBase::OnRep_Health()
-{
-    UpdateHealthBar();
-}
-
 void ASW_CharacterBase::CharacterDeath()
 {
     bIsDead = true;
@@ -495,6 +464,23 @@ void ASW_CharacterBase::CharacterDeath()
     {
         UE_LOG(LogTemp, Warning, TEXT("Working"));
         ThisPS->SetbIsWon(false);
+    }
+}
+
+void ASW_CharacterBase::Server_ExecuteDeath_Implementation(AActor* Killer)
+{
+    if (Killer)
+    {
+        if (AController* KillerController = Killer->GetInstigatorController())
+        {
+            if (ASW_PlayerController* KillerPC = Cast<ASW_PlayerController>(KillerController))
+            {
+                if (ASW_PlayerState* KillerPS = KillerPC->GetPlayerState<ASW_PlayerState>())
+                {
+                    KillerPS->SetPlayerKill(1);
+                }
+            }
+        }
     }
 }
 
@@ -529,6 +515,25 @@ void ASW_CharacterBase::Server_PlaySkill_Implementation(FName SkillName)
 
     Multicast_PlaySkill(SkillName);
 }
+
+// 리플리케이션되는 함수들================================================================================
+
+void ASW_CharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+    DOREPLIFETIME(ASW_CharacterBase, Health);
+    DOREPLIFETIME(ASW_CharacterBase, bIsLocked);
+    DOREPLIFETIME(ASW_CharacterBase, bIsAttacking);
+    DOREPLIFETIME(ASW_CharacterBase, bIsMovementLocked);
+    DOREPLIFETIME(ASW_CharacterBase, bIsDead);
+}
+
+void ASW_CharacterBase::OnRep_Health()
+{
+    UpdateHealthBar();
+}
+
 
 
 void ASW_CharacterBase::Multicast_PlaySkill_Implementation(FName SkillName)
