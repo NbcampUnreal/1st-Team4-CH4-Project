@@ -143,25 +143,21 @@ void ASW_CharacterBase::ComboAttack()
 
 void ASW_CharacterBase::JumpAttack()
 {
-    PlaySkillAnimation(FName("JumpAttack"));
-    ApplyDownTime(ESkillType::Skill3, DropSkillDownTime);
+    ActivateSkill(ESkillType::Skill3, DropSkillDownTime);
 }
 void ASW_CharacterBase::NormalSkill()
 {
-    PlaySkillAnimation(FName("NormalSkill"));
-    ApplyDownTime(ESkillType::Skill1, NormalSkillDownTime);
+    ActivateSkill(ESkillType::Skill1, NormalSkillDownTime);
 }
 
 void ASW_CharacterBase::SpecialSkill()
 {
-    PlaySkillAnimation(FName("SpecialSkill"));
-    ApplyDownTime(ESkillType::Skill2, SpecialSkillDownTime);
+    ActivateSkill(ESkillType::Skill2, SpecialSkillDownTime);
 }
 
 void ASW_CharacterBase::DashSkill()
 {
-    PlaySkillAnimation(FName("DashSkill"));
-    ApplyDownTime(ESkillType::Dash, DashSkillDownTime);
+    ActivateSkill(ESkillType::Dash, DashSkillDownTime);
 }
 
 TArray<AActor*> ASW_CharacterBase::GetTargetsInRange_Implementation(FName SkillName)
@@ -536,7 +532,7 @@ void ASW_CharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
     DOREPLIFETIME(ASW_CharacterBase, bIsDead);
 }
 
-void ASW_CharacterBase::ApplyDownTime(ESkillType skillType, float _DownTime)
+void ASW_CharacterBase::ActivateSkill(ESkillType skillType, float _DownTime)
 {
     if (UGameInstance* GI = GetGameInstance())
     {
@@ -549,15 +545,19 @@ void ASW_CharacterBase::ApplyDownTime(ESkillType skillType, float _DownTime)
                 switch (skillType)
                 {
                 case ESkillType::Skill1:
+                    PlaySkillAnimation(FName("NormalSkill"));
                     SkillViewModel->SetSkill1Time(NormalSkillDownTime);
                     break;
                 case ESkillType::Skill2:
+                    PlaySkillAnimation(FName("SpecialSkill"));
                     SkillViewModel->SetSkill2Time(SpecialSkillDownTime);
                     break;
                 case ESkillType::Skill3:
+                    PlaySkillAnimation(FName("JumpAttack"));
                     SkillViewModel->SetSkill3Time(DropSkillDownTime);
                     break;
                 case ESkillType::Dash:
+                    PlaySkillAnimation(FName("DashSkill"));
                     SkillViewModel->SetDashTime(DashSkillDownTime);
                 }
             }
