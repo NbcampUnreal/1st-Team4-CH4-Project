@@ -144,18 +144,18 @@ void ASW_CharacterBase::ComboAttack()
 void ASW_CharacterBase::JumpAttack()
 {
     PlaySkillAnimation(FName("JumpAttack"));
-    ApplyDownTime(ESkillType::Drop, DropSkillDownTime);
+    ApplyDownTime(ESkillType::Skill3, DropSkillDownTime);
 }
 void ASW_CharacterBase::NormalSkill()
 {
     PlaySkillAnimation(FName("NormalSkill"));
-    ApplyDownTime(ESkillType::Normal, NormalSkillDownTime);
+    ApplyDownTime(ESkillType::Skill1, NormalSkillDownTime);
 }
 
 void ASW_CharacterBase::SpecialSkill()
 {
     PlaySkillAnimation(FName("SpecialSkill"));
-    ApplyDownTime(ESkillType::Special, SpecialSkillDownTime);
+    ApplyDownTime(ESkillType::Skill2, SpecialSkillDownTime);
 }
 
 void ASW_CharacterBase::DashSkill()
@@ -548,13 +548,13 @@ void ASW_CharacterBase::ApplyDownTime(ESkillType skillType, float _DownTime)
             {
                 switch (skillType)
                 {
-                case ESkillType::Normal:
+                case ESkillType::Skill1:
                     SkillViewModel->SetSkill1Time(NormalSkillDownTime);
                     break;
-                case ESkillType::Special:
+                case ESkillType::Skill2:
                     SkillViewModel->SetSkill2Time(SpecialSkillDownTime);
                     break;
-                case ESkillType::Drop:
+                case ESkillType::Skill3:
                     SkillViewModel->SetSkill3Time(DropSkillDownTime);
                     break;
                 case ESkillType::Dash:

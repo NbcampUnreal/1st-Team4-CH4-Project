@@ -7,7 +7,7 @@
 #include "GameFramework/DamageType.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraSystem.h"
-#include "../UI/CharacterData/SW_CharacterType.h"
+#include "UI/CharacterData/SW_CharacterType.h"
 #include "SW_CharacterBase.generated.h"
 
 class USpringArmComponent;
@@ -26,14 +26,14 @@ enum class ESkillAttackType : uint8
     RangedProjectile // 원거리 투사체
 };
 
-UENUM(BlueprintType)
-enum class ESkillType : uint8
-{
-    Normal,
-    Dash,
-    Drop,
-    Special
-};
+//UENUM(BlueprintType)
+//enum class ESkillType : uint8
+//{
+//    Normal,
+//    Dash,
+//    Drop,
+//    Special
+//};
 
 USTRUCT(BlueprintType)
 struct FSkillData
