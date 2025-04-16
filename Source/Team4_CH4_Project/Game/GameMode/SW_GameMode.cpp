@@ -40,6 +40,7 @@ TArray<APlayerController*> ASW_GameMode::GetPlayerControllers()
 	return PlayerControllers;
 }
 
+
 void ASW_GameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
@@ -49,8 +50,8 @@ void ASW_GameMode::PostLogin(APlayerController* NewPlayer)
 		if (ASW_GameState* SWGS = Cast<ASW_GameState>(GS))
 		{
 			SWGS->SetCurrentPlayerAmount(1);
+			SWGS->AddPlayerStates(NewPlayer);
 		}
-		
 	}
 }
 

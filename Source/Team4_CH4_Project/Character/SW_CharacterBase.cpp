@@ -3,12 +3,14 @@
 #include "Net/UnrealNetwork.h"
 #include "SW_PlayerAnimInstance.h"
 #include "SW_PlayerAnimLayerInterface.h"
+#include "SW_PlayerController.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Engine/DamageEvents.h"
 #include "Game/GameState/SW_GameState.h"
+#include "Player/SW_PlayerState.h"
 
 ASW_CharacterBase::ASW_CharacterBase()
 {
@@ -85,15 +87,6 @@ void ASW_CharacterBase::BeginPlay()
 void ASW_CharacterBase::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
-
-    if (HealthBarWidget)
-    {
-        FVector CameraLocation = GetWorld()->GetFirstPlayerController()->PlayerCameraManager->GetCameraLocation();
-        FVector ToCamera = CameraLocation - HealthBarWidget->GetComponentLocation();
-        FRotator LookAtRotation = FRotationMatrix::MakeFromX(ToCamera).Rotator();
-        LookAtRotation.Pitch = 0.f;
-        LookAtRotation.Roll = 0.f;
-    }
 
     AccelerationLastFrame = Acceleration;
     Acceleration = GetCharacterMovement()->GetCurrentAcceleration();
@@ -439,6 +432,7 @@ float ASW_CharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Dama
         {
             PlayAnimMontage(DeathMontage);
         }
+        Server_ExecuteDeath_Implementation(DamageCauser);
         CharacterDeath();
         SetLifeSpan(2.f);
     }
@@ -463,6 +457,23 @@ void ASW_CharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
     DOREPLIFETIME(ASW_CharacterBase, bIsDead);
 }
 
+void ASW_CharacterBase::Server_ExecuteDeath_Implementation(AActor* Killer)
+{
+    if (Killer)
+    {
+        if (AController* KillerController = Killer->GetInstigatorController())
+        {
+            if (ASW_PlayerController* KillerPC = Cast<ASW_PlayerController>(KillerController))
+            {
+                if (ASW_PlayerState* KillerPS = KillerPC->GetPlayerState<ASW_PlayerState>())
+                {
+                    KillerPS->SetPlayerKill(1);
+                }
+            }
+        }
+    }
+}
+
 void ASW_CharacterBase::OnRep_Health()
 {
     UpdateHealthBar();
@@ -474,6 +485,16 @@ void ASW_CharacterBase::CharacterDeath()
     if (ASW_GameState* SWGS = Cast<ASW_GameState>(GetWorld()->GetGameState()))
     {
         SWGS->SetCurrentPlayerAmount(-1);
+        
+        if (ASW_PlayerController* ThisPC = this->GetController<ASW_PlayerController>())
+        {
+            SWGS->AddRanking(ThisPC);
+        }
+    }
+    if (ASW_PlayerState* ThisPS = this->GetPlayerState<ASW_PlayerState>())
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Working"));
+        ThisPS->SetbIsWon(false);
     }
 }
 
