@@ -494,10 +494,9 @@ void ASW_CharacterBase::Server_PlaySkill_Implementation(FName SkillName)
         Multicast_ComboAttack();
         return;
     }
-
-    if (SkillName == "JumpAttack")
+    else if(SkillName == "JumpAttack")
     {
-        if (!GetCharacterMovement()->IsFalling()) return;
+        if (!GetCharacterMovement()->IsFalling() || bIsJumpAttacking) return;
         JumpAttack();
     }
     else if (SkillName == "DashSkill")

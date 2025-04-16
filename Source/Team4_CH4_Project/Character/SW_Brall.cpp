@@ -84,8 +84,8 @@ ASW_Brall::ASW_Brall()
     // 기본 스킬 콜리전 설정
     FSkillData NormalSkillData;
     NormalSkillData.DamageMultiplier = 1.5f; // 데미지 계수
-    NormalSkillData.AttackType = ESkillAttackType::BoxTrace;
-    NormalSkillData.Range = FVector(600.f, 200.f, 300.f); // X: 길이, Y: 폭, Z: 높이
+    NormalSkillData.AttackType = ESkillAttackType::MeleeSphere;
+    NormalSkillData.Range = FVector(300.f); // X: 길이, Y: 폭, Z: 높이
     NormalSkillData.Offset = FVector(300.f, 0.f, 0.f);
     SkillDataMap.Add(FName("NormalSkill"), NormalSkillData);
     // =================================================================================
@@ -95,8 +95,8 @@ ASW_Brall::ASW_Brall()
     // 스페셜 스킬 콜리전 설정
     FSkillData SpecialSkillData;
     SpecialSkillData.DamageMultiplier = 1.5f; // 데미지 계수
-    SpecialSkillData.AttackType = ESkillAttackType::MeleeBox; // Box
-    SpecialSkillData.Range = FVector(300.f, 300.f, 200.f);  
+    SpecialSkillData.AttackType = ESkillAttackType::MeleeSphere; // Box
+    SpecialSkillData.Range = FVector(400.f);  
     SpecialSkillData.Offset = FVector(200.f, 0.f, 0.f);        // 살짝 앞쪽으로
     SkillDataMap.Add(FName("SpecialSkill"), SpecialSkillData);
     // =================================================================================
@@ -106,8 +106,8 @@ ASW_Brall::ASW_Brall()
     // 점프 공격
     FSkillData JumpAttackData;
     JumpAttackData.DamageMultiplier = 1.5f; // 데미지 계수
-    JumpAttackData.AttackType = ESkillAttackType::MeleeBox;
-    JumpAttackData.Range = FVector(200.f, 200.f, 200.f); // 범위 설정
+    JumpAttackData.AttackType = ESkillAttackType::MeleeSphere;
+    JumpAttackData.Range = FVector(300.f); // 범위 설정
     JumpAttackData.Offset = FVector(200.f, 0.f, -50.f);    // 착지 지점 아래쪽
     SkillDataMap.Add(FName("JumpAttack"), JumpAttackData);
     // =================================================================================
