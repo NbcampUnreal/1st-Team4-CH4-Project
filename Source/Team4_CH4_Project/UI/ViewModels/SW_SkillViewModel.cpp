@@ -31,3 +31,22 @@ void USW_SkillViewModel::SetUsedSkillType(const ESkillType& SkillType)
 	UE_MVVM_SET_PROPERTY_VALUE(UsedSkillType, SkillType);
 	UE_MVVM_BROADCAST_FIELD_VALUE_CHANGED(GetUsedSkillType);
 }
+
+void USW_SkillViewModel::ResetSkillTime(ESkillType Type)
+{
+	switch (Type)
+	{
+	case ESkillType::Dash:
+		SetDashTime(0.f);
+		break;
+	case ESkillType::Skill1:
+		SetSkill1Time(0.f);
+		break;
+	case ESkillType::Skill2:
+		SetSkill2Time(0.f);
+		break;
+	case ESkillType::Skill3:
+		SetSkill3Time(0.f);
+		break;
+	}
+}
