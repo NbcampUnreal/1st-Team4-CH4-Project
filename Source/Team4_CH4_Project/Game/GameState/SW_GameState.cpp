@@ -82,6 +82,10 @@ void ASW_GameState::SetCurrentPlayerAmount(int AddAmount)
 	{
 		OnRep_DoEndGame();
 	}
+	if (CurrentPlayerAmount <= 0)
+	{
+		OnRep_DoEndGame();
+	}
 }
 
 float ASW_GameState::GetRoundTimeLeft()

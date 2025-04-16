@@ -34,7 +34,7 @@ ASW_Dubu::ASW_Dubu()
 	DashCollider->SetVisibility(true);    // 디버그용
 
 	// 궁극기용 액터 주소
-	static ConstructorHelpers::FClassFinder<AActor> ThrowActorBP(TEXT("/Game/Characters/Dubu/BP_ThrowGround/BP_ThrowActor.BP_ThrowActor"));
+	static ConstructorHelpers::FClassFinder<AActor> ThrowActorBP(TEXT("/Game/Characters/Dubu/BP_ThrowGround/BP_ThrowActor"));
 	if (ThrowActorBP.Succeeded()) ThrowActorClass = ThrowActorBP.Class;
 
 	// 2단 점프용 애니메이션 몽타주 주소

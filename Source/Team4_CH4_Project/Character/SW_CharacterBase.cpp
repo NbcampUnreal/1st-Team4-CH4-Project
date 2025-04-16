@@ -8,6 +8,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Engine/DamageEvents.h"
+#include "Game/GameState/SW_GameState.h"
 
 ASW_CharacterBase::ASW_CharacterBase()
 {
@@ -438,7 +439,7 @@ float ASW_CharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Dama
         {
             PlayAnimMontage(DeathMontage);
         }
-
+        CharacterDeath();
         SetLifeSpan(2.f);
     }
     else if (HitReactionMontage && !bIsLocked)
@@ -459,11 +460,21 @@ void ASW_CharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
     DOREPLIFETIME(ASW_CharacterBase, bIsLocked);
     DOREPLIFETIME(ASW_CharacterBase, bIsAttacking);
     DOREPLIFETIME(ASW_CharacterBase, bIsMovementLocked);
+    DOREPLIFETIME(ASW_CharacterBase, bIsDead);
 }
 
 void ASW_CharacterBase::OnRep_Health()
 {
     UpdateHealthBar();
+}
+
+void ASW_CharacterBase::CharacterDeath()
+{
+    bIsDead = true;
+    if (ASW_GameState* SWGS = Cast<ASW_GameState>(GetWorld()->GetGameState()))
+    {
+        SWGS->SetCurrentPlayerAmount(-1);
+    }
 }
 
 void ASW_CharacterBase::Server_PlaySkill_Implementation(FName SkillName)
