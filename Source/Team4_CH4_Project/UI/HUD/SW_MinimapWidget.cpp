@@ -26,7 +26,7 @@ void USW_MinimapWidget::UpdateMinimap()
 	if (!GetWorld() || GetWorld()->bIsTearingDown) return;
 	if (!MinimapImage || !PlayerMarker) return;
 	
-	if (APlayerController* PlayerController = GetWorld()->GetFirstPlayerController())
+	if (APlayerController* PlayerController = GetOwningPlayer())
 	{
 		if (ACharacter* Character = PlayerController->GetCharacter())
 		{
