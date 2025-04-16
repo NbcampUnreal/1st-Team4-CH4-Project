@@ -100,6 +100,33 @@ void USkillAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBas
                 }
             }
 
+            // 두부 궁극기 스킬 노티파이
+            else if (NotifyEventName == "ThrowActor")
+            {
+                if (ASW_Dubu* Dubu = Cast<ASW_Dubu>(Character))
+                {
+                    Dubu->ThrowUltimateSkill();
+                }
+            }
+
+            // myth 노멀스킬 노티파이
+            else if (NotifyEventName == "FireArrow")
+            {
+                if (ASW_Myth* Myth = Cast<ASW_Myth>(Character))
+                {
+                    bool bIsNormalSkill = SkillName == "NormalSkill";
+                    Myth->SpawnArrow(true, bIsNormalSkill);
+                }
+                }
+
+            else if (NotifyEventName == "FireComboArrow")
+            {
+                if (ASW_Myth* Myth = Cast<ASW_Myth>(Character))
+                {
+                    Myth->SpawnComboArrow();
+                }
+            }
+
             // 원거리 Myth 캐릭터 대쉬 스킬시 뒤로 1400만큼 이동
             else if (NotifyEventName == "DoBackwardMove")
             {
@@ -128,34 +155,7 @@ void USkillAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBas
                             }
                         }, 0.2f, false);
                 }
-            }
-
-            // 두부 궁극기 스킬 노티파이
-            else if (NotifyEventName == "ThrowActor")
-            {
-                if (ASW_Dubu* Dubu = Cast<ASW_Dubu>(Character))
-                {
-                    Dubu->ThrowUltimateSkill();
                 }
-            }
-
-            // myth 노멀스킬 노티파이
-            else if (NotifyEventName == "FireArrow")
-            {
-                if (ASW_Myth* Myth = Cast<ASW_Myth>(Character))
-                {
-                    bool bIsNormalSkill = SkillName == "NormalSkill";
-                    Myth->SpawnArrow(true, bIsNormalSkill);
-                }
-                }
-
-            else if (NotifyEventName == "FireComboArrow")
-            {
-                if (ASW_Myth* Myth = Cast<ASW_Myth>(Character))
-                {
-                    Myth->SpawnComboArrow();
-                }
-            }
 
             // void 기본콤보어택 발사체 노티파이
             else if (NotifyEventName == "FireComboMagic")
