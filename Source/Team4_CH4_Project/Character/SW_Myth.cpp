@@ -318,20 +318,7 @@ void ASW_Myth::SpecialSkill()
 {
     if (!HasAuthority()) return;
 
-    bIsInvincible = true;
-
-    // 3초 후 무적 해제
-    FTimerHandle InvincibleTimerHandle;
-    GetWorld()->GetTimerManager().SetTimer(
-        InvincibleTimerHandle,
-        [this]()
-        {
-            bIsInvincible = false;
-        },
-        3.0f,
-        false
-    );
-
     PlaySkillAnimation(FName("SpecialSkill"));
 }
+
 

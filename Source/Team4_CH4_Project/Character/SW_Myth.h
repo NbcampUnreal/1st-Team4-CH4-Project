@@ -45,9 +45,6 @@ public:
 
 	bool bIsJumpAttacking;
 
-	// 궁극 사용 시 무적 상태 플래그
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Myth")
-	bool bIsInvincible;
 
 	// 화살 머테리얼들
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Arrow Materials")

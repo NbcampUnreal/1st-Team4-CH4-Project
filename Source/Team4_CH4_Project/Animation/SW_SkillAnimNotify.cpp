@@ -100,6 +100,16 @@ void USkillAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBas
                 }
             }
 
+            // SetInvincible 부터 UnsetInvincible까지는 캐릭터가 무적이됨
+            else if (NotifyEventName == "SetInvincible")
+            {
+                Character->bIsInvincible = true;
+            }
+            else if (NotifyEventName == "UnsetInvincible")
+            {
+                Character->bIsInvincible = false;
+            }
+
             // 두부 궁극기 스킬 노티파이
             else if (NotifyEventName == "ThrowActor")
             {
