@@ -15,12 +15,25 @@ class TEAM4_CH4_PROJECT_API USW_MainHUDWidget : public UUserWidget
 	
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UUserWidget* PlayerInfoWidget;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UUserWidget* SkillSlotWidget;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UUserWidget* TimeWidget;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	USW_MinimapWidget* MinimapWidget;
+	UPROPERTY(Transient, meta=(BindWidgetAnim))
+	UWidgetAnimation* EnterAnim;
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	//UUserWidget* NotificationWidget;
 
+	FWidgetAnimationDynamicEvent EnterAnimFinished;
 	FTimerHandle UpdateHandle;
 
+	virtual void NativeConstruct() override;
+
+	UFUNCTION(BlueprintCallable)
+	void DisplayWidgets();
 	UFUNCTION(BlueprintCallable)
 	void StartUpdateTimer();
 	UFUNCTION(BlueprintCallable)

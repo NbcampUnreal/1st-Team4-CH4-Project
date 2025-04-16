@@ -3,7 +3,6 @@
 
 #include "SW_HUDManager.h"
 #include "Blueprint/UserWidget.h"
-#include "HUD/SW_MainHUDWidget.h"
 #include "ViewModels/SW_StatusBarViewModel.h"
 #include "ViewModels/SW_TimeViewModel.h"
 #include "ViewModels/SW_PlayerInfoViewModel.h"
@@ -35,25 +34,17 @@ void USW_HUDManager::InitializeHUD()
 		if (UClass* LoadedHUDWidgetClass = HUDWidgetClassPtr.LoadSynchronous())
 		{
 			HUDWidget = CreateWidget<UUserWidget>(GetGameInstance(), LoadedHUDWidgetClass, TEXT("HUDWidget"));
+			DisplayHUD();
 		}
-	}
-
-	// Initialize Level and Exp values
-	if (USW_LevelExpViewModel* LevelExpViewModel = Cast<USW_LevelExpViewModel>(GetViewModel(EViewModelType::PlayerInfoViewModel)))
-	{
-		LevelExpViewModel->SetCurrentLevel(1);
-		LevelExpViewModel->SetCurrentExp(0);
-		LevelExpViewModel->SetMaxExp(100);
 	}
 }
 
 void USW_HUDManager::DisplayHUD()
 {
-	if (USW_MainHUDWidget* MainHUDWidget = Cast<USW_MainHUDWidget>(HUDWidget))
+	if (HUDWidget)
 	{
 		HUDWidget->AddToViewport();
 		HUDWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		MainHUDWidget->StartUpdateTimer();
 	}
 }
 

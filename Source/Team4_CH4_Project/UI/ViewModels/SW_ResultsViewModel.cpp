@@ -39,6 +39,5 @@ void USW_ResultsViewModel::SetResultToAdd(const FSW_ResultData& InData)
 		ResultToAdd.bHasWon = InData.bHasWon;
 
 		UE_MVVM_BROADCAST_FIELD_VALUE_CHANGED(GetResultToAdd);
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, TEXT("ViewModel Data Set and broadcasted"));
 	}
 }
