@@ -25,6 +25,15 @@ enum class ESkillAttackType : uint8
     RangedProjectile // 원거리 투사체
 };
 
+UENUM(BlueprintType)
+enum class ESkillType : uint8
+{
+    Normal,
+    Dash,
+    Drop,
+    Special
+};
+
 USTRUCT(BlueprintType)
 struct FSkillData
 {
@@ -150,8 +159,11 @@ public:
     UPROPERTY()
     TSet<AActor*> AlreadyHitActors;
 
-protected:
+    // 스킬 쿨타임 적용 함수
+    UFUNCTION()
+    void ApplyDownTime(ESkillType skillType, float _DownTime);
 
+protected:
     // 스킬 데이터 (기본값은 자식 클래스에서 설정)
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
     TMap<FName, FSkillData> SkillDataMap;
@@ -172,13 +184,22 @@ protected:
     UPROPERTY(VisibleAnywhere, Category = "Movement")
     FVector VelocityLastFrame;
 
+    // 스킬 쿨타임 변수
+    UPROPERTY(VisibleAnywhere, Category = "SkillDownTime")
+    float NormalSkillDownTime = 3.f;
+
+    UPROPERTY(VisibleAnywhere, Category = "SkillDownTime")
+    float DashSkillDownTime = 8.f;
+
+    UPROPERTY(VisibleAnywhere, Category = "SkillDownTime")
+    float SpecialSkillDownTime = 15.f;
+
+    UPROPERTY(VisibleAnywhere, Category = "SkillDownTime")
+    float DropSkillDownTime = 5.f;
 
     // 리플리케이션 데미지 중복 방지용
     UPROPERTY()
     TSet<FName> SkillsAppliedThisFrame;
-
-    
-
 
     // =======================캐릭터 체력 ============================
     UPROPERTY(EditDefaultsOnly, Category = "Stat")
