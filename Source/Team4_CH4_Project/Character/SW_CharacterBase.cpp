@@ -549,28 +549,16 @@ void ASW_CharacterBase::ApplyDownTime(ESkillType skillType, float _DownTime)
                 switch (skillType)
                 {
                 case ESkillType::Normal:
-                    if (SkillViewModel->GetSkill1Time() == 0)
-                    {
-                        SkillViewModel->SetSkill1Time(NormalSkillDownTime);
-                    }
+                    SkillViewModel->SetSkill1Time(NormalSkillDownTime);
                     break;
                 case ESkillType::Special:
-                    if (SkillViewModel->GetSkill1Time() == 0)
-                    {
-                        SkillViewModel->SetSkill2Time(SpecialSkillDownTime);
-                    }
+                    SkillViewModel->SetSkill2Time(SpecialSkillDownTime);
                     break;
                 case ESkillType::Drop:
-                    if (SkillViewModel->GetSkill1Time() == 0)
-                    {
-                        SkillViewModel->SetSkill3Time(DropSkillDownTime);
-                    }
+                    SkillViewModel->SetSkill3Time(DropSkillDownTime);
                     break;
                 case ESkillType::Dash:
-                    if (SkillViewModel->GetSkill1Time() == 0)
-                    {
-                        SkillViewModel->SetDashTime(DashSkillDownTime);
-                    }
+                    SkillViewModel->SetDashTime(DashSkillDownTime);
                 }
             }
         }
