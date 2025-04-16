@@ -85,15 +85,6 @@ void ASW_CharacterBase::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 
-    if (HealthBarWidget)
-    {
-        FVector CameraLocation = GetWorld()->GetFirstPlayerController()->PlayerCameraManager->GetCameraLocation();
-        FVector ToCamera = CameraLocation - HealthBarWidget->GetComponentLocation();
-        FRotator LookAtRotation = FRotationMatrix::MakeFromX(ToCamera).Rotator();
-        LookAtRotation.Pitch = 0.f;
-        LookAtRotation.Roll = 0.f;
-    }
-
     AccelerationLastFrame = Acceleration;
     Acceleration = GetCharacterMovement()->GetCurrentAcceleration();
     VelocityLastFrame = Velocity;
