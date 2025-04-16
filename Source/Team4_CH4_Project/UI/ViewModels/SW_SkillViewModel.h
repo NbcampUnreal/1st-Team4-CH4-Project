@@ -40,11 +40,11 @@ private:
 	UPROPERTY(BlueprintReadWrite, FieldNotify, Getter, Setter, meta = (AllowPrivateAccess))
 	ESkillType UsedSkillType;
 	UPROPERTY(BlueprintReadWrite, FieldNotify, Getter, Setter, meta = (AllowPrivateAccess))
-	float Skill1Time;
+	float Skill1Time = 0.f;
 	UPROPERTY(BlueprintReadWrite, FieldNotify, Getter, Setter, meta = (AllowPrivateAccess))
-	float Skill2Time;
+	float Skill2Time = 0.f;
 	UPROPERTY(BlueprintReadWrite, FieldNotify, Getter, Setter, meta = (AllowPrivateAccess))
-	float Skill3Time;
+	float Skill3Time = 0.f;
 	UPROPERTY(BlueprintReadWrite, FieldNotify, Getter, Setter, meta = (AllowPrivateAccess))
-	float DashTime;
+	float DashTime = 0.f;
 };
