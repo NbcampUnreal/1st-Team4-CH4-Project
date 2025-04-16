@@ -16,10 +16,9 @@ public:
 	int32 GetRemainingTimeSeconds() const { return RemainingTimeSeconds; };
 	UFUNCTION(BlueprintCallable)
 	void SetRemainingTimeSeconds(const int32& NewTimeSeconds);
-	/*
 	UFUNCTION(BlueprintPure, FieldNotify)
 	FText GetRemainingTimeText() const;
-	*/
+	
 
 private:
 	UPROPERTY(BlueprintReadWrite, FieldNotify, Getter, Setter, meta = (AllowPrivateAccess))
