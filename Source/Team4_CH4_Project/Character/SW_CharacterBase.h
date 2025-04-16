@@ -162,7 +162,7 @@ public:
 
     // 스킬 쿨타임 적용 함수
     UFUNCTION()
-    void ApplyDownTime(ESkillType skillType, float _DownTime);
+    void ActivateSkill(ESkillType skillType, float _DownTime);
 
 protected:
     // 스킬 데이터 (기본값은 자식 클래스에서 설정)

@@ -128,24 +128,13 @@ void ASW_PlayerController::ComboAttack(const FInputActionValue& InputValue)
 void ASW_PlayerController::JumpAttack(const FInputActionValue& InputValue)
 {
     if (ASW_CharacterBase* PlayerCharacter = Cast<ASW_CharacterBase>(GetPawn()))
-    {   
-        // 점프중일때만 실행되도록
-        if (!PlayerCharacter->bIsLocked && PlayerCharacter->GetCharacterMovement()->IsFalling()) 
+    {
+        // 점프 중이면서 점프어택 중이 아닐 때만 입력 가능
+        if (!PlayerCharacter->bIsLocked &&
+            PlayerCharacter->GetCharacterMovement()->IsFalling() &&
+            !PlayerCharacter->bIsJumpAttacking)
         {
-            if (UGameInstance* GI = GetGameInstance())
-            {
-                if (USW_HUDManager* HUDManager = GI->GetSubsystem<USW_HUDManager>())
-                {
-                    USW_SkillViewModel* SkillViewModel = Cast<USW_SkillViewModel>(HUDManager->GetViewModel(EViewModelType::SkillViewModel));
-                    if (SkillViewModel)
-                    {
-                        if (SkillViewModel->GetSkill3Time() == 0)
-                        {
-                            PlayerCharacter->Server_PlaySkill("JumpAttack");
-                        }
-                    }
-                }
-            }   
+            PlayerCharacter->Server_PlaySkill("JumpAttack");
         }
     }
 }
@@ -155,22 +144,9 @@ void ASW_PlayerController::NormalSkill(const FInputActionValue& InputValue)
 {
     if (ASW_CharacterBase* PlayerCharacter = Cast<ASW_CharacterBase>(GetPawn()))
     {
-        if (!PlayerCharacter->bIsLocked && PlayerCharacter->GetCharacterMovement()->IsFalling())
+        if (!PlayerCharacter->bIsLocked && !PlayerCharacter->GetCharacterMovement()->IsFalling())
         {
-            if (UGameInstance* GI = GetGameInstance())
-            {
-                if (USW_HUDManager* HUDManager = GI->GetSubsystem<USW_HUDManager>())
-                {
-                    USW_SkillViewModel* SkillViewModel = Cast<USW_SkillViewModel>(HUDManager->GetViewModel(EViewModelType::SkillViewModel));
-                    if (SkillViewModel)
-                    {
-                        if (SkillViewModel->GetSkill1Time() == 0)
-                        {
-                            PlayerCharacter->Server_PlaySkill("NormalSkill");
-                        }
-                    }
-                }
-            }
+            PlayerCharacter->Server_PlaySkill("NormalSkill");
         }
     }
 }
@@ -179,22 +155,9 @@ void ASW_PlayerController::SpecialSkill(const FInputActionValue& InputValue)
 {
     if (ASW_CharacterBase* PlayerCharacter = Cast<ASW_CharacterBase>(GetPawn()))
     {
-        if (!PlayerCharacter->bIsLocked && PlayerCharacter->GetCharacterMovement()->IsFalling())
+        if (!PlayerCharacter->bIsLocked && !PlayerCharacter->GetCharacterMovement()->IsFalling())
         {
-            if (UGameInstance* GI = GetGameInstance())
-            {
-                if (USW_HUDManager* HUDManager = GI->GetSubsystem<USW_HUDManager>())
-                {
-                    USW_SkillViewModel* SkillViewModel = Cast<USW_SkillViewModel>(HUDManager->GetViewModel(EViewModelType::SkillViewModel));
-                    if (SkillViewModel)
-                    {
-                        if (SkillViewModel->GetSkill2Time() == 0)
-                        {
-                            PlayerCharacter->Server_PlaySkill("SpecialSkill");
-                        }
-                    }
-                }
-            }
+            PlayerCharacter->Server_PlaySkill("SpecialSkill");
         }
     }
 }
@@ -203,22 +166,9 @@ void ASW_PlayerController::DashSkill(const FInputActionValue& InputValue)
 {
     if (ASW_CharacterBase* PlayerCharacter = Cast<ASW_CharacterBase>(GetPawn()))
     {
-        if (!PlayerCharacter->bIsLocked && PlayerCharacter->GetCharacterMovement()->IsFalling())
+        if (!PlayerCharacter->bIsLocked && !PlayerCharacter->GetCharacterMovement()->IsFalling())
         {
-            if (UGameInstance* GI = GetGameInstance())
-            {
-                if (USW_HUDManager* HUDManager = GI->GetSubsystem<USW_HUDManager>())
-                {
-                    USW_SkillViewModel* SkillViewModel = Cast<USW_SkillViewModel>(HUDManager->GetViewModel(EViewModelType::SkillViewModel));
-                    if (SkillViewModel)
-                    {
-                        if (SkillViewModel->GetDashTime() == 0)
-                        {
-                            PlayerCharacter->Server_PlaySkill("DashSkill");
-                        }
-                    }
-                }
-            }
+            PlayerCharacter->Server_PlaySkill("DashSkill");
         }
     }
 }
