@@ -11,6 +11,10 @@
 #include "Game/GameMode/SW_GameMode.h"
 #include "Game/GameState/SW_GameState.h"
 #include "Character/Player/SW_PlayerState.h"
+#include "UI/SW_HUDManager.h"
+#include "UI/ViewModels/SW_PlayerInfoViewModel.h"
+#include "UI/ViewModels/SW_SkillViewModel.h"
+#include "UI/ViewModels/SW_LevelExpViewModel.h"
 
 ASW_CharacterBase::ASW_CharacterBase()
 {
@@ -140,20 +144,24 @@ void ASW_CharacterBase::ComboAttack()
 void ASW_CharacterBase::JumpAttack()
 {
     PlaySkillAnimation(FName("JumpAttack"));
+    ApplyDownTime(ESkillType::Drop, DropSkillDownTime);
 }
 void ASW_CharacterBase::NormalSkill()
 {
     PlaySkillAnimation(FName("NormalSkill"));
+    ApplyDownTime(ESkillType::Normal, NormalSkillDownTime);
 }
 
 void ASW_CharacterBase::SpecialSkill()
 {
     PlaySkillAnimation(FName("SpecialSkill"));
+    ApplyDownTime(ESkillType::Special, SpecialSkillDownTime);
 }
 
 void ASW_CharacterBase::DashSkill()
 {
     PlaySkillAnimation(FName("DashSkill"));
+    ApplyDownTime(ESkillType::Dash, DashSkillDownTime);
 }
 
 TArray<AActor*> ASW_CharacterBase::GetTargetsInRange_Implementation(FName SkillName)
@@ -527,6 +535,47 @@ void ASW_CharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
     DOREPLIFETIME(ASW_CharacterBase, bIsAttacking);
     DOREPLIFETIME(ASW_CharacterBase, bIsMovementLocked);
     DOREPLIFETIME(ASW_CharacterBase, bIsDead);
+}
+
+void ASW_CharacterBase::ApplyDownTime(ESkillType skillType, float _DownTime)
+{
+    if (UGameInstance* GI = GetGameInstance())
+    {
+        if (USW_HUDManager* HUDManager = GI->GetSubsystem<USW_HUDManager>())
+        {
+            USW_SkillViewModel* SkillViewModel = Cast<USW_SkillViewModel>(HUDManager->GetViewModel(EViewModelType::SkillViewModel));
+        
+            if (SkillViewModel)
+            {
+                switch (skillType)
+                {
+                case ESkillType::Normal:
+                    if (SkillViewModel->GetSkill1Time() == 0)
+                    {
+                        SkillViewModel->SetSkill1Time(NormalSkillDownTime);
+                    }
+                    break;
+                case ESkillType::Special:
+                    if (SkillViewModel->GetSkill1Time() == 0)
+                    {
+                        SkillViewModel->SetSkill2Time(SpecialSkillDownTime);
+                    }
+                    break;
+                case ESkillType::Drop:
+                    if (SkillViewModel->GetSkill1Time() == 0)
+                    {
+                        SkillViewModel->SetSkill3Time(DropSkillDownTime);
+                    }
+                    break;
+                case ESkillType::Dash:
+                    if (SkillViewModel->GetSkill1Time() == 0)
+                    {
+                        SkillViewModel->SetDashTime(DashSkillDownTime);
+                    }
+                }
+            }
+        }
+    }
 }
 
 void ASW_CharacterBase::OnRep_Health()
