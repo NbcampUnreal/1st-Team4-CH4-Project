@@ -27,10 +27,9 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "Combat")
 	UBoxComponent* DashCollider;
 	// ============================================
-
-	// 점프어택 이펙트 블루프린트 클래스 지정용
+	 
 	UPROPERTY(EditAnywhere, Category = "Effect")
-	TSubclassOf<ASkillEffectActor> JumpLandEffectClass;
+	UNiagaraSystem* JumpLandNiagaraSystem;
 
 	// 궁극기용 던지는 액터 변수
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")

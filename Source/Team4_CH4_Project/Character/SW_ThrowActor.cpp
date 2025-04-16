@@ -2,7 +2,8 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/BoxComponent.h"
 #include "GameFramework/DamageType.h"
-#include "Engine/DamageEvents.h" // FDamageEvent 정의를 위해 추가
+#include "Engine/DamageEvents.h"
+#include "NiagaraFunctionLibrary.h"
 #include "Kismet/GameplayStatics.h"
 
 ASW_ThrowActor::ASW_ThrowActor()
@@ -59,6 +60,19 @@ void ASW_ThrowActor::ApplyThrowDamage(AActor* OtherActor)
 
     if (AlreadyHitActors.Contains(OtherActor)) return;
     AlreadyHitActors.Add(OtherActor);
+
+    if (HitNiagaraEffect)
+    {
+        UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+            GetWorld(),
+            HitNiagaraEffect,
+            GetActorLocation(),
+            GetActorRotation(),
+            FVector(1.f),
+            true,
+            true
+        );
+    }
 
     FDamageEvent DamageEvent;
     OtherActor->TakeDamage(Damage, DamageEvent, GetInstigatorController(), this);

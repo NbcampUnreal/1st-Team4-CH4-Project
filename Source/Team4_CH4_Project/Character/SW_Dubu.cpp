@@ -86,10 +86,10 @@ ASW_Dubu::ASW_Dubu()
 	// =================================================================================
 	// 기본 스킬
 	FSkillData NormalSkillData;
-	NormalSkillData.DamageMultiplier = 1.5f; // 데미지 계수
-	NormalSkillData.AttackType = ESkillAttackType::MeleeBox;
-	NormalSkillData.Range = FVector(300.f, 300.f, 300.f); // X: 길이, Y: 폭, Z: 높이
-	NormalSkillData.Offset = FVector(100.f, 0.f, 0.f); // 캐릭터 스킬 방향
+	NormalSkillData.DamageMultiplier = 1.5f;                    // 데미지 계수
+	NormalSkillData.AttackType = ESkillAttackType::MeleeSphere;
+	NormalSkillData.Range = FVector(400.f);                     // 반지름 400
+	NormalSkillData.Offset = FVector(100.f, 0.f, 0.f);          // 캐릭터 스킬 위치
 	SkillDataMap.Add(FName("NormalSkill"), NormalSkillData);
 	// =================================================================================
 
@@ -97,10 +97,10 @@ ASW_Dubu::ASW_Dubu()
 	// =================================================================================
 	// 점프 공격
 	FSkillData JumpAttackData;
-	JumpAttackData.DamageMultiplier = 2.f; // 데미지 계수
-	JumpAttackData.AttackType = ESkillAttackType::MeleeBox;
-	JumpAttackData.Range = FVector(200.f, 200.f, 200.f);  // X: 길이, Y: 폭, Z: 높이
-	JumpAttackData.Offset = FVector(0.f); // 캐릭터 스킬 방향
+	JumpAttackData.DamageMultiplier = 2.f;
+	JumpAttackData.AttackType = ESkillAttackType::MeleeSphere; // 스피어로 변경
+	JumpAttackData.Range = FVector(300.f);                     // 반지름 300짜리 스피어
+	JumpAttackData.Offset = FVector(0.f);                      // 중심 그대로
 	SkillDataMap.Add(FName("JumpAttack"), JumpAttackData);
 	// =================================================================================
 
@@ -213,22 +213,20 @@ void ASW_Dubu::Landed(const FHitResult& Hit)
 	if (!bIsJumpAttacking) return;
 	bIsJumpAttacking = false;
 
-	FVector ForwardOffset = GetActorForwardVector() * 50.f; // 앞으로 50cm 정도
-	FVector SpawnLocation = Hit.ImpactPoint + FVector(0, 0, 10.f) + ForwardOffset;
+	FVector SpawnLocation = Hit.ImpactPoint + FVector(0, 0, 5.f); // 정중앙, 지면 살짝 위
 	FRotator SpawnRotation = FRotator::ZeroRotator;
 
-	FActorSpawnParameters Params;
-	Params.Owner = this;
-
-	if (JumpLandEffectClass)
+	if (JumpLandNiagaraSystem)
 	{
-		ASkillEffectActor* Effect = GetWorld()->SpawnActor<ASkillEffectActor>(
-			JumpLandEffectClass, SpawnLocation, SpawnRotation, Params);
-
-		if (Effect)
-		{
-			Effect->InitEffect(SpawnLocation, SpawnRotation);
-		}
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+			GetWorld(),
+			JumpLandNiagaraSystem,
+			SpawnLocation,
+			SpawnRotation,
+			FVector(1.f),
+			true,
+			true
+		);
 	}
 }
 // ===========================================================================================
