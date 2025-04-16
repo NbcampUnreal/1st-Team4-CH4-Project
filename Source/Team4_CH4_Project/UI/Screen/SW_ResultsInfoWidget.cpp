@@ -31,6 +31,10 @@ void USW_ResultsInfoWidget::SetRankText(const int32& Rank)
 	{
 		RankBorder->SetBrushColor(FLinearColor(1.f, 0.3f, 0.f));
 	}
+	else
+	{
+		RankBorder->SetBrushColor(FLinearColor(0.5f, 0.5f, 0.5f));
+	}
 }
 
 //void USW_ResultsInfoWidget::SetTimeText(const int32& Minutes, const int32& Seconds)

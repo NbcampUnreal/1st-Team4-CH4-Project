@@ -18,12 +18,12 @@ void USW_ResultsScreen::NativeConstruct()
 	{
 		EnterAnimFinished.BindDynamic(this, &USW_ResultsScreen::DisplayButtons);
 		BindToAnimationFinished(EnterAnim, EnterAnimFinished);
+		PlayAnimation(EnterAnim);
 	}
 
-	if (ExitAnim)
+	if (ReturnButton)
 	{
-		ExitAnimFinished.BindDynamic(this, &USW_ResultsScreen::RemoveScreen);
-		BindToAnimationFinished(ExitAnim, ExitAnimFinished);
+		ReturnButton->OnClicked.AddDynamic(this, &USW_ResultsScreen::ExitScreen);
 	}
 }
 
@@ -46,7 +46,7 @@ void USW_ResultsScreen::SetTimeText(const FText& InTimeText)
 // TODO: change parameter to struct
 void USW_ResultsScreen::AddPlayerInfo(const FSW_ResultData& ResultData)
 {
-	if (PlayerInfoBox && PlayerInfoWidgetClass)
+	if (PlayerInfoBox && PlayerInfoWidgetClass && ResultData.Rank > 0)
 	{
 		USW_ResultsInfoWidget* PlayerInfoWidget = CreateWidget<USW_ResultsInfoWidget>(this, PlayerInfoWidgetClass);
 		if (PlayerInfoWidget)
@@ -64,14 +64,6 @@ void USW_ResultsScreen::AddPlayerInfo(const FSW_ResultData& ResultData)
 			}
 			PlayerInfoWidget->AddToViewport();
 		}
-	}
-}
-
-void USW_ResultsScreen::EnterScreen()
-{
-	if (EnterAnim)
-	{
-		PlayAnimation(EnterAnim);
 	}
 }
 
@@ -93,15 +85,13 @@ void USW_ResultsScreen::DisplayButtons()
 
 void USW_ResultsScreen::RemoveScreen()
 {
-	if (!GetWorld() || GetWorld()->bIsTearingDown || !IsValidLowLevel())
+	if (GetWorld() && GetWorld()->bIsTearingDown && IsValidLowLevel())
 	{
-		return;
-	}
-
-	if (PlayerInfoBox)
-	{
-		PlayerInfoBox->ClearChildren();
-		RemoveFromParent();
+		if (PlayerInfoBox)
+		{
+			PlayerInfoBox->ClearChildren();
+			RemoveFromParent();
+		}
 	}
 }
 

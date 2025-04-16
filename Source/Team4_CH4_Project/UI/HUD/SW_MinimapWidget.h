@@ -6,13 +6,29 @@
 #include "Blueprint/UserWidget.h"
 #include "SW_MinimapWidget.generated.h"
 
+class UImage;
 
 UCLASS()
 class TEAM4_CH4_PROJECT_API USW_MinimapWidget : public UUserWidget
 {
 	GENERATED_BODY()
 	
-protected:
+public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
-	class UImage* MinimapImage;
+	UImage* MinimapImage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UImage* PlayerMarker;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Minimap")
+	float CaptureOffsetX;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Minimap")
+	float CaptureOffsetY;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Minimap")
+	float MinimapSize;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Minimap")
+	UMaterialParameterCollection* MPCMinimap;
+
+	USW_MinimapWidget(const FObjectInitializer& ObjectInitializer);
+
+	UFUNCTION(BlueprintCallable)
+	void UpdateMinimap();
 };

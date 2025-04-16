@@ -19,6 +19,7 @@ enum class EViewModelType : uint8
 	DebuffViewModel			UMETA(DisplayName="Debuff"),
 	SquadViewModel			UMETA(DisplayName="Squad"),
 	TimeViewModel			UMETA(DisplayName="Time"),
+	ResultsViewModel		UMETA(DisplayName="Results"),
 	MAX						UMETA(DisplayName="MAX")
 };
 

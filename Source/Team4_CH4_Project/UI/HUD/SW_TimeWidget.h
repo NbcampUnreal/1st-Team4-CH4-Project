@@ -6,7 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "SW_TimeWidget.generated.h"
 
-class UMVVMViewModelBase;
+class UTextBlock;
 
 UCLASS()
 class TEAM4_CH4_PROJECT_API USW_TimeWidget : public UUserWidget
@@ -14,8 +14,16 @@ class TEAM4_CH4_PROJECT_API USW_TimeWidget : public UUserWidget
 	GENERATED_BODY()
 	
 public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UTextBlock* TimeText;
+
+	FTimerHandle StopHandle;
+	FTimerHandle UpdateHandle;
+
 	UFUNCTION(BlueprintCallable)
-	void SetViewModel(UMVVMViewModelBase* InViewModel);
-private:
-	UMVVMViewModelBase* ViewModel;
+	void StartTimer(const int32& Seconds);
+	UFUNCTION(BlueprintCallable)
+	void UpdateTimer();
+	UFUNCTION(BlueprintCallable)
+	void StopTimer();
 };

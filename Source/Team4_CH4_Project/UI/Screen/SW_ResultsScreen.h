@@ -39,12 +39,9 @@ public:
 	TSubclassOf<UUserWidget> PlayerInfoWidgetClass;
 
 	FWidgetAnimationDynamicEvent EnterAnimFinished;
-	FWidgetAnimationDynamicEvent ExitAnimFinished;
 
 	virtual void NativeConstruct() override;
 
-	UFUNCTION(BlueprintCallable)
-	void EnterScreen();
 	UFUNCTION(BlueprintCallable)
 	void ExitScreen();
 

@@ -33,6 +33,7 @@ void USW_ResultsViewModel::SetResultToAdd(const FSW_ResultData& InData)
 {
 	if (ResultToAdd.PlayerName != InData.PlayerName)
 	{
+		
 		ResultToAdd.PlayerName = InData.PlayerName;
 		ResultToAdd.Rank = InData.Rank;
 		ResultToAdd.bHasWon = InData.bHasWon;

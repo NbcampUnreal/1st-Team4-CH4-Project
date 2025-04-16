@@ -6,6 +6,8 @@
 #include "Blueprint/UserWidget.h"
 #include "SW_MainHUDWidget.generated.h"
 
+class USW_MinimapWidget;
+
 UCLASS()
 class TEAM4_CH4_PROJECT_API USW_MainHUDWidget : public UUserWidget
 {
@@ -19,11 +21,21 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	UUserWidget* TimeWidget;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
-	UUserWidget* MinimapWidget;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
-	UUserWidget* QuickSlotWidget;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidgetOptional))
-	UUserWidget* SquadInfoWidget;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UUserWidget* NotificationWidget;
+	USW_MinimapWidget* MinimapWidget;
+	UPROPERTY(Transient, meta=(BindWidgetAnim))
+	UWidgetAnimation* EnterAnim;
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	//UUserWidget* NotificationWidget;
+
+	FWidgetAnimationDynamicEvent EnterAnimFinished;
+	FTimerHandle UpdateHandle;
+
+	virtual void NativeConstruct() override;
+
+	UFUNCTION(BlueprintCallable)
+	void DisplayWidgets();
+	UFUNCTION(BlueprintCallable)
+	void StartUpdateTimer();
+	UFUNCTION(BlueprintCallable)
+	void UpdateMinimap();
 };

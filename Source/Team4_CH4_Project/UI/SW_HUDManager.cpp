@@ -10,6 +10,7 @@
 #include "ViewModels/SW_DebuffViewModel.h"
 #include "ViewModels/SW_SquadViewModel.h"
 #include "ViewModels/SW_SkillViewModel.h"
+#include "ViewModels/SW_ResultsViewModel.h"
 #include "CharacterData/SW_CharacterDataRow.h"
 
 void USW_HUDManager::Initialize(FSubsystemCollectionBase& Collection)
@@ -33,21 +34,14 @@ void USW_HUDManager::InitializeHUD()
 		if (UClass* LoadedHUDWidgetClass = HUDWidgetClassPtr.LoadSynchronous())
 		{
 			HUDWidget = CreateWidget<UUserWidget>(GetGameInstance(), LoadedHUDWidgetClass, TEXT("HUDWidget"));
+			DisplayHUD();
 		}
-	}
-
-	// Initialize Level and Exp values
-	if (USW_LevelExpViewModel* LevelExpViewModel = Cast<USW_LevelExpViewModel>(GetViewModel(EViewModelType::PlayerInfoViewModel)))
-	{
-		LevelExpViewModel->SetCurrentLevel(1);
-		LevelExpViewModel->SetCurrentExp(0);
-		LevelExpViewModel->SetMaxExp(100);
 	}
 }
 
 void USW_HUDManager::DisplayHUD()
 {
-	if (IsValid(HUDWidget))
+	if (HUDWidget)
 	{
 		HUDWidget->AddToViewport();
 		HUDWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
@@ -140,6 +134,8 @@ void USW_HUDManager::InitializeViewModel(EViewModelType ViewModelType)
 		case EViewModelType::SkillViewModel:
 			ViewModel = NewObject<USW_SkillViewModel>(this);
 			break;
+		case EViewModelType::ResultsViewModel:
+			ViewModel = NewObject<USW_ResultsViewModel>(this);
 		//...
 		}
 		ViewModelMap.Add(ViewModelType, ViewModel);
