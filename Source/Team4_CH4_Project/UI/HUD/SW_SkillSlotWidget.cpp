@@ -18,6 +18,7 @@ void USW_SkillSlotWidget::SetSkillIcons(ECharacterType Type)
 			{
 				AttackWidget->SetSkillIcon(SkillData.AttackIcon);
 				AttackWidget->SetInputText(FText::FromString(TEXT("U")));
+				AttackWidget->SetSkillType(ESkillType::Attack);
 			}
 			/*
 			if (GuardWidget && IsValid(SkillData.GuardIcon))
@@ -29,25 +30,29 @@ void USW_SkillSlotWidget::SetSkillIcons(ECharacterType Type)
 			{
 				DashWidget->SetSkillIcon(SkillData.DashIcon);
 				DashWidget->SetInputText(FText::FromString(TEXT("I")));
+				DashWidget->SetSkillType(ESkillType::Dash);
 			}
 
 			if (Skill1Widget && IsValid(SkillData.Skill1Icon))
 			{
 				Skill1Widget->SetSkillIcon(SkillData.Skill1Icon);
 				Skill1Widget->SetInputText(FText::FromString(TEXT("H")));
+				Skill1Widget->SetSkillType(ESkillType::Skill1);
 			}
 
 			if (Skill2Widget && IsValid(SkillData.Skill2Icon))
 			{
 				Skill2Widget->SetSkillIcon(SkillData.Skill2Icon);
 				Skill2Widget->SetInputText(FText::FromString(TEXT("J")));
+				Skill2Widget->SetSkillType(ESkillType::Skill2);
 			}
-			/*
+			
 			if (Skill3Widget && IsValid(SkillData.Skill3Icon))
 			{
 				Skill3Widget->SetSkillIcon(SkillData.Skill3Icon);
+				Skill3Widget->SetInputText(FText::FromString(TEXT("SPACE+K")));
+				Skill3Widget->SetSkillType(ESkillType::Skill3);
 			}
-			*/
 		}
 	}
 }
@@ -78,6 +83,12 @@ void USW_SkillSlotWidget::PlaySkillAnim(ESkillType SkillType)
 		if (Skill2Widget)
 		{
 			Skill2Widget->PlaySkillAnim();
+		}
+		break;
+	case ESkillType::Skill3:
+		if (Skill3Widget)
+		{
+			Skill3Widget->PlaySkillAnim();
 		}
 		break;
 	}

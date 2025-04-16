@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "../CharacterData/SW_CharacterType.h"
 #include "SW_SkillWidget.generated.h"
 
 class UImage;
@@ -27,11 +28,15 @@ public:
 	FTimerHandle DownHandle;
 	UPROPERTY(BlueprintReadOnly)
 	FTimerHandle UpdateHandle;
-
+	UPROPERTY(BlueprintReadWrite)
+	ESkillType SkillType;
+	
 	FLinearColor DownColor = FLinearColor(0.3f, 0.3f, 0.3f, 0.3f);
 
 	virtual void NativeConstruct() override;
 
+	UFUNCTION(BlueprintCallable)
+	void SetSkillType(const ESkillType& Type);
 	UFUNCTION(BlueprintCallable)
 	void SetSkillIcon(UTexture2D* Icon);
 	UFUNCTION(BlueprintCallable)

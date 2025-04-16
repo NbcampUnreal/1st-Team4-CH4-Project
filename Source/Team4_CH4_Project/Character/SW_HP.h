@@ -20,6 +20,9 @@ protected:
     virtual void NativeConstruct() override;
 
     UPROPERTY(meta = (BindWidget))
+    UTextBlock* NameText;
+
+    UPROPERTY(meta = (BindWidget))
     UProgressBar* HealthBar;
 
     UPROPERTY(meta = (BindWidget))

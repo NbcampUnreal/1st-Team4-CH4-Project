@@ -34,6 +34,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetDashTime(const float& DownTime);
 
+	void ResetSkillTime(ESkillType Type);
+
 private:
 	UPROPERTY(BlueprintReadWrite, FieldNotify, Getter, Setter, meta = (AllowPrivateAccess))
 	ESkillType UsedSkillType;

@@ -4,10 +4,17 @@
 #include "SW_SkillWidget.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
+#include "../SW_HUDManager.h"
+#include "../ViewModels/SW_SkillViewModel.h"
 
 void USW_SkillWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+}
+
+void USW_SkillWidget::SetSkillType(const ESkillType& Type)
+{
+	SkillType = Type;
 }
 
 void USW_SkillWidget::SetSkillIcon(UTexture2D* Icon)
@@ -84,6 +91,14 @@ void USW_SkillWidget::StopSkillTimer()
 	{
 		DownTimeText->SetVisibility(ESlateVisibility::Collapsed);
 		SkillIcon->SetColorAndOpacity(FLinearColor(1.f, 1.f, 1.f, 1.f));
+	}
+
+	if (USW_HUDManager* HUDManager = GetGameInstance()->GetSubsystem<USW_HUDManager>())
+	{
+		if (USW_SkillViewModel* SkillVM = Cast<USW_SkillViewModel>(HUDManager->GetViewModel(EViewModelType::SkillViewModel)))
+		{
+			SkillVM->ResetSkillTime(SkillType);
+		}
 	}
 }
 
