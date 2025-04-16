@@ -204,6 +204,16 @@ protected:
     UPROPERTY(VisibleAnywhere, Category = "SkillDownTime")
     float DropSkillDownTime = 5.f;
 
+    // 스킬별 사용 가능 상태
+    UPROPERTY(Replicated)
+    bool bCanUseNormalSkill = true;
+    UPROPERTY(Replicated)
+    bool bCanUseSpecialSkill = true;
+    UPROPERTY(Replicated)
+    bool bCanUseDashSkill = true;
+    UPROPERTY(Replicated)
+    bool bCanUseDropSkill = true;
+
     // 리플리케이션 데미지 중복 방지용
     UPROPERTY()
     TSet<FName> SkillsAppliedThisFrame;
@@ -284,4 +294,12 @@ public:
     UFUNCTION(NetMulticast, Reliable)
     void Multicast_ComboAttack();
 
+    UFUNCTION(Client, Reliable)
+    void Client_UpdateSkillAvailability(ESkillType InSkillType);
+
+    UFUNCTION(Server, Reliable)
+    void Server_UpdateSkillAvailability(ESkillType InSkillType, bool bCanUse);
+
+    UFUNCTION(Client, Reliable)
+    void Client_SetSkillDown(ESkillType InSkillType);
 };

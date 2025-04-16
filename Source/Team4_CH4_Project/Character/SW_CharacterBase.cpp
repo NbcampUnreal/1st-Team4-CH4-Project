@@ -530,37 +530,43 @@ void ASW_CharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
     DOREPLIFETIME(ASW_CharacterBase, bIsAttacking);
     DOREPLIFETIME(ASW_CharacterBase, bIsMovementLocked);
     DOREPLIFETIME(ASW_CharacterBase, bIsDead);
+    DOREPLIFETIME(ASW_CharacterBase, bCanUseNormalSkill);
+    DOREPLIFETIME(ASW_CharacterBase, bCanUseSpecialSkill);
+    DOREPLIFETIME(ASW_CharacterBase, bCanUseDropSkill);
+    DOREPLIFETIME(ASW_CharacterBase, bCanUseDashSkill);
 }
 
 void ASW_CharacterBase::ActivateSkill(ESkillType skillType, float _DownTime)
 {
-    if (UGameInstance* GI = GetGameInstance())
+    Client_UpdateSkillAvailability(skillType);
+    switch (skillType)
     {
-        if (USW_HUDManager* HUDManager = GI->GetSubsystem<USW_HUDManager>())
+    case ESkillType::Skill1:
+        if (bCanUseNormalSkill)
         {
-            USW_SkillViewModel* SkillViewModel = Cast<USW_SkillViewModel>(HUDManager->GetViewModel(EViewModelType::SkillViewModel));
-        
-            if (SkillViewModel)
-            {
-                switch (skillType)
-                {
-                case ESkillType::Skill1:
-                    PlaySkillAnimation(FName("NormalSkill"));
-                    SkillViewModel->SetSkill1Time(NormalSkillDownTime);
-                    break;
-                case ESkillType::Skill2:
-                    PlaySkillAnimation(FName("SpecialSkill"));
-                    SkillViewModel->SetSkill2Time(SpecialSkillDownTime);
-                    break;
-                case ESkillType::Skill3:
-                    PlaySkillAnimation(FName("JumpAttack"));
-                    SkillViewModel->SetSkill3Time(DropSkillDownTime);
-                    break;
-                case ESkillType::Dash:
-                    PlaySkillAnimation(FName("DashSkill"));
-                    SkillViewModel->SetDashTime(DashSkillDownTime);
-                }
-            }
+            PlaySkillAnimation(FName("NormalSkill"));
+            Client_SetSkillDown(skillType);
+        }
+        break;
+    case ESkillType::Skill2:
+        if (bCanUseSpecialSkill)
+        {
+            PlaySkillAnimation(FName("SpecialSkill"));
+            Client_SetSkillDown(skillType);
+        }
+        break;
+    case ESkillType::Skill3:
+        if (bCanUseDropSkill)
+        {
+            PlaySkillAnimation(FName("JumpAttack"));
+            Client_SetSkillDown(skillType);
+        }
+        break;
+    case ESkillType::Dash:
+        if (bCanUseDashSkill)
+        {
+            PlaySkillAnimation(FName("DashSkill"));
+            Client_SetSkillDown(skillType);
         }
     }
 }
@@ -569,8 +575,6 @@ void ASW_CharacterBase::OnRep_Health()
 {
     UpdateHealthBar();
 }
-
-
 
 void ASW_CharacterBase::Multicast_PlaySkill_Implementation(FName SkillName)
 {
@@ -612,3 +616,81 @@ void ASW_CharacterBase::Multicast_ComboAttack_Implementation()
     }
 }
 // ============================================================================================
+
+void ASW_CharacterBase::Client_UpdateSkillAvailability_Implementation(ESkillType InSkillType)
+{
+    if (UGameInstance* GI = GetGameInstance())
+    {
+        if (USW_HUDManager* HUDManager = GI->GetSubsystem<USW_HUDManager>())
+        {
+            USW_SkillViewModel* SkillViewModel = Cast<USW_SkillViewModel>(HUDManager->GetViewModel(EViewModelType::SkillViewModel));
+            if (SkillViewModel)
+            {
+                switch (InSkillType)
+                {
+                case ESkillType::Skill1:
+                    Server_UpdateSkillAvailability(InSkillType, SkillViewModel->GetSkill1Time() <= 0);
+                    break;
+                case ESkillType::Skill2:
+                    Server_UpdateSkillAvailability(InSkillType, SkillViewModel->GetSkill2Time() <= 0);
+                    break;
+                case ESkillType::Skill3:
+                    Server_UpdateSkillAvailability(InSkillType, SkillViewModel->GetSkill3Time() <= 0);
+                    break;
+                case ESkillType::Dash:
+                    Server_UpdateSkillAvailability(InSkillType, SkillViewModel->GetDashTime() <= 0);
+                    break;
+                }
+            }
+        }
+    }
+}
+
+void ASW_CharacterBase::Server_UpdateSkillAvailability_Implementation(ESkillType InSkillType, bool bCanUse)
+{
+    switch (InSkillType)
+    {
+    case ESkillType::Skill1:
+        bCanUseNormalSkill = bCanUse;
+        break;
+    case ESkillType::Skill2:
+        bCanUseSpecialSkill = bCanUse;
+        break;
+    case ESkillType::Skill3:
+        bCanUseDropSkill = bCanUse;
+        break;
+    case ESkillType::Dash:
+        bCanUseDashSkill = bCanUse;
+        break;
+    }
+}
+
+void ASW_CharacterBase::Client_SetSkillDown_Implementation(ESkillType InSkillType)
+{
+    if (UGameInstance* GI = GetGameInstance())
+    {
+        if (USW_HUDManager* HUDManager = GI->GetSubsystem<USW_HUDManager>())
+        {
+            USW_SkillViewModel* SkillViewModel = Cast<USW_SkillViewModel>(HUDManager->GetViewModel(EViewModelType::SkillViewModel));
+            if (SkillViewModel)
+            {
+                switch (InSkillType)
+                {
+                case ESkillType::Skill1:
+                    SkillViewModel->SetSkill1Time(NormalSkillDownTime);
+                    break;
+                case ESkillType::Skill2:
+                    SkillViewModel->SetSkill2Time(SpecialSkillDownTime);
+                    break;
+                case ESkillType::Skill3:
+                    SkillViewModel->SetSkill3Time(DropSkillDownTime);
+                    break;
+                case ESkillType::Dash:
+                    SkillViewModel->SetDashTime(DashSkillDownTime);
+                }
+            }
+        }
+    }
+}
+
+
