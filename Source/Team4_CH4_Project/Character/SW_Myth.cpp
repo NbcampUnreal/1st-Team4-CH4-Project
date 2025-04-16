@@ -63,10 +63,10 @@ ASW_Myth::ASW_Myth()
 
     // 스페셜 스킬 콜리전 설정
     FSkillData SpecialSkillData;
-    SpecialSkillData.DamageMultiplier = 8.f; // 데미지 계수 8배
-    SpecialSkillData.AttackType = ESkillAttackType::MeleeBox;
-    SpecialSkillData.Range = FVector(300.f, 300.f, 200.f);
-    SpecialSkillData.Offset = FVector(500.f, 0.f, 0.f); // 정면 500 위치
+    SpecialSkillData.DamageMultiplier = 3.f;
+    SpecialSkillData.AttackType = ESkillAttackType::MeleeSphere;
+    SpecialSkillData.Range = FVector(300.f);  // 반지름 300짜리 구체
+    SpecialSkillData.Offset = FVector(600.f, 0.f, 0.f);
     SkillDataMap.Add(FName("SpecialSkill"), SpecialSkillData);
 
 
@@ -86,27 +86,54 @@ void ASW_Myth::ComboAttack()
     Super::ComboAttack();
 }
 
-void ASW_Myth::SpawnComboArrow()
+void ASW_Myth::SpawnComboArrow(bool bIsSpecialSkill)
 {
-    AActor* Projectile = SpawnArrow(false);
-    if (ASW_Arrow* SpawnedArrow = Cast<ASW_Arrow>(Projectile))
-    {
-        float CalculatedDamage = 0.f;
+    FVector CharacterLocation = GetActorLocation();
+    FVector Direction;
+    FVector SpawnLocation;
 
-        switch (CurrentComboIndex)
+    bool bIsJumpSkill = bIsJumpAttacking;
+
+    if (bIsSpecialSkill || bIsJumpSkill)
+    {
+        // 45도 아래 방향
+        FVector Forward = GetActorForwardVector() * 0.7071f;
+        FVector Downward = FVector::DownVector * 0.7071f;
+        Direction = (Forward + Downward).GetSafeNormal();
+
+        // 위치: 스페셜스킬은 위에서, 점프어택은 현재 위치 기준
+        FVector Start = CharacterLocation;
+        if (bIsSpecialSkill)
         {
-        case 0:
-            CalculatedDamage = AttackDamage; // 30
-            break;
-        case 1:
-            CalculatedDamage = AttackDamage + (AttackDamage * 0.5f); // 30 + 15 = 45
-            break;
-        case 2:
-            CalculatedDamage = (AttackDamage + (AttackDamage * 0.5f)) + (AttackDamage * 0.5f); // 45 + 15 = 60
-            break;
+            Start += FVector(0.f, 0.f, 390.f);
         }
 
-        SpawnedArrow->Damage = bIsJumpAttacking ? 0.f : CalculatedDamage;
+        SpawnLocation = Start + Direction * 100.f;
+    }
+    else
+    {
+        Direction = GetActorForwardVector();
+        SpawnLocation = CharacterLocation + Direction * 100.f;
+    }
+
+    FRotator ArrowRotation = Direction.Rotation();
+
+    FActorSpawnParameters Params;
+    Params.Owner = this;
+    Params.Instigator = this;
+
+    AActor* Projectile = GetWorld()->SpawnActor<AActor>(ArrowProjectileClass, SpawnLocation, ArrowRotation, Params);
+    if (ASW_Arrow* SpawnedArrow = Cast<ASW_Arrow>(Projectile))
+    {
+        // 스페셜스킬 또는 점프어택일 때는 데미지 0
+        if (bIsSpecialSkill || bIsJumpSkill)
+        {
+            SpawnedArrow->Damage = 0.f;
+        }
+        else
+        {
+            SpawnedArrow->Damage = AttackDamage;
+        }
 
         if (UStaticMeshComponent* MeshComp = SpawnedArrow->FindComponentByClass<UStaticMeshComponent>())
         {
@@ -117,6 +144,8 @@ void ASW_Myth::SpawnComboArrow()
             case 2: MeshComp->SetMaterial(0, ThirdMaterial); break;
             }
         }
+
+        SpawnedArrow->SetActorScale3D(FVector(1.f));
     }
 }
 // =============================================================================================================================
@@ -303,19 +332,6 @@ void ASW_Myth::SpecialSkill()
         false
     );
 
-    // 애니메이션 실행
     PlaySkillAnimation(FName("SpecialSkill"));
-
-    // 2초 후 데미지 판정
-    FTimerHandle DamageTimer;
-    GetWorld()->GetTimerManager().SetTimer(
-        DamageTimer,
-        [this]()
-        {
-            Server_ApplySkillDamage(FName("SpecialSkill"));
-        },
-        1.7f,
-        false
-    );
 }
 

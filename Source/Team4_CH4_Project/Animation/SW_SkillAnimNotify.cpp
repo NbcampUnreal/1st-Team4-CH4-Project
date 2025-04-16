@@ -123,9 +123,11 @@ void USkillAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBas
             {
                 if (ASW_Myth* Myth = Cast<ASW_Myth>(Character))
                 {
-                    Myth->SpawnComboArrow();
+                    bool bIsSpecialSkill = SkillName == "SpecialSkill";
+                    Myth->SpawnComboArrow(bIsSpecialSkill); // bool 추가
                 }
-            }
+                }
+
 
             // 원거리 Myth 캐릭터 대쉬 스킬시 뒤로 1400만큼 이동
             else if (NotifyEventName == "DoBackwardMove")

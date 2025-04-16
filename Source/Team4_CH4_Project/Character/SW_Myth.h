@@ -31,7 +31,7 @@ public:
 
 	virtual void SpecialSkill() override;
 
-	void SpawnComboArrow();
+	void SpawnComboArrow(bool bIsSpecialSkill = false);
 
 	// 궁수 전용 투사체 클래스 (화살)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Myth")
