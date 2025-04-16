@@ -20,7 +20,7 @@ public:
 	UFUNCTION()
 	void SetbIsWon(bool IsWon);
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	bool GetbIsWon() const;
 protected:
 
