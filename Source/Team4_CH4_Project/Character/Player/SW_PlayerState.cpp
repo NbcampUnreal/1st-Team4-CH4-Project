@@ -35,5 +35,5 @@ void ASW_PlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(ASW_PlayerState, PlayerKill);
-
+	DOREPLIFETIME(ASW_PlayerState, bIsWon);
 }

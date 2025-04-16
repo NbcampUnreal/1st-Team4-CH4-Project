@@ -62,7 +62,7 @@ void ASW_GameMode::Logout(AController* Exiting)
 
 void ASW_GameMode::Multicast_EndGame_Implementation()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Round Is Over"));
 	PopUpResult();
+	UE_LOG(LogTemp, Warning, TEXT("Round Is Over"));
 	HandleGameEnd();
 }
