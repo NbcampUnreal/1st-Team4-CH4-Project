@@ -192,7 +192,7 @@ void ASW_Void::ExecuteDashTeleport()
 {
     if (!HasAuthority()) return;  // 서버에서만 실행
 
-    FVector TeleportLocation = GetActorLocation() + GetActorForwardVector() * 400.f;
+    FVector TeleportLocation = GetActorLocation() + GetActorForwardVector() * 300.f;
     TeleportLocation.Z = GetActorLocation().Z;
 
     TeleportTo(TeleportLocation, GetActorRotation());
