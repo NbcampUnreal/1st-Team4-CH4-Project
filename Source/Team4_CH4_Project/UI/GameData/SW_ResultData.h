@@ -15,8 +15,8 @@ public:
 	FString PlayerName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 Rank;
+	int32 Rank = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	bool bHasWon;
+	bool bHasWon = "false";
 };
