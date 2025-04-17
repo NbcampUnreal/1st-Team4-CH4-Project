@@ -31,7 +31,7 @@ public:
 	UFUNCTION()
 	void OnRep_DoEndGame();
 
-	UFUNCTION(BlueprintAuthorityOnly, BlueprintImplementableEvent)
+	UFUNCTION(BlueprintImplementableEvent, BlueprintAuthorityOnly)
 	void AddRanking(APlayerController* DeadUserPC);
 
 	UFUNCTION()
@@ -54,6 +54,9 @@ protected:
 	UPROPERTY(BlueprintReadWrite, Category="CurrentGame")
 	bool bGameEnd;
 
+	UPROPERTY(BlueprintReadWrite)
+	TArray<APlayerState*> PlayerStatesForRank;
+	
 	TArray<ASW_PlayerState*> PlayerStates;
 private:
 };
