@@ -6,11 +6,30 @@
 
 ASW_GameMode::ASW_GameMode()
 {
+	PostLoginActivate = false;
 }
 
 void ASW_GameMode::BeginPlay()
 {
 	Super::BeginPlay();
+	UE_LOG(LogTemp, Warning, TEXT("GameMode Swapped"));
+	if (!PostLoginActivate)
+	{
+		ServerPlayerControllers.Empty();
+	
+		TArray<AActor*> FoundPlayerControllers;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerController::StaticClass(), FoundPlayerControllers);
+		
+		for (AActor* PlayerControllerActor : FoundPlayerControllers)
+		{
+			APlayerController* PlayerController = Cast<APlayerController>(PlayerControllerActor);
+			if (PlayerController && !ServerPlayerControllers.Contains(PlayerController))
+			{
+				ServerPlayerControllers.Add(PlayerController);
+				UE_LOG(LogTemp, Warning, TEXT("Added PlayerController (using GetAllActorsOfClass) to ServerPlayerControllers: %s"), *PlayerController->GetName());
+			}
+		}
+	}
 }
 
 
@@ -35,16 +54,18 @@ void ASW_GameMode::DelayedTravelToLobby()
 	}
 }
 
-TArray<APlayerController*> ASW_GameMode::GetPlayerControllers()
+TArray<APlayerController*> ASW_GameMode::GetServerPlayerControllers()
 {
-	return PlayerControllers;
+	return ServerPlayerControllers;
 }
 
 
 void ASW_GameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
-	PlayerControllers.Add(NewPlayer);
+	UE_LOG(LogTemp, Warning, TEXT("PostLogin Activate"));
+	ServerPlayerControllers.Add(NewPlayer);
+	PostLoginActivate = true;
 	if (AGameStateBase* GS = GetWorld()->GetGameState())
 	{
 		if (ASW_GameState* SWGS = Cast<ASW_GameState>(GS))
@@ -59,6 +80,7 @@ void ASW_GameMode::Logout(AController* Exiting)
 {
 	Super::Logout(Exiting);
 }
+
 
 void ASW_GameMode::Multicast_EndGame_Implementation()
 {

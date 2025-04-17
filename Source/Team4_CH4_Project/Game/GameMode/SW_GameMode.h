@@ -22,14 +22,14 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void DelayedTravelToLobby();
 
-	UFUNCTION(BlueprintImplementableEvent)
+	UFUNCTION(BlueprintAuthorityOnly, BlueprintImplementableEvent)
 	void PopUpResult();
 
-	UFUNCTION(BlueprintImplementableEvent)
+	UFUNCTION(BlueprintAuthorityOnly, BlueprintImplementableEvent)
 	void CreateSession();
 	
-	UFUNCTION()
-	TArray<APlayerController*> GetPlayerControllers();
+	UFUNCTION(BlueprintCallable)
+	TArray<APlayerController*> GetServerPlayerControllers();
 	
 	UPROPERTY(EditDefaultsOnly, Category = "GameEndLevel")
 	FString LobbyMapName;
@@ -40,8 +40,9 @@ protected:
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 	virtual void Logout(AController* Exiting) override;
 
+	bool PostLoginActivate;
 private:
 
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	TArray<APlayerController*> PlayerControllers;
+	TArray<APlayerController*> ServerPlayerControllers;
 };
