@@ -43,25 +43,20 @@ ASW_Brall::ASW_Brall()
     static ConstructorHelpers::FObjectFinder<UAnimMontage> Combo1(TEXT("/Game/Characters/Brall/Animation/ComboAttack/AM_Brall_Combo1.AM_Brall_Combo1"));
     static ConstructorHelpers::FObjectFinder<UAnimMontage> Combo2(TEXT("/Game/Characters/Brall/Animation/ComboAttack/AM_Brall_Combo2.AM_Brall_Combo2"));
     static ConstructorHelpers::FObjectFinder<UAnimMontage> Combo3(TEXT("/Game/Characters/Brall/Animation/ComboAttack/AM_Brall_Combo3.AM_Brall_Combo3"));
-
-    if (Combo1.Succeeded()) ComboMontages.Add(Combo1.Object);
-    if (Combo2.Succeeded()) ComboMontages.Add(Combo2.Object);
-    if (Combo3.Succeeded()) ComboMontages.Add(Combo3.Object);
-
     if (Combo1.Succeeded())
     {
-        ComboMontages.Add(Combo1.Object);
         SkillMontages.Add(FName("Combo1"), Combo1.Object);
+        ComboMontages.Add(Combo1.Object);
     }
     if (Combo2.Succeeded())
     {
+        SkillMontages.Add(FName("Combo2"), Combo2.Object);
         ComboMontages.Add(Combo2.Object);
-        SkillMontages.Add(FName("Combo2"), Combo2.Object); 
     }
     if (Combo3.Succeeded())
     {
-        ComboMontages.Add(Combo3.Object);
         SkillMontages.Add(FName("Combo3"), Combo3.Object);
+        ComboMontages.Add(Combo3.Object);
     }
 
     // =================================================================================
@@ -84,7 +79,7 @@ ASW_Brall::ASW_Brall()
     // =================================================================================
     // 기본 스킬 콜리전 설정
     FSkillData NormalSkillData;
-    NormalSkillData.DamageMultiplier = 1.5f; // 데미지 계수
+    NormalSkillData.DamageMultiplier = 0.7f; // 데미지 계수
     NormalSkillData.AttackType = ESkillAttackType::MeleeSphere;
     NormalSkillData.Range = FVector(300.f); // X: 길이, Y: 폭, Z: 높이
     NormalSkillData.Offset = FVector(300.f, 0.f, 0.f);
@@ -95,7 +90,7 @@ ASW_Brall::ASW_Brall()
     // =================================================================================
     // 스페셜 스킬 콜리전 설정
     FSkillData SpecialSkillData;
-    SpecialSkillData.DamageMultiplier = 1.5f; // 데미지 계수
+    SpecialSkillData.DamageMultiplier = 1.f; // 데미지 계수
     SpecialSkillData.AttackType = ESkillAttackType::MeleeSphere; // Box
     SpecialSkillData.Range = FVector(400.f);  
     SpecialSkillData.Offset = FVector(200.f, 0.f, 0.f);        // 살짝 앞쪽으로
@@ -106,7 +101,7 @@ ASW_Brall::ASW_Brall()
     // =================================================================================
     // 점프 공격
     FSkillData JumpAttackData;
-    JumpAttackData.DamageMultiplier = 1.5f; // 데미지 계수
+    JumpAttackData.DamageMultiplier = 0.7f; // 데미지 계수
     JumpAttackData.AttackType = ESkillAttackType::MeleeSphere;
     JumpAttackData.Range = FVector(300.f); // 범위 설정
     JumpAttackData.Offset = FVector(200.f, 0.f, -50.f);    // 착지 지점 아래쪽

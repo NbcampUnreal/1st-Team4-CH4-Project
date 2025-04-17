@@ -245,7 +245,7 @@ void ASW_Dubu::ThrowUltimateSkill()
 	auto* Thrown = GetWorld()->SpawnActor<ASW_ThrowActor>(ThrowActorClass, SpawnLocation, SpawnRotation, Params);
 	if (Thrown)
 	{
-		Thrown->Damage = AttackDamage * 4.f;
+		Thrown->Damage = AttackDamage * 8.f;
 	}
 }
 // ========================================================================================== =

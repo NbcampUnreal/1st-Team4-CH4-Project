@@ -131,14 +131,27 @@ void ASW_CharacterBase::Player_Jump(const FInputActionValue& _InputValue)
 
 void ASW_CharacterBase::ComboAttack()
 {
-    if (!ComboMontages.IsValidIndex(CurrentComboIndex)) return;
+    // 처음 콤보 시전은 서버에서 시작
+    if (HasAuthority())
+    {
+        CurrentComboIndex = 0;
 
-    FString ComboKey = FString::Printf(TEXT("Combo%d"), CurrentComboIndex + 1);
-    FSkillData* SkillData = SkillDataMap.Find(*ComboKey);
-    if (!SkillData) return;
+        if (!ComboMontages.IsValidIndex(CurrentComboIndex)) return;
 
-    PlayAnimMontage(ComboMontages[CurrentComboIndex]);
-    SetLockedState(true);
+        FString ComboKey = FString::Printf(TEXT("Combo%d"), CurrentComboIndex + 1);
+        if (!SkillDataMap.Contains(*ComboKey)) return;
+
+        PlayAnimMontage(ComboMontages[CurrentComboIndex]);
+
+        // 클라에 전파
+        Multicast_PlayComboAnim(CurrentComboIndex);
+
+        SetLockedState(true);
+    }
+    else
+    {
+        Server_PlaySkill(FName("ComboAttack")); // 클라라면 서버에 요청
+    }
 }
 
 void ASW_CharacterBase::JumpAttack()
@@ -371,20 +384,26 @@ void ASW_CharacterBase::SetMovementLocked(bool bLocked)
 
 void ASW_CharacterBase::AdvanceCombo()
 {
-    CurrentComboIndex++;
-    if (!ComboMontages.IsValidIndex(CurrentComboIndex))
+    // 클라이언트는 무조건 서버에 요청만
+    if (!HasAuthority())
     {
-        ResetCombo();
-        return;
+        Server_RequestAdvanceCombo();
     }
-
-    PlayAnimMontage(ComboMontages[CurrentComboIndex]);
-    SetLockedState(true);
 }
+
+void ASW_CharacterBase::Server_AdvanceCombo_Implementation(int32 ComboIndex)
+{
+    if (!ComboMontages.IsValidIndex(ComboIndex)) return;
+
+    CurrentComboIndex = ComboIndex;
+    PlayAnimMontage(ComboMontages[ComboIndex]);
+    Multicast_ComboAttack(); 
+}
+
 
 void ASW_CharacterBase::ResetCombo()
 {
-    CurrentComboIndex = 0;
+    CurrentComboIndex = -1;
 }
 
 void ASW_CharacterBase::UpdateHealthBar()
@@ -492,29 +511,38 @@ void ASW_CharacterBase::Server_PlaySkill_Implementation(FName SkillName)
 
     if (SkillName == "ComboAttack")
     {
-        ComboAttack();
-        Multicast_ComboAttack();
-        return;
+        ComboAttack(); // 서버에서 재생 + Multicast
     }
-    else if(SkillName == "JumpAttack")
+    else if (SkillName == "JumpAttack")
     {
         if (!GetCharacterMovement()->IsFalling() || bIsJumpAttacking) return;
         JumpAttack();
+        Multicast_PlaySkill(SkillName);
     }
     else if (SkillName == "DashSkill")
     {
-        DashSkill(); 
+        DashSkill();
+        Multicast_PlaySkill(SkillName);
     }
     else if (SkillName == "NormalSkill")
     {
-        NormalSkill(); 
+        NormalSkill();
+        Multicast_PlaySkill(SkillName);
     }
     else if (SkillName == "SpecialSkill")
     {
-        SpecialSkill(); 
+        SpecialSkill();
+        Multicast_PlaySkill(SkillName);
     }
+}
 
-    Multicast_PlaySkill(SkillName);
+void ASW_CharacterBase::Multicast_PlaySkill_Implementation(FName SkillName)
+{
+    // DedicatedServer 제외 + 서버 자신 제외
+    if (!IsNetMode(NM_DedicatedServer))
+    {
+        PlaySkillAnimation(SkillName);
+    }
 }
 
 // 리플리케이션되는 함수들================================================================================
@@ -574,36 +602,22 @@ void ASW_CharacterBase::OnRep_Health()
     UpdateHealthBar();
 }
 
-void ASW_CharacterBase::Multicast_PlaySkill_Implementation(FName SkillName)
-{
-    if (!HasAuthority()) 
-    {
-        PlaySkillAnimation(SkillName);
-    }
-}
 
 void ASW_CharacterBase::Server_ApplySkillDamage_Implementation(FName SkillName)
 {
-    // 데미지 중복 방지
-    if (SkillsAppliedThisFrame.Contains(SkillName)) return; 
+    if (!HasAuthority()) return;
+    if (SkillsAppliedThisFrame.Contains(SkillName)) return;
     SkillsAppliedThisFrame.Add(SkillName);
 
     TArray<AActor*> Targets = GetTargetsInRange(SkillName);
     ApplySkillDamage(SkillName, Targets);
-
     Multicast_ApplySkillDamage(SkillName);
 }
 
 void ASW_CharacterBase::Multicast_ApplySkillDamage_Implementation(FName SkillName)
 {
-    // 클라이언트에서는 데미지를 적용하지 않고 시각적 피드백만 처리
-    if (!HasAuthority())
-    {
-        // 피격 이펙트 재생 (필요 시 추가)
-
-
-        PlaySkillAnimation(SkillName); // 애니메이션만 재생
-    }
+    if (!IsLocallyControlled()) return;
+    PlaySkillAnimation(SkillName); // 클라이언트는 애니메이션만
 }
 
 void ASW_CharacterBase::Multicast_ComboAttack_Implementation()
@@ -691,4 +705,35 @@ void ASW_CharacterBase::Client_SetSkillDown_Implementation(ESkillType InSkillTyp
     }
 }
 
+void ASW_CharacterBase::Server_RequestAdvanceCombo_Implementation()
+{
+    CurrentComboIndex++;
 
+    if (!ComboMontages.IsValidIndex(CurrentComboIndex))
+    {
+        ResetCombo();
+        return;
+    }
+
+    // 애니 재생은 서버 기준
+    PlayAnimMontage(ComboMontages[CurrentComboIndex]);
+
+    // 멀티캐스트로 클라들에 동일한 인덱스 애니메이션 재생 지시
+    Multicast_PlayComboAnim(CurrentComboIndex);
+
+    SetLockedState(true);
+}
+
+
+
+void ASW_CharacterBase::Multicast_PlayComboAnim_Implementation(int32 ComboIndex)
+{
+    // 서버는 이미 재생했으니 무시
+    if (HasAuthority()) return;
+
+    if (!ComboMontages.IsValidIndex(ComboIndex)) return;
+
+    // 클라이언트도 ComboIndex 맞춰서 재생
+    CurrentComboIndex = ComboIndex;
+    PlayAnimMontage(ComboMontages[ComboIndex]);
+}

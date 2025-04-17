@@ -44,6 +44,9 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
     UNiagaraSystem* ExplosionNiagaraSystem;
 
+    UFUNCTION(NetMulticast, Reliable)
+    void Multicast_PlayExplosionFX();
+
 private:
     void ApplyDamage();
 };
