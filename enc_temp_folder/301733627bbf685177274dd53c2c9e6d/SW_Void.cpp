@@ -192,7 +192,7 @@ void ASW_Void::ExecuteDashTeleport()
 {
     if (!HasAuthority()) return;  // 서버에서만 실행
 
-    FVector TeleportLocation = GetActorLocation() + GetActorForwardVector() * 400.f;
+    FVector TeleportLocation = GetActorLocation() + GetActorForwardVector() * 300.f;
     TeleportLocation.Z = GetActorLocation().Z;
 
     TeleportTo(TeleportLocation, GetActorRotation());
@@ -233,7 +233,7 @@ void ASW_Void::SpecialSkill()
             if (Spawned)
             {
                 Spawned->OwnerCharacter = this;
-                Spawned->Damage = AttackDamage * 5;
+                Spawned->Damage = AttackDamage * 10;
                 Spawned->DamageMultiplier = 1.f;
                 Spawned->Range = FVector(1000.f);
                 Spawned->Offset = FVector::ZeroVector;

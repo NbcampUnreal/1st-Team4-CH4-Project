@@ -315,7 +315,7 @@ void ASW_Myth::JumpAttack()
                 {
                     DamageZone->OwnerCharacter = this;
                     DamageZone->Damage = AttackDamage;
-                    DamageZone->DamageMultiplier = 1.5f;
+                    DamageZone->DamageMultiplier = 3.f;
                     DamageZone->Range = FVector(300.f);
                     DamageZone->Offset = FVector(0.f, 0.f, 0.f);
                 }

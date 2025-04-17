@@ -275,6 +275,8 @@ public:
     UFUNCTION(BlueprintCallable)
     void PlaySkillAnimation(FName SkillName);
 
+    UFUNCTION(Server, Reliable)
+    void Server_AdvanceCombo(int32 ComboIndex);
 
     UFUNCTION(Server, Reliable)
     void Server_PlaySkill(FName SkillName);
@@ -302,4 +304,10 @@ public:
 
     UFUNCTION(Client, Reliable)
     void Client_SetSkillDown(ESkillType InSkillType);
+
+    UFUNCTION(Server, Reliable)
+    void Server_RequestAdvanceCombo();
+
+    UFUNCTION(NetMulticast, Reliable)
+    void Multicast_PlayComboAnim(int32 ComboIndex);
 };
