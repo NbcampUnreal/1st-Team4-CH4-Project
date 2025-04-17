@@ -90,12 +90,11 @@ void ASW_GameState::SetCurrentPlayerAmount(int AddAmount)
 			if (PS->GetbIsWon()&&HasAuthority())
 			{
 				AddRanking(PS->GetPlayerController());
-				UE_LOG(LogTemp, Warning, TEXT("2"));
 			}
 		}
 		OnRep_DoEndGame();
 	}
-	if (CurrentPlayerAmount <= 0)
+	if (CurrentPlayerAmount <= 0 && !bGameEnd)
 	{
 		OnRep_DoEndGame();
 	}

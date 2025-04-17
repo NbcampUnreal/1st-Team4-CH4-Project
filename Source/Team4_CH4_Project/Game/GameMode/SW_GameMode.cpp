@@ -26,7 +26,6 @@ void ASW_GameMode::BeginPlay()
 			if (PlayerController && !ServerPlayerControllers.Contains(PlayerController))
 			{
 				ServerPlayerControllers.Add(PlayerController);
-				UE_LOG(LogTemp, Warning, TEXT("Added PlayerController (using GetAllActorsOfClass) to ServerPlayerControllers: %s"), *PlayerController->GetName());
 			}
 			if (AGameStateBase* GS = GetWorld()->GetGameState())
 			{
@@ -43,7 +42,6 @@ void ASW_GameMode::BeginPlay()
 
 void ASW_GameMode::HandleGameEnd()
 {
-	UE_LOG(LogTemp, Warning, TEXT("HandleGameEnd Entrance"));
 	FTimerHandle GameEndTimerHandle;
 	GetWorldTimerManager().SetTimer(GameEndTimerHandle, this, &ASW_GameMode::DelayedTravelToLobby, 50.0f, false);
 }
@@ -71,7 +69,6 @@ TArray<APlayerController*> ASW_GameMode::GetServerPlayerControllers()
 void ASW_GameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
-	UE_LOG(LogTemp, Warning, TEXT("PostLogin Activate"));
 	ServerPlayerControllers.Add(NewPlayer);
 	PostLoginActivate = true;
 	if (AGameStateBase* GS = GetWorld()->GetGameState())
@@ -93,6 +90,5 @@ void ASW_GameMode::Logout(AController* Exiting)
 void ASW_GameMode::Multicast_EndGame_Implementation()
 {
 	PopUpResult();
-	UE_LOG(LogTemp, Warning, TEXT("Round Is Over"));
 	HandleGameEnd();
 }

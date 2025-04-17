@@ -459,7 +459,6 @@ float ASW_CharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Dama
         {
             PlayAnimMontage(DeathMontage);
         }
-        Server_ExecuteDeath_Implementation(DamageCauser);
         Server_CharacterDeath_Implementation();
         SetLifeSpan(2.f);
     }

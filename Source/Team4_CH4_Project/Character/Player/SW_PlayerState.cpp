@@ -13,7 +13,6 @@ ASW_PlayerState::ASW_PlayerState()
 void ASW_PlayerState::SetPlayerKill(int Count)
 {
 	PlayerKill += Count;
-	UE_LOG(LogTemp, Warning, TEXT("Player Kill: %d"), PlayerKill);
 }
 
 int ASW_PlayerState::GetPlayerKill() const
@@ -23,12 +22,13 @@ int ASW_PlayerState::GetPlayerKill() const
 
 void ASW_PlayerState::SetbIsWon(bool IsWon)
 {
-	bIsWon = IsWon;
+	bIsWon = false;
+	UE_LOG(LogTemp,Warning,TEXT("Set %d"),bIsWon);
 }
 
 bool ASW_PlayerState::GetbIsWon() const
 {
-	return bool(bIsWon);
+	return bIsWon;
 }
 
 void ASW_PlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
