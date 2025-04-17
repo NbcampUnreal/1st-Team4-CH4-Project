@@ -26,10 +26,6 @@ ASW_Myth::ASW_Myth()
     static ConstructorHelpers::FObjectFinder<UAnimMontage> Combo1(TEXT("/Game/Characters/Myth/Animation/ComboAttack/AM_Myth_Combo1.AM_Myth_Combo1"));
     static ConstructorHelpers::FObjectFinder<UAnimMontage> Combo2(TEXT("/Game/Characters/Myth/Animation/ComboAttack/AM_Myth_Combo2.AM_Myth_Combo2"));
     static ConstructorHelpers::FObjectFinder<UAnimMontage> Combo3(TEXT("/Game/Characters/Myth/Animation/ComboAttack/AM_Myth_Combo3.AM_Myth_Combo3"));
-    if (Combo1.Succeeded()) ComboMontages.Add(Combo1.Object);
-    if (Combo2.Succeeded()) ComboMontages.Add(Combo2.Object);
-    if (Combo3.Succeeded()) ComboMontages.Add(Combo3.Object);
-
     if (Combo1.Succeeded())
     {
         ComboMontages.Add(Combo1.Object);
@@ -90,7 +86,9 @@ void ASW_Myth::BeginPlay()
 // 콤보 어택 ==================================================================================================================
 void ASW_Myth::ComboAttack()
 {
+    if (bIsJumpAttacking) return; // 점프어택 중이면 화살 발사 X
     Super::ComboAttack();
+    SpawnComboArrow(); // 화살 날리기
 }
 
 void ASW_Myth::SpawnComboArrow(bool bIsSpecialSkill)
@@ -132,8 +130,8 @@ void ASW_Myth::SpawnComboArrow(bool bIsSpecialSkill)
     AActor* Projectile = GetWorld()->SpawnActor<AActor>(ArrowProjectileClass, SpawnLocation, ArrowRotation, Params);
     if (ASW_Arrow* SpawnedArrow = Cast<ASW_Arrow>(Projectile))
     {
-        // 스페셜스킬 또는 점프어택일 때는 데미지 0
-        if (bIsSpecialSkill || bIsJumpSkill)
+        // 점프어택만 0 데미지
+        if (bIsJumpSkill)
         {
             SpawnedArrow->Damage = 0.f;
         }
@@ -169,6 +167,8 @@ void ASW_Myth::NormalSkill()
 
 AActor* ASW_Myth::SpawnArrow(bool bFanShape, bool bIsNormalSkill)
 {
+    if (bIsJumpAttacking) return nullptr; // 아예 점프어택 중이면 실행 자체를 막음
+
     FVector CharacterLocation = GetActorLocation();
     FVector CharacterForward = GetActorForwardVector();
 
@@ -288,7 +288,7 @@ void ASW_Myth::JumpAttack()
 
     LaunchCharacter(-GetActorForwardVector() * 1000.f, true, true);
 
-    // 0.4초 뒤에 MythSpawnActor 생성
+    // 0.2초 뒤에 MythSpawnActor 생성
     FTimerHandle SpawnDelayTimer;
     GetWorld()->GetTimerManager().SetTimer(
         SpawnDelayTimer,
@@ -302,21 +302,28 @@ void ASW_Myth::JumpAttack()
                 FActorSpawnParameters Params;
                 Params.Owner = this;
                 Params.Instigator = this;
+                Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
-                AActor* Spawned = GetWorld()->SpawnActor<AActor>(MythSpawnActorClass, SpawnLocation, SpawnRotation, Params);
+                AActor* Spawned = GetWorld()->SpawnActor<AActor>(
+                    MythSpawnActorClass,
+                    SpawnLocation,
+                    SpawnRotation,
+                    Params);
+
                 if (ASW_MythSpawnActor* DamageZone = Cast<ASW_MythSpawnActor>(Spawned))
                 {
                     DamageZone->OwnerCharacter = this;
                     DamageZone->Damage = AttackDamage;
-                    DamageZone->DamageMultiplier = 3.f; // 데미지 기본어택데미지 곱하기 2
+                    DamageZone->DamageMultiplier = 3.f;
                     DamageZone->Range = FVector(300.f);
                     DamageZone->Offset = FVector(0.f, 0.f, 0.f);
                 }
             }
         },
-        0.2f, // 0.2초 뒤에 액터 생성 (화살이 지면에 닿는 시간용)
-        false  
+        0.2f,
+        false
     );
+
 
     PlaySkillAnimation(FName("JumpAttack"));
 }

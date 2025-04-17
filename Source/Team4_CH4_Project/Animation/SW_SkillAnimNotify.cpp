@@ -38,10 +38,8 @@ void USkillAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBas
             // 스킬 공격이 적용되는 노티파이 (스킬이름을 잘 넣어주어야한다.)
             else if (NotifyEventName == "ApplyDamage")
             {
-                if (Character->HasAuthority()) // 서버에서만 실행
-                {
-                    Character->Server_ApplySkillDamage(SkillName);
-                }
+                // 클라이언트는 서버에 요청만 보냄
+                Character->Server_ApplySkillDamage(SkillName);
             }
 
             else if (NotifyEventName == "ComboInput")
@@ -52,6 +50,8 @@ void USkillAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBas
             // 근접캐릭터 평타시 바라보는곳으로 500만큼 이동 
             else if (NotifyEventName == "DoForwardMove")
             {
+                if (!Character->HasAuthority()) return; // 서버에서만 실행
+
                 if (ASW_Dubu* Dubu = Cast<ASW_Dubu>(Character))
                 {
                     UCharacterMovementComponent* MoveComp = Dubu->GetCharacterMovement();
@@ -189,6 +189,8 @@ void USkillAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBas
             // void 대쉬스킬용 노티파이
             else if (NotifyEventName == "DoDashTeleport")
             {
+                if (!Character->HasAuthority()) return; // 서버에서만 실행
+
                 if (ASW_Void* Void = Cast<ASW_Void>(Character))
                 {
                     Void->ExecuteDashTeleport();

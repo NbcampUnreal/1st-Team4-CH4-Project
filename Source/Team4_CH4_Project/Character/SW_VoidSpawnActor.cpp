@@ -8,6 +8,9 @@
 
 ASW_VoidSpawnActor::ASW_VoidSpawnActor()
 {
+    bReplicates = true;
+    SetReplicateMovement(false);
+
     PrimaryActorTick.bCanEverTick = false;
 
     VisualMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualMesh"));
@@ -32,6 +35,9 @@ void ASW_VoidSpawnActor::BeginPlay()
 void ASW_VoidSpawnActor::ApplyDamage()
 {
     if (!OwnerCharacter) return;
+
+    // FX는 모두에게 보이게 멀티캐스트 호출
+    Multicast_PlayExplosionFX();
 
     FVector Origin = GetActorLocation() + GetActorRotation().RotateVector(Offset);
     float Radius = Range.X;
@@ -75,4 +81,20 @@ void ASW_VoidSpawnActor::ApplyDamage()
     }
 
     DrawDebugSphere(GetWorld(), Origin, Radius, 32, FColor::Purple, false, 2.f);
+}
+
+void ASW_VoidSpawnActor::Multicast_PlayExplosionFX_Implementation()
+{
+    if (ExplosionNiagaraSystem)
+    {
+        UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+            GetWorld(),
+            ExplosionNiagaraSystem,
+            GetActorLocation() + GetActorRotation().RotateVector(Offset),
+            GetActorRotation(),
+            FVector(1.f),
+            true,
+            true
+        );
+    }
 }

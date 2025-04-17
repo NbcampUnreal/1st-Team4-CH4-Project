@@ -521,7 +521,7 @@ void ASW_CharacterBase::Server_PlaySkill_Implementation(FName SkillName)
 void ASW_CharacterBase::Multicast_PlaySkill_Implementation(FName SkillName)
 {
     // DedicatedServer 제외 + 서버 자신 제외
-    if (!IsNetMode(NM_DedicatedServer))
+    if (!IsNetMode(NM_DedicatedServer) && !HasAuthority())
     {
         PlaySkillAnimation(SkillName);
     }

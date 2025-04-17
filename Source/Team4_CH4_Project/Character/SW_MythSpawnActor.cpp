@@ -8,6 +8,9 @@
 
 ASW_MythSpawnActor::ASW_MythSpawnActor()
 {
+    bReplicates = true;
+    SetReplicateMovement(false);
+
     PrimaryActorTick.bCanEverTick = true; // Tick 활성화
 
     // 시각용 메시 (Root로 사용)

@@ -46,10 +46,6 @@ ASW_Dubu::ASW_Dubu()
 	static ConstructorHelpers::FObjectFinder<UAnimMontage> Combo1(TEXT("/Game/Characters/Dubu/Animation/ComboAttack/AM_Dubu_Combo_1.AM_Dubu_Combo_1"));
 	static ConstructorHelpers::FObjectFinder<UAnimMontage> Combo2(TEXT("/Game/Characters/Dubu/Animation/ComboAttack/AM_Dubu_Combo_2.AM_Dubu_Combo_2"));
 	static ConstructorHelpers::FObjectFinder<UAnimMontage> Combo3(TEXT("/Game/Characters/Dubu/Animation/ComboAttack/AM_Dubu_Combo_3.AM_Dubu_Combo_3"));
-	if (Combo1.Succeeded()) ComboMontages.Add(Combo1.Object);
-	if (Combo2.Succeeded()) ComboMontages.Add(Combo2.Object);
-	if (Combo3.Succeeded()) ComboMontages.Add(Combo3.Object);
-
 	if (Combo1.Succeeded())
 	{
 		ComboMontages.Add(Combo1.Object);

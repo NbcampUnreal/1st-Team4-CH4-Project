@@ -142,13 +142,12 @@ void ASW_Void::SpawnNormalMagic()
 // =============================================점프어택 =============================================
 void ASW_Void::JumpAttack()
 {
-    if (!HasAuthority() || bIsLocked) return;
+    if (!HasAuthority() || bIsLocked || bIsJumpAttacking) return;
 
     bIsJumpAttacking = true;
 
     PlaySkillAnimation(FName("JumpAttack"));
 
-    // 이동 속도 조절
     FVector Forward = GetActorForwardVector().GetSafeNormal();
     float DashSpeed = 1300.f;
 
@@ -158,18 +157,25 @@ void ASW_Void::JumpAttack()
 
     LaunchCharacter(Forward * DashSpeed, true, true);
 
-    // 체력 회복 및 UI 갱신
+    // 체력 회복
     Health = FMath::Clamp(Health + 50.f, 0.f, MaxHealth);
     UpdateHealthBar();
 
-    // 이동 후 마찰 원복
+    // 낙하 후 마찰 원복
     FTimerHandle ResetHandle;
     GetWorldTimerManager().SetTimer(ResetHandle, FTimerDelegate::CreateLambda([this, MoveComp]()
         {
             MoveComp->BrakingFrictionFactor = 2.f;
             MoveComp->BrakingDecelerationWalking = 2048.f;
         }), 0.5f, false);
+    FTimerHandle JumpAttackFlagTimerHandle;
+    // ✅ 0.5초 후 점프어택 플래그 해제
+    GetWorldTimerManager().SetTimer(JumpAttackFlagTimerHandle, FTimerDelegate::CreateLambda([this]()
+        {
+            bIsJumpAttacking = false;
+        }), 0.5f, false);
 }
+
 // ===================================================================================================
 
 
@@ -184,6 +190,8 @@ void ASW_Void::DashSkill()
 
 void ASW_Void::ExecuteDashTeleport()
 {
+    if (!HasAuthority()) return;  // 서버에서만 실행
+
     FVector TeleportLocation = GetActorLocation() + GetActorForwardVector() * 600.f;
     TeleportLocation.Z = GetActorLocation().Z;
 
@@ -195,7 +203,6 @@ void ASW_Void::ExecuteDashTeleport()
 
 
 // ============================================= 스페셜스킬 ============================================
-
 void ASW_Void::SpecialSkill()
 {
     if (!HasAuthority() || !VoidUltimateActorClass) return;
@@ -207,7 +214,7 @@ void ASW_Void::SpecialSkill()
     FVector InitialSpawnLocation = GetActorLocation() + ForwardVector * 1000.f;
     FRotator SpawnRotation = ForwardVector.Rotation();
 
-    // 1.5초 후 스폰
+    // 1.35초 후 스폰
     FTimerHandle SpawnTimerHandle;
     GetWorldTimerManager().SetTimer(SpawnTimerHandle, FTimerDelegate::CreateLambda(
         [this, InitialSpawnLocation, SpawnRotation]()
@@ -218,7 +225,10 @@ void ASW_Void::SpecialSkill()
             Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
             ASW_VoidSpawnActor* Spawned = GetWorld()->SpawnActor<ASW_VoidSpawnActor>(
-                VoidUltimateActorClass, InitialSpawnLocation, SpawnRotation, Params);
+                VoidUltimateActorClass,
+                InitialSpawnLocation,
+                SpawnRotation,
+                Params);
 
             if (Spawned)
             {
@@ -228,7 +238,6 @@ void ASW_Void::SpecialSkill()
                 Spawned->Range = FVector(1000.f);
                 Spawned->Offset = FVector::ZeroVector;
             }
-
         }), 1.35f, false);
 }
 // ===================================================================================================
