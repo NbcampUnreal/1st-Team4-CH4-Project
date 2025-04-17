@@ -158,7 +158,7 @@ void ASW_Void::JumpAttack()
     LaunchCharacter(Forward * DashSpeed, true, true);
 
     // 체력 회복
-    Health = FMath::Clamp(Health + 50.f, 0.f, MaxHealth);
+    Health = FMath::Clamp(Health + 25.f, 0.f, MaxHealth);
     UpdateHealthBar();
 
     // 낙하 후 마찰 원복
@@ -169,7 +169,7 @@ void ASW_Void::JumpAttack()
             MoveComp->BrakingDecelerationWalking = 2048.f;
         }), 0.5f, false);
     FTimerHandle JumpAttackFlagTimerHandle;
-    // ✅ 0.5초 후 점프어택 플래그 해제
+    // 0.5초 후 점프어택 플래그 해제
     GetWorldTimerManager().SetTimer(JumpAttackFlagTimerHandle, FTimerDelegate::CreateLambda([this]()
         {
             bIsJumpAttacking = false;
@@ -192,7 +192,7 @@ void ASW_Void::ExecuteDashTeleport()
 {
     if (!HasAuthority()) return;  // 서버에서만 실행
 
-    FVector TeleportLocation = GetActorLocation() + GetActorForwardVector() * 400.f;
+    FVector TeleportLocation = GetActorLocation() + GetActorForwardVector() * 300.f;
     TeleportLocation.Z = GetActorLocation().Z;
 
     TeleportTo(TeleportLocation, GetActorRotation());
