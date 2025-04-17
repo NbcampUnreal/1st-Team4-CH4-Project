@@ -12,8 +12,7 @@ void USW_HP::NativeConstruct()
     if (!NameText) return;
 
     // Get a reference to the Player that actually owns the character this widget is attached to
-    // WARNING! GETOUTER() ISN'T WidgetComponent!! FUCK MY LIFE!!!
-    if (UWidgetComponent* OwningComponent = Cast<UWidgetComponent>(GetOuter()))
+    if (UWidgetComponent* OwningComponent = Cast<UWidgetComponent>(GetOuter())) // HERE: GETOUTER() ISN'T A WidgetComponent!!
     {
         if (ACharacter* OwningCharacter = Cast<ACharacter>(OwningComponent->GetOwner()))
         {
@@ -21,18 +20,7 @@ void USW_HP::NativeConstruct()
             {
                 NameText->SetText(FText::FromString(PS->GetPlayerName()));
             }
-            else
-            {
-                GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Magenta, TEXT("GetPlayerState Failed"));
-            }
         }
-        else
-        {
-            GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Magenta, TEXT("OwningCharacter Cast Failed"));
-        }
-    }
-    else {
-        GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Magenta, TEXT("WidgetComponent Cast Failed"));
     }
 }
 
