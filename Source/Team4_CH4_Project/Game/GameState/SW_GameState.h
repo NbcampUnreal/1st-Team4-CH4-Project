@@ -31,7 +31,7 @@ public:
 	UFUNCTION()
 	void OnRep_DoEndGame();
 
-	UFUNCTION(BlueprintImplementableEvent)
+	UFUNCTION(BlueprintAuthorityOnly, BlueprintImplementableEvent)
 	void AddRanking(APlayerController* DeadUserPC);
 
 	UFUNCTION()
