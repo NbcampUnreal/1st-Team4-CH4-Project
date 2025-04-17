@@ -16,8 +16,6 @@ USW_MinimapWidget::USW_MinimapWidget(const FObjectInitializer& ObjectInitializer
 		MPCMinimap = MPCFinder.Object;
 	}
 
-	CaptureOffsetX = 0.f;
-	CaptureOffsetY = -1930.f;
 	MinimapSize = 250.f;
 }
 
@@ -25,7 +23,7 @@ void USW_MinimapWidget::UpdateMinimap()
 {
 	if (!GetWorld() || GetWorld()->bIsTearingDown) return;
 	if (!MinimapImage || !PlayerMarker) return;
-	
+
 	if (APlayerController* PlayerController = GetOwningPlayer())
 	{
 		if (ACharacter* Character = PlayerController->GetCharacter())
