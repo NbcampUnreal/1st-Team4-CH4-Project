@@ -16,8 +16,8 @@ USW_MinimapWidget::USW_MinimapWidget(const FObjectInitializer& ObjectInitializer
 		MPCMinimap = MPCFinder.Object;
 	}
 
-	CaptureOffsetX = 280.f;
-	CaptureOffsetY = 2403.f;
+	CaptureOffsetX = 0.f;
+	CaptureOffsetY = -1930.f;
 	MinimapSize = 250.f;
 }
 
