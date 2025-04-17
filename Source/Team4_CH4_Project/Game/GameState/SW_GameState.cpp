@@ -47,6 +47,7 @@ void ASW_GameState::AddPlayerStates(APlayerController* const NewPlayerPC)
 		if (ASW_PlayerState* NewPS = NewPlayerPC->GetPlayerState<ASW_PlayerState>())
 		{
 			PlayerStates.Add(NewPS);
+			UE_LOG(LogTemp, Warning, TEXT("PlayerStatesAdded"));
 		}
 	}
 }
@@ -86,7 +87,7 @@ void ASW_GameState::SetCurrentPlayerAmount(int AddAmount)
 	{
 		for (ASW_PlayerState* PS : PlayerStates)
 		{
-			if (PS->GetbIsWon())
+			if (PS->GetbIsWon()&&HasAuthority())
 			{
 				AddRanking(PS->GetPlayerController());
 				UE_LOG(LogTemp, Warning, TEXT("2"));

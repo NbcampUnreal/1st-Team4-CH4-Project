@@ -28,6 +28,14 @@ void ASW_GameMode::BeginPlay()
 				ServerPlayerControllers.Add(PlayerController);
 				UE_LOG(LogTemp, Warning, TEXT("Added PlayerController (using GetAllActorsOfClass) to ServerPlayerControllers: %s"), *PlayerController->GetName());
 			}
+			if (AGameStateBase* GS = GetWorld()->GetGameState())
+			{
+				if (ASW_GameState* SWGS = Cast<ASW_GameState>(GS))
+				{
+					SWGS->SetCurrentPlayerAmount(1);
+					SWGS->AddPlayerStates(PlayerController);
+				}
+			}
 		}
 	}
 }
@@ -37,7 +45,7 @@ void ASW_GameMode::HandleGameEnd()
 {
 	UE_LOG(LogTemp, Warning, TEXT("HandleGameEnd Entrance"));
 	FTimerHandle GameEndTimerHandle;
-	GetWorldTimerManager().SetTimer(GameEndTimerHandle, this, &ASW_GameMode::DelayedTravelToLobby, 5.0f, false);
+	GetWorldTimerManager().SetTimer(GameEndTimerHandle, this, &ASW_GameMode::DelayedTravelToLobby, 50.0f, false);
 }
 
 void ASW_GameMode::DelayedTravelToLobby()

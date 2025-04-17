@@ -231,8 +231,8 @@ protected:
     // ==============================================================
 
     // =======================캐릭터 사망 =============================
-    UFUNCTION()
-    void CharacterDeath();
+    UFUNCTION(Server, Reliable)
+    void Server_CharacterDeath();
 
     UPROPERTY(Replicated)
     bool bIsDead;

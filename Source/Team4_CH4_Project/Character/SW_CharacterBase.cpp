@@ -441,7 +441,7 @@ float ASW_CharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Dama
             PlayAnimMontage(DeathMontage);
         }
         Server_ExecuteDeath_Implementation(DamageCauser);
-        CharacterDeath();
+        Server_CharacterDeath_Implementation();
         SetLifeSpan(2.f);
     }
     else if (HitReactionMontage && !bIsLocked)
@@ -452,22 +452,20 @@ float ASW_CharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Dama
     return DamageToApply;
 }
 
-void ASW_CharacterBase::CharacterDeath()
+void ASW_CharacterBase::Server_CharacterDeath_Implementation()
 {
     bIsDead = true;
+    if (ASW_PlayerState* ThisPS = this->GetPlayerState<ASW_PlayerState>())
+    {
+        ThisPS->SetbIsWon(false);
+    }
     if (ASW_GameState* SWGS = Cast<ASW_GameState>(GetWorld()->GetGameState()))
     {
-        SWGS->SetCurrentPlayerAmount(-1);
-        
         if (ASW_PlayerController* ThisPC = this->GetController<ASW_PlayerController>())
         {
             SWGS->AddRanking(ThisPC);
         }
-    }
-    if (ASW_PlayerState* ThisPS = this->GetPlayerState<ASW_PlayerState>())
-    {
-        UE_LOG(LogTemp, Warning, TEXT("Working"));
-        ThisPS->SetbIsWon(false);
+        SWGS->SetCurrentPlayerAmount(-1);
     }
 }
 
