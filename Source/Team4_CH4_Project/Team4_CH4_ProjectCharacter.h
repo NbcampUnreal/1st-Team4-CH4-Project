@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
+#include "GameplayTagContainer.h"
 #include "Team4_CH4_ProjectCharacter.generated.h"
 
 class USpringArmComponent;
@@ -14,6 +15,8 @@ class UInputAction;
 struct FInputActionValue;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDownTimeTickDelegate, int32, Seconds);
 
 UCLASS(config=Game)
 class ATeam4_CH4_ProjectCharacter : public ACharacter
@@ -46,7 +49,10 @@ class ATeam4_CH4_ProjectCharacter : public ACharacter
 
 public:
 	ATeam4_CH4_ProjectCharacter();
-	
+
+	virtual void PossessedBy(AController* NewController) override;
+	virtual void OnRep_PlayerState() override;
+
 
 protected:
 
@@ -55,13 +61,15 @@ protected:
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
-			
-
-protected:
 
 	virtual void NotifyControllerChanged() override;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+private:
+
+	UPROPERTY(EditAnywhere, Category = "Custom Values|Character Info") // �ð迡 ��ġ�� �ν��Ͻ� ������ ����. ��Ȯ���� � ���������� �÷��̾ ���迡 �ٷ� ��ġ�ϰ� �ʹٸ� EditAnywhere �� ����ؾ��Ѵ�.
+	FGameplayTag CharacterTag;
+
 
 public:
 	/** Returns CameraBoom subobject **/
