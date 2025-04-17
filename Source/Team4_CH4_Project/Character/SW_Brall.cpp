@@ -30,8 +30,8 @@ ASW_Brall::ASW_Brall()
     DashCollider->SetCollisionResponseToAllChannels(ECR_Ignore);
     DashCollider->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
     DashCollider->OnComponentBeginOverlap.AddDynamic(this, &ASW_Brall::OnDashBoxOverlap);
-    DashCollider->SetHiddenInGame(false); // 디버그용
-    DashCollider->SetVisibility(true); // 디버그용
+    DashCollider->SetHiddenInGame(true); // 디버그용
+    //DashCollider->SetVisibility(true); // 디버그용
 
     // 2단 점프용 애니메이션 몽타주 주소
     static ConstructorHelpers::FObjectFinder<UAnimMontage> JumpStartMontage(TEXT("/Game/Characters/Brall/Animation/Jump/AM_Brall_2StepJump.AM_Brall_2StepJump"));

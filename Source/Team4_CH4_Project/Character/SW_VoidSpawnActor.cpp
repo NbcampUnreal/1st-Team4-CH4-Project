@@ -80,7 +80,7 @@ void ASW_VoidSpawnActor::ApplyDamage()
         AlreadyHitActors.Add(Target);
     }
 
-    DrawDebugSphere(GetWorld(), Origin, Radius, 32, FColor::Purple, false, 2.f);
+    //DrawDebugSphere(GetWorld(), Origin, Radius, 32, FColor::Purple, false, 2.f);
 }
 
 void ASW_VoidSpawnActor::Multicast_PlayExplosionFX_Implementation()

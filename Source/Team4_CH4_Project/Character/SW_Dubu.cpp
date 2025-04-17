@@ -31,8 +31,8 @@ ASW_Dubu::ASW_Dubu()
 	DashCollider->SetCollisionResponseToAllChannels(ECR_Ignore);
 	DashCollider->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 	DashCollider->OnComponentBeginOverlap.AddDynamic(this, &ASW_Dubu::OnDashBoxOverlap);
-	DashCollider->SetHiddenInGame(false); // 디버그용
-	DashCollider->SetVisibility(true);    // 디버그용
+	DashCollider->SetHiddenInGame(true); // 디버그용
+	//DashCollider->SetVisibility(true);    // 디버그용
 
 
 	// 2단 점프용 애니메이션 몽타주 주소

@@ -191,7 +191,7 @@ TArray<AActor*> ASW_CharacterBase::GetTargetsInRange_Implementation(FName SkillN
         float Radius = SkillData->Range.X;
 
         // 디버그용
-        DrawDebugSphere(GetWorld(), Location, Radius, 12, FColor::Green, false, 1.0f);
+       // DrawDebugSphere(GetWorld(), Location, Radius, 12, FColor::Green, false, 1.0f);
 
         UKismetSystemLibrary::SphereOverlapActors(
             GetWorld(),
@@ -210,7 +210,7 @@ TArray<AActor*> ASW_CharacterBase::GetTargetsInRange_Implementation(FName SkillN
         FVector Extent = SkillData->Range;
 
         // 디버그용
-        DrawDebugBox(GetWorld(), Location, Extent, GetActorQuat(), FColor::Cyan, false, 1.f);
+        //DrawDebugBox(GetWorld(), Location, Extent, GetActorQuat(), FColor::Cyan, false, 1.f);
 
         UKismetSystemLibrary::BoxOverlapActors(
             GetWorld(),
@@ -248,7 +248,7 @@ TArray<AActor*> ASW_CharacterBase::GetTargetsInRange_Implementation(FName SkillN
         );
 
         // 디버그 박스
-        DrawDebugBox(GetWorld(), Start, HalfSize, Rotation, FColor::Purple, false, 1.5f, 0, 2.0f);
+       // DrawDebugBox(GetWorld(), Start, HalfSize, Rotation, FColor::Purple, false, 1.5f, 0, 2.0f);
 
         if (bHit)
         {
@@ -271,7 +271,7 @@ TArray<AActor*> ASW_CharacterBase::GetTargetsInRange_Implementation(FName SkillN
         FHitResult HitResult;
 
         // 디버그용
-        DrawDebugLine(GetWorld(), Start, End, FColor::Blue, false, 1.0f, 0, 2.0f);
+        //DrawDebugLine(GetWorld(), Start, End, FColor::Blue, false, 1.0f, 0, 2.0f);
 
         UKismetSystemLibrary::LineTraceSingle(
             GetWorld(),
@@ -295,7 +295,7 @@ TArray<AActor*> ASW_CharacterBase::GetTargetsInRange_Implementation(FName SkillN
     case ESkillAttackType::RangedProjectile:
     {
         // 디버그용
-        DrawDebugSphere(GetWorld(), Location, 20.f, 8, FColor::Yellow, false, 1.0f);
+        //DrawDebugSphere(GetWorld(), Location, 20.f, 8, FColor::Yellow, false, 1.0f);
 
         if (SkillData->ProjectileClass)
         {

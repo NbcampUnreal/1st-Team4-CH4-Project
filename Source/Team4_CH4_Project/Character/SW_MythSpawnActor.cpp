@@ -93,5 +93,5 @@ void ASW_MythSpawnActor::ApplyDamage()
     }
 
     // 디버그용 시각화
-    DrawDebugSphere(GetWorld(), Origin, Radius, 16, FColor::Red, false, 2.f);
+    //DrawDebugSphere(GetWorld(), Origin, Radius, 16, FColor::Red, false, 2.f);
 }
