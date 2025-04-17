@@ -19,7 +19,13 @@ public:
 	FText DisplayName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FText IntroText;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UTexture2D* CharacterImage = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSoftObjectPtr<UTexture2D> CharacterFullImage = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float Damage = 0.f;
