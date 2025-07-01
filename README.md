@@ -46,6 +46,8 @@
 - 각각의 캐릭터에 필요한 스킬들, 쿨타임들, 데미지 타입 구현
 - 로비생성과 로비 찾기 등 세션을 편하게 이용하기 위한 UI/UX 설계
 
+**참고 영상**:
+https://www.youtube.com/watch?v=WcfjTOyUUuU&ab_channel=Cha_n0
 ---
 
 ## 2. 팀원 소개
