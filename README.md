@@ -89,7 +89,7 @@
 
 - **Dubu**: 높은 체력, 강력한 궁극기, 멀리 갈 수 있는 기동성
 
- ![스크린샷 2025-07-01 161654](https://github.com/user-attachments/assets/4287310d-ff68-43a7-8024-12372972544d)
+  ![image](https://github.com/user-attachments/assets/ce1e1c04-a3f0-4b26-a91f-f958e121b2d5)
     
 - **Brall**: 강한 공격력, 빠른 이동속도, 빠른 공격
 
